@@ -288,8 +288,6 @@ AudioRecord(PCM 16k/24k)
    - ✅ **删除照片**（v1.6 已定）：API 30+ 走 MediaStore 回收站；API 24–29 走 SAF 且明确不可恢复，见 §3.2
    - **HEIC 解码**（待定）：`libheif` 无官方 Android 制品（Maven Central 无、JitPack 无、
      `androidx.heifwriter` 只能编码），API 24–27 的解码方式需在「降级提示」与「自建 native 库」之间选择
-5. **低版本能力边界**（v1.4 新列）：API 24–29 上「删除照片」（§3.2 依赖 API 30+ 的回收站）与
-   「HEIC 解码」（需 API 28+）都不能按 v1 方案实现，需要决定：降级为不支持、或走 SAF
 6. ~~**ViewModel 异常策略**~~ → **已定（v1.5）**：由 `BaseViewModel.launch {}` 统一捕获非取消异常，
    默认写日志、子类可覆写 `onError` 做状态/副作用映射；业务代码不再直接调用 `viewModelScope.launch`。
 
