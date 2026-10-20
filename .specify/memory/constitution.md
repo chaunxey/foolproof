@@ -125,7 +125,13 @@ items(groupItems) { group ->
 
 - 扫描全程本地、不联网
 - **绝对不能自动删除**，必须用户手动勾选确认
-- 删除前调用 MediaStore 回收站（Android 11+），可恢复，不直接 unlink
+- **删除按 API 版本分通道**（v1.6 定案，能力不同，不可统一实现）：
+  - **API 30+**：`MediaStore.createDeleteRequest()` / `createTrashRequest()`，系统弹确认框，
+    进回收站、**可恢复**，无需存储权限
+  - **API 24–29**：系统无回收站 API。改走 SAF（`ACTION_OPEN_DOCUMENT_TREE` + `DocumentsContract.deleteDocument`），
+    用户需先授权目录；**删除不可恢复**，UI 必须在二次确认中明示「此操作不可撤销」
+  - **API 24–29 且用户未授权 SAF 目录**：只展示重复分组，**删除按钮置灰**
+- 任何版本都禁止用 `WRITE_EXTERNAL_STORAGE` 绕过（宪法 §8）
 - 大图分批加载（Coil + 分页），防止 OOM
 - **页面归属**：整页由 `:app` 组装，`image-compression` 与 `duplicate-cleanup` 各自只暴露
   `Section` composable 与 `ViewModel`，两者**互不依赖**（v1.4 定案）
@@ -274,9 +280,14 @@ AudioRecord(PCM 16k/24k)
 
 1. ~~Office 转 PDF 方案~~ → 已定：A + Word 截长图曲线方案（§3.4）；Excel v1.1，PPT v1 不做
 2. ✅ **包名**：定为 `com.foolproof`（v1.3 已决，不再变更；模块包名 `com.foolproof.base` 等）
-3. **minSdk / targetSdk / compileSdk**：目前工程为 `minSdk=24 / compileSdk=37 / targetSdk=37`；
-   原建议 targetSdk=34 与现状不符，需拍板是否回到 34
-4. **Room 位置**：voice-chat 私有 OK；以后多 feature 共用时是否抽到 common？
+3. ✅ **SDK 口径**（v1.6 已决）：保持工程现状 `minSdk=24 / compileSdk=37 / targetSdk=37`；
+   原「建议 targetSdk=34」作废。minSdk 是否需要上调，见第 5 条
+4. ✅ **Room 位置**（v1.6 已决）：先保持在 `:features:voice-chat` 私有，不抽到 common；
+   等出现第二个真正需要 Room 的 feature 时再评估（宪法 §7 YAGNI）
+5. **低版本能力边界**（拆分处理）：
+   - ✅ **删除照片**（v1.6 已定）：API 30+ 走 MediaStore 回收站；API 24–29 走 SAF 且明确不可恢复，见 §3.2
+   - **HEIC 解码**（待定）：`libheif` 无官方 Android 制品（Maven Central 无、JitPack 无、
+     `androidx.heifwriter` 只能编码），API 24–27 的解码方式需在「降级提示」与「自建 native 库」之间选择
 5. **低版本能力边界**（v1.4 新列）：API 24–29 上「删除照片」（§3.2 依赖 API 30+ 的回收站）与
    「HEIC 解码」（需 API 28+）都不能按 v1 方案实现，需要决定：降级为不支持、或走 SAF
 6. ~~**ViewModel 异常策略**~~ → **已定（v1.5）**：由 `BaseViewModel.launch {}` 统一捕获非取消异常，
@@ -353,3 +364,13 @@ AudioRecord(PCM 16k/24k)
     动机：原条文只写「统一走 CoroutineExceptionHandler 或 runCatching」，但基类并未提供，
     业务侧直接 `viewModelScope.launch` 会把异常裸抛成崩溃。
   - **§10-6**：标记为已定；§10 尚未拍板的只剩「targetSdk 口径」「Room 位置」「低版本能力边界」三项。
+
+- v1.6（2026-10-20）：
+
+  - **§10-3**：SDK 口径定为工程现状 `minSdk=24 / compileSdk=37 / targetSdk=37`，撤回「targetSdk=34」的建议。
+  - **§10-4**：Room 先保留在 `:features:voice-chat` 私有，不抽 common；等第二个使用者出现再评估。
+  - **§3.2 / §10-5（删除部分）**：删除能力按 API 分通道——API 30+ 用 MediaStore 回收站（可恢复），
+    API 24–29 用 SAF（不可恢复，UI 必须明示），未授权目录时按钮置灰；任何版本都不申请写权限。
+    动机：回收站 API 是 API 30 才有的系统能力，低版本无法伪装；申请写权限又与 §8 冲突。
+  - **§10-5（HEIC 部分）**：查证后 `libheif` 无官方 Android 制品，原「补依赖解 HEIC」方案不成立，
+    留待单独决定。
