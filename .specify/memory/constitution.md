@@ -96,7 +96,7 @@ feature 之间  →  禁止互相依赖
 
 ### 3.2 重复照片清理页面交互规范（与 image-compression 同页）
 
-UI 容器：`LazyVerticalGrid`，跨列头部分组：
+UI 容器：`LazyVerticalGrid`，跨列头部分组（**纵向顺序：图片压缩区在上，重复照片清理区在下**，v1.8 定案）：
 
 ```kotlin
 items(groupItems) { group ->
@@ -385,3 +385,8 @@ AudioRecord(PCM 16k/24k)
     动机：libheif 无官方 Android 制品（Maven Central 无、JitPack 返回空、`androidx.heifwriter` 只能编码），
     自建 native 需承担 LGPL-3.0 合规与 HEVC 专利评估，为极少数老设备上的 HEIC 场景不划算。
   - 该门槛同时适用于图片压缩源图、重复照片扫描与转 PDF 三处 HEIC 输入，不只是 §3.3。
+
+- v1.8（2026-10-20）：
+
+  - **§3.2**：明确同页的纵向顺序——图片压缩区在上、重复照片清理区在下（`002-image-compression` 规格拍板）。
+    动机：页面结构归 §3.2 管，顺序若只写在 feature 规格里，将来两个模块各写一遍就会漂移。
