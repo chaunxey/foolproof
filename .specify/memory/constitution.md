@@ -1,122 +1,303 @@
-# Foolproof 项目宪法
+# 项目宪法（Project Constitution）
 
-**Foolproof** 是一个**纯本地**的图片 / 文件处理工具 App。本宪法规定项目不可协商的原则与约束，
-所有规格（`specs/`）、计划（`plan.md`）、任务（`tasks.md`）与代码实现都必须符合本文件。
+> 本文档是本项目的最高约束。任何代码、评审、重构都不得违反；如需修改，必须显式更新本文档并说明理由。
+技术栈一旦锁定，禁止替换；新增依赖必须在第 2 节登记。
 
----
+***
 
-## 核心原则
+## 1. 项目定位：做什么 / 不做什么
 
-### I. 纯本地优先（NON-NEGOTIABLE）
+### 1.1 做什么
 
-用户数据默认不离开设备。图片压缩、重复照片清理、PDF 生成与文件转换**必须完全在本地完成**，
-不得为此引入任何云服务、上传通道或后端依赖。
+纯本地工具 App，5 个功能：
 
-唯一允许联网的场景是第 5 项功能「语音聊天」，且必须满足：
+1. 图片压缩（Compressor SDK，输出 WebP/JPEG）
+2. 重复照片清理（dHash/pHash + 汉明距离分组）
+3. 多张图片合并生成 PDF
+4. 本地文件转 PDF
+5. 类豆包语音聊天（用户自填 OpenAI API Key，回合制：Whisper → GPT-4o-mini → TTS）
 
-- 接口地址与 API Key 由**用户自行填写并保存在本地**，不得硬编码、不得内置作者的密钥；
-- 联网行为必须由用户操作显式触发，禁止后台静默上报；
-- 除该功能外，App 不得有其他网络出口。
+### 1.2 不做什么（红线，本版不实现）
 
-**不做**：账号体系、云端同步、用户行为埋点与统计上报、远程配置、在线素材库。
+- ❌ 不写后端服务、不买服务器、不做用户账号体系
+- ❌ 不做云同步、不做相册备份、不做社交分享
+- ❌ 不内置 OpenAI Key，不代理、不转卖 API 调用
+- ❌ 不做通用 AI 聊天机器人（仅限语音问答形态）
+- ❌ 不做视频处理、不做云盘、不做笔记类功能
 
-### II. 技术栈锁定（NON-NEGOTIABLE）
+***
 
-技术栈由项目负责人确定，**AI 不得自作主张替换、升级或引入同类替代品**。包括但不限于：
-不得用其他图片压缩库替代约定的方案，不得用 Hilt / Koin 之外的方式替代依赖注入，
-不得引入 RxJava 与协程 Flow 混用替代约定的状态方案。
+## 2. 技术栈锁定（禁止替换）
 
-- 需要新增任何第三方依赖时，必须说明用途、体积影响与替代方案，**经项目负责人确认后**才能加入；
-- 库版本统一在 `gradle/libs.versions.toml` 中声明，禁止在 `build.gradle.kts` 里硬编码版本号；
-- 已有约定库的版本升级同样视为技术栈变更，需经确认。
-
-### III. 模块边界与单向依赖
-
-工程采用 `app` → `base` / `conmon` 的**单向依赖**结构：
-
-| 模块 | 职责 | 允许依赖 |
+| 类别 | 选型 | 备注 |
 | --- | --- | --- |
-| `:base` | 架构基建：MVI 封装、`BaseApplication`、Koin、Retrofit/HttpClient 封装、日志 | 仅第三方库，不依赖 `:conmon`、`:app` |
-| `:conmon` | 通用业务能力：图片压缩等可复用的能力封装 | 可依赖 `:base` |
-| `:app` | 功能编排、UI、导航 | 可依赖 `:base`、`:conmon` |
+| 语言 | Kotlin | 禁止新增 Java 业务代码 |
+| DI | **Koin** | 不用 Hilt/Dagger |
+| 架构 | MVI（StateFlow + Channel） | 状态集中，副作用走 Channel |
+| 网络 | **Ktor Client** | 不用 Retrofit；统一封装在 base |
+| 序列化 | kotlinx.serialization | Ktor 官方配套 |
+| 导航 | **Jetpack Navigation 3** | 封装在 common，禁止业务模块自己写 NavHost |
+| 图片压缩 | **Compressor** (zetbaitsu) | https://github.com/zetbaitsu/Compressor |
+| 图片加载 | **Coil 3** | 业务模块禁止直接 new ImageLoader |
+| 本地存储 | **Room** + **EncryptedSharedPreferences** | 会话历史用 Room；API Key 必须用 EncryptedSP |
+| 语音端点 | Silero VAD（ONNX，本地） | 不用服务端 VAD |
+| 异步 | Coroutine + Flow | 禁止 RxJava |
+| UI | **Jetpack Compose** | 本版全面用 Compose，不再写 XML；MVI 状态驱动重组 |
+| PDF 生成 | **原生 android.graphics.pdf.PdfDocument** | 不引入 iText/PDFBox 等第三方 PDF 库 |
+| Word 解析 | **poi-ooxml-lite**（Apache POI，仅读 docx） | 只用于转简易 HTML→WebView 截图，不引 PDFBox |
 
-- `:base` 与 `:conmon` **不得依赖 `:app`**，也不得包含 Android UI（Compose 页面、Activity）；
-- 两个模块必须能被独立单元测试，不依赖 `:app` 的运行时环境；
-- 功能逻辑不得直接堆在 `:app`，可复用的处理能力必须下沉到 `:conmon`。
+***
 
-> 待确认：`conmon` 为需求原文写法，若实为 `common` 的笔误，应在写第一行业务代码前改名——
-> 模块名一旦被引用，改名成本随代码量上升。
+## 3. 模块结构
 
-### IV. 单向数据流（MVI）
+```
+:app                             // 首页 + 底部导航，只做壳，不写业务
+:base                            // MVI 基类、Koin、Ktor 封装、日志、BaseApplication
+:common                          // 跨业务通用：导航封装、API 层、工具类
+:features:image-compression      // 功能 1（图片压缩）
+:features:duplicate-cleanup      // 功能 2（重复照片清理），UI 与 image-compression 同页（见 §3.2）
+:features:file-conversion        // 功能 3+4（图片合并 PDF、文件转 PDF）
+:features:voice-chat             // 功能 5（类豆包语音聊天）
+```
 
-`base` 模块统一封装 MVI 架构，所有 ViewModel 遵循同一套状态与副作用约定：
+### 模块依赖规则（单向，禁止反向）
 
-- **状态**：用 `StateFlow<UiState>` 暴露，`UiState` 必须是不可变的 `data class`，
-  由 ViewModel 内部 `MutableStateFlow` 唯一持有，外部只读；
-- **副作用**：一次性事件（导航、Toast、弹窗、权限请求）用 `Channel` 发送，
-  由 UI 侧以 `receiveAsFlow()` 收集，**不得**塞进 `UiState` 里用布尔字段模拟事件；
-- **事件入口**：UI 只向 ViewModel 发送意图（Intent/Action），不直接调用业务实现；
-- **线程**：耗时工作（图片解码、PDF 写入、文件 IO）不得在主线程执行，统一在 ViewModel 或
-  数据层切换到 IO 调度器。
+```
+app → base, common, features/*
+feature → base, common
+common → base
+base → 无业务依赖
+feature 之间  →  禁止互相依赖
+```
 
-### V. 克制的依赖注入（Koin）
+### 模块职责
 
-使用 `BaseApplication` 完成 Koin 的初始化与模块装配。**只注入满足以下至少一条的类**：
+- **:base**
 
-- 需要外部提供（Context、配置、API Key 等运行时参数）；
-- 实现容易被替换（如网络客户端、图片处理器）；
-- 需要统一生命周期（单例、与页面或进程绑定）；
-- 需要单例或多例的实例数量控制；
-- 需要便于单元测试替换（如 ViewModel、Repository）。
+  - `BaseApplication`（Koin 启动入口）
+  - `BaseViewModel<S, E>`：`StateFlow<S>` 持状态，`Channel<E>` 发副作用
+  - Ktor `HttpClient` 封装：对外只暴露 `get()` / `post()`，支持配置日志、请求头、全局错误拦截
+  - `LogUtil`（object 单例）：仅 debug 打印，输出 `文件名:行号 + 信息`，release 全砍
 
-不满足上述条件的普通工具类、无状态纯函数、数据模型**不要**注册进 Koin——
-容器里塞满琐碎对象会让依赖关系变得不可读。
+- **:common**
 
-### VI. 可观测性最小化
+  - 导航组件封装：过滤重复跳转；返回首页时重置导航栈
+  - `common/api/`：所有 API 调用唯一出口（见第 6 节）
+  - 通用工具：加密 SP 封装、权限请求基类、文件工具
 
-统一的日志工具为 `object LogUtil`（全局单例，位于 `:base`）：
+- **:app**
 
-- **仅在 debug 构建下输出**，release 构建必须静默；
-- 输出内容必须包含：**调用处文件名**、**行号**、日志信息；
-- 生产代码中禁止直接使用 `android.util.Log`、`println` 或第三方日志库；
-- 日志不得输出用户隐私内容（完整文件路径、图片内容、API Key、聊天正文）。
+  - 底部导航 3 tab：图片压缩 / 文件转换 / AI 语音聊天
+  - tab 切换不重复入栈（3 个都是首页，返回栈不叠加）
+  - 重复照片清理与图片压缩**合并在同一个 tab 页面**内（见 §3.2）
 
-### VII. 简洁优先（YAGNI）
+### 3.2 重复照片清理页面交互规范（与 image-compression 同页）
 
-优先交付能工作的最小实现。不为「将来可能需要」预埋抽象层、接口、配置项或开关；
-不为单一实现编写多余的 Strategy / Factory。重复出现三次以上再抽取。
+UI 容器：`LazyVerticalGrid`，跨列头部分组：
 
----
+```kotlin
+items(groupItems) { group ->
+    item(span = { GridItemSpan(maxLineSpan) }) {
+        GroupHeader(group.title)   // 横跨整行的标题
+    }
+    items(group.photos) { photo ->
+        PhotoGridItem(photo, onSelected = { ... })
+    }
+}
+```
 
-## 工程约束
+交互状态机（按钮文案驱动）：
 
-### 技术栈基线
+1. 初始：主按钮显示 **【查询相同图片】**
+2. 点击 → 按钮变为 **【重新查询】**，后台扫描（dHash/pHash + 汉明距离 ≤5 分组）
+3. 扫描完成 → 按钮下方展示结果 Grid
+4. 每张图片：
 
-- Kotlin + Jetpack Compose（Material 3），单 Activity 架构；
-- `minSdk 24`，`compileSdk / targetSdk 37`；
-- AGP 9 的写法约定（不要引入 `kotlin-android` 插件、`compileSdk` 块式写法、
-  R8 规则放 `app/src/main/keepRules/`）见 [README](../README.md)；
-- 网络层统一封装：Retrofit + HttpClient 封装，对外提供 GET / POST，支持可配置的
-  日志、请求头与全局错误处理，**不允许**在业务代码里自行创建 `OkHttpClient` 或散落 Retrofit 实例；
-- 图片压缩统一使用 [Compressor](https://github.com/zetbaitsu/Compressor)（`zetbaitsu/Compressor`），
-  不得替换为其他压缩实现；封装在 `:conmon` 中对外暴露。
+  - 点击图片本体 → 全屏放大预览
+  - 右下角选中框 → 点选后右上角/右侧出现 **【删除】** 按钮
 
-### 质量门槛
+5. 点击 **【删除】** → 二次确认后删除选中图片
 
-- 架构基建（`:base` 的 MVI 基类、Koin、网络封装、`LogUtil`）与 `:conmon` 的能力封装
-  **必须有单元测试**；
-- 提交前 `./gradlew :app:testDebugUnitTest` 必须通过；
-- 涉及图片 / PDF 的核心算法（汉明距离比对、合并排序、格式转换）测试优先于实现；
-- 提交信息遵循 Conventional Commits，分支模型 `main` + `feature/<name>`。
+约束：
 
----
+- 扫描全程本地、不联网
+- **绝对不能自动删除**，必须用户手动勾选确认
+- 删除前调用 MediaStore 回收站（Android 11+），可恢复，不直接 unlink
+- 大图分批加载（Coil + 分页），防止 OOM
 
-## 治理
+### 3.3 文件转换能力分级（file-conversion）
 
-1. 本宪法**优先于**任何其他开发实践、外部教程与 AI 的默认习惯；冲突时以本文件为准。
-2. 违反「纯本地优先」或「技术栈锁定」的实现**一律退回**，不因工期压力放宽。
-3. 修订须：说明动机 → 更新本文件 → 递增版本号 → 同步受影响的 `specs/` 与 `tasks.md`。
-4. 版本号遵循语义化：MAJOR（原则增删或破坏性变更）、MINOR（新增原则 / 章节）、PATCH（措辞澄清）。
-5. 若某条原则确实需要例外，例外必须**显式记录在本文件中**（附原因与范围），而不是在代码里悄悄绕过。
+| 输入格式 | 方案 | 状态 |
+| --- | --- | --- |
+| 图片（JPG/PNG/WebP/HEIC）→ PDF | 原生 `PdfDocument`，逐页 draw Bitmap | ✅ v1 实现 |
+| 文本（TXT/MD）→ PDF | 原生 `PdfDocument`，Canvas 画文字 | ✅ v1 实现 |
+| Word（DOCX）→ PDF | **截长图曲线方案**（见 §3.4） | ✅ v1 实现（.docx 优先，.doc 后续） |
+| Excel（XLS/XLSX）→ PDF | 同上思路，表格转 HTML | ⏳ v1.1 再做 |
+| PPT（PPT/PPTX）→ PDF | 自由排版，截长图方案不适用 | ❌ v1 不做 |
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-20 | **Last Amended**: 2026-10-20
+### 3.4 Word 转 PDF：截长图曲线方案
+
+思路：不追求矢量 PDF，**把 Word 渲染成长图，再塞进 PdfDocument**。绕开完整 Office 排版引擎。
+
+链路：
+
+```
+.docx 文件
+  → Apache POI (poi-ooxml-lite) 读取段落/标题/表格/内嵌图片
+  → 拼成简易 HTML（支持 h1/h2/p/strong/table/img base64）
+  → WebView.loadDataWithBaseURL(html)
+  → 测量 WebView 内容高度，动态设高
+  → PixelCopy / drawToBitmap 截长图（API 26+ 用 PixelCopy）
+  → 按 A4 比例切分成多页 Bitmap
+  → PdfDocument 逐页 draw
+```
+
+依赖与约束：
+
+- 引入 `poi-ooxml-lite`（约 5~10MB，剔除 examples/字体）；不引 PDFBox、不引完整 POI scratchpad
+- 只支持 `.docx`；老 `.doc`（OLE2）v1 不做
+- WebView 长截图统一用 `PixelCopy`（API 26+），低版本降级 `drawToBitmap`
+- 复杂排版还原不了：浮动文本框、公式、艺术字、页眉页脚、复杂分栏——v1 接受
+- 内嵌图片：从 docx `word/media/` 读出来转 base64 嵌进 `<img>`
+- 输出 PDF 是**位图 PDF**，文字不可选中、不可复制——UI 文案必须提前告知用户
+
+**为什么这个方案可行**：你不需要"完美还原 Word"，只需要"用户能看到内容、能存档"。截长图路线用 5~10MB 依赖换了 Word 支持，比 LibreOfficeKit 的 300MB 代价小两个数量级。
+
+***
+
+## 4. MVI 架构规范（base 模块强制）
+
+每个 ViewModel 必须：
+
+1. 定义 `State`（data class，不可变）和 `Effect`（sealed class，一次性事件）
+2. 状态容器：`private val _uiState = MutableStateFlow(State())`，对外暴露 `uiState: StateFlow<...>`
+3. 副作用：`private val _effect = Channel<Effect>(Channel.BUFFERED)`，对外 `effect: Flow<Effect>`
+4. 禁止在 ViewModel 里持有 View / Context（用 `@ApplicationContext` 或参数传入）
+5. 所有业务调用走 `viewModelScope.launch`，异常统一走 `CoroutineExceptionHandler` 或封装的 `runCatching`
+6. Intent 由 UI 层单向发送：`viewModel.dispatch(Action.Xxx)`
+
+***
+
+## 5. 网络层规范（common/api/）
+
+- 所有 HTTP 请求**只能**在 `common/api/` 目录下定义 service interface
+- feature 模块**禁止**直接 `HttpClient.get/post`、禁止直接 import Ktor 的 request builder
+- feature 只依赖 `common/api/` 暴露的 service 接口，实现由 Koin 提供
+- 统一错误模型：sealed class `ApiResult<T>` / `NetworkError`，业务层不直接捕 `IOException`
+- 请求头、超时、日志开关在 base 的 Ktor 配置里统一管理
+- OpenAI endpoint 常量集中在 `common/api/OpenAiEndpoints.kt`，禁止业务模块写死 URL
+
+***
+
+## 6. 代码复用规则（补充原规范）
+
+1. 同一 UI 模式 / 同一逻辑**出现第 2 次**就必须抽公共（比原规范的"第 3 次"更严，因为本项目模块多、重复风险高）
+2. API 调用只走 `common/api/`，组件里不准直接 fetch
+3. 工具函数放 `common/util/`，业务层禁止复制粘贴
+4. 跨 feature 需要复用的业务逻辑，下沉到 common 或抽 UseCase，**feature 之间不互引**
+5. 新增公共组件前，先在 common 里搜；找不到再写，写了要登记到第 11 节清单
+
+***
+
+## 7. 语音聊天模块（voice-chat）硬约束
+
+链路固定：
+
+```
+AudioRecord(PCM 16k/24k)
+  → Silero VAD 判断说完
+  → Whisper STT
+  → GPT-4o-mini（带上下文）
+  → TTS 接口拿音频
+  → AudioTrack 播放
+```
+
+- API Key：**EncryptedSharedPreferences**，禁止 DataStore / MMKV / 明文
+- 会话历史：**Room**，库建在 `:features:voice-chat` 内部，不暴露给其他模块
+- 必须有"测试连通性"按钮（调 `/v1/models`）
+- 所有日志打印 API Key 时必须脱敏（`sk-***xxxx`）
+- 必须在 UI 层提示："本工具调用您自己的 OpenAI 账号，费用由您承担"
+
+***
+
+## 8. 权限与隐私合规（Google Play 上架红线）
+
+权限最小化：
+
+- `RECORD_AUDIO`（仅 voice-chat 运行时申请）
+- `READ_MEDIA_IMAGES` / `READ_MEDIA_VISUAL_USER_SELECTED`（Android 13+）
+- `READ_EXTERNAL_STORAGE`（Android 12 及以下，maxSdk=32）
+- 不要申请 `WRITE_EXTERNAL_STORAGE`（Scoped Storage）
+- 不要申请无关权限（通讯录、定位、手机状态）
+
+合规要求：
+
+- 隐私政策明确说明：麦克风音频直传 OpenAI，不经过我方服务器
+- 首次进入语音聊天前弹同意框
+- 图片压缩、重复照片清理全程本地处理，不联网
+
+***
+
+## 9. 禁止事项（Code Review 一票否决）
+
+- ❌ feature 模块直接 new Ktor client / 直接写 URL
+- ❌ API Key 明文存储或打日志
+- ❌ feature 之间互相 import
+- ❌ 在 ViewModel / 工具类里 `startActivity` / `Toast`
+- ❌ 复制粘贴超过 2 次的相同逻辑
+- ❌ 引入文档第 2 节以外的框架（如要加，先改本文档）
+- ❌ 在 release 包留 `Log.d` / `printStackTrace`
+- ❌ 用 Java 写新业务
+- ❌ 为了"复用"在公共组件里加 `if (feature == X)` 分支
+
+***
+
+## 10. 待拍板事项
+
+### 已决（v1.1）
+
+- ✅ 重复照片清理：新建 `:features:duplicate-cleanup`，UI 与 image-compression 同页
+- ✅ PDF 生成：原生 `PdfDocument`
+- ✅ UI 技术栈：Jetpack Compose（替换原 ViewBinding+XML）
+- ✅ 文件转 PDF 输入范围：图片 / 文本 / Word / Excel / PPT
+
+### 待你拍板
+
+1. ~~Office 转 PDF 方案~~ → 已定：A + Word 截长图曲线方案（§3.4）；Excel v1.1，PPT v1 不做
+2. **包名**：`com.xxx.toolbox`？
+3. **minSdk / targetSdk / compileSdk**：建议 minSdk=24，targetSdk=34
+4. **Room 位置**：voice-chat 私有 OK；以后多 feature 共用时是否抽到 common？
+5. **Git 提交规范**：是否启用 Conventional Commits（feat/fix/chore）？
+
+***
+
+## 11. 公共组件登记清单（持续维护）
+
+| 组件 | 位置 | 用途 | 注册时间 |
+| --- | --- | --- | --- |
+| LogUtil | base/util | 统一日志 | 初始 |
+| HttpClient | base/network | Ktor 封装 | 初始 |
+| NavHost 封装 | common/navigation | 导航 | 初始 |
+| EncryptedSP 封装 | common/util | API Key 存储 | 初始 |
+| （后续新增在此登记） |  |  |  |
+
+***
+
+## 12. 版本
+
+- v1.0（2026-10-20）：初始版本，锁定技术栈与模块结构
+- v1.1（2026-10-20）：
+
+  - 确认新建 `:features:duplicate-cleanup` 模块
+  - UI 从 ViewBinding+XML 改为 Jetpack Compose
+  - PDF 生成锁定原生 `PdfDocument`
+  - 新增 §3.2 重复照片清理页面交互规范（LazyVerticalGrid + 状态机）
+  - 新增 §3.3 文件转换能力分级，Office 转 PDF 调研结论（A/B/C 三选一待拍板）
+
+- v1.2（2026-10-20）：
+
+  - 拍板 Office 方案：v1 砍掉 LibreOfficeKit/Spire/完整 Office 引擎
+  - Word 改用**截长图曲线方案**（§3.4）：poi-ooxml-lite 读 docx → 简易 HTML → WebView → PixelCopy 长截图 → PdfDocument
+  - 新增依赖：`poi-ooxml-lite`（约 5~10MB），不引 PDFBox
+  - 能力范围：v1 支持图片/文本/docx 转 PDF；Excel 延后 v1.1；PPT v1 不做
+  - 明确输出为位图 PDF（文字不可选中），UI 需告知用户
