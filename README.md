@@ -122,8 +122,21 @@ Foolproof/
 │       │   ├── mvi/                      # MviContract + BaseViewModel
 │       │   └── network/                  # Ktor 封装 + ApiResult + NetworkError
 │       └── test/java/com/foolproof/base/ # 33 个单元测试
+├── features/
+│   └── image-compression/          # 功能 1：图片压缩
+│       ├── build.gradle.kts
+│       └── src/
+│           ├── main/java/com/foolproof/features/compression/
+│           │   ├── CompressionSection.kt     # 对外唯一 Composable
+│           │   ├── CompressionViewModel.kt   # MVI + 批量串行 + 防抖预估
+│           │   ├── domain/                   # 模型与三个接口（测试接缝）
+│           │   ├── data/                     # Compressor / MediaStore / 元数据读取
+│           │   └── platform/                 # SDK 能力判定与采样计算
+│           └── test/java/...                 # 33 个单元测试
 ├── docs/requirements.md            # 原始需求记录（已由宪法取代）
-├── specs/001-base-module/          # 本 feature 的 spec / plan / tasks
+├── specs/
+│   ├── 001-base-module/            # base 模块的 spec / plan / tasks
+│   └── 002-image-compression/      # 图片压缩的 spec / plan / tasks
 ├── gradle/
 │   ├── libs.versions.toml          # 依赖版本目录
 │   └── wrapper/                    # Gradle Wrapper 9.8.2
@@ -136,11 +149,11 @@ Foolproof/
 ## 模块规划（宪法 §3）
 
 ```
-:app                             # 底部导航壳，不写业务            ✅ 已建
+:app                             # 导航与页面组装（不写业务逻辑）      ✅ 已建
 :base                            # MVI 基类、Koin、Ktor 封装、日志  ✅ 已建
+:features:image-compression      # 功能 1：图片压缩                  ✅ 已建
 :common                          # 导航封装、common/api、通用工具    ⏳ 待建
-:features:image-compression      # 功能 1                          ⏳ 待建
-:features:duplicate-cleanup      # 功能 2（UI 与 image-compression 同页）
+:features:duplicate-cleanup      # 功能 2（与图片压缩同页，见 §3.2）
 :features:file-conversion        # 功能 3 + 4
 :features:voice-chat             # 功能 5
 ```
@@ -155,6 +168,17 @@ base → 无业务依赖
 ```
 
 底部导航 3 个 tab：图片压缩 / 文件转换 / AI 语音聊天。
+
+## 图片压缩（已实现）
+
+`:features:image-compression`，只对外暴露一个 `CompressionSection`，整页由 `:app` 组装（宪法 §3.2）。
+
+- **零权限**：选图走系统 Photo Picker，写图走应用私有目录 + `FileProvider`；不申请 `READ_MEDIA_*` / `WRITE_*`
+- **压缩**：Compressor（`id.zelory:compressor:3.0.1`），输出 JPEG / WebP，质量 0–100
+- **版本门槛**：HEIC 仅在 API ≥ 28 可解码，24–27 提示不支持；「保存到相册」仅 API ≥ 29 出现
+- **行为**：批量串行压缩、单张失败隔离可重试、参数改动 300ms 防抖后出预估体积
+
+> 注意：Compressor 的默认约束会把图缩到 612×816，实现里已用 `resolution()` 覆盖为「仅超阈值才降尺寸」。
 
 ## base 模块
 
