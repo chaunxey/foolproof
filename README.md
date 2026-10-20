@@ -1,16 +1,25 @@
 # Foolproof
 
-> **状态：脚手架阶段** — 目前是基于 Android Studio 新建 Compose 模板的空壳项目，尚无业务代码。
+> **状态：规格阶段** — 宪法已定稿（v1.2），工程仍是 Android Studio 新建的 Compose 模板，模块骨架尚未搭建。
 
-<!-- TODO: 用两三句话说明 Foolproof 是什么、解决什么问题、面向谁。 -->
-**简介**：待补充。
+**简介**：纯本地的图片 / 文件处理工具 App。所有处理都在设备上完成，不依赖后端、不上传用户文件；
+唯一需要联网的是「AI 语音聊天」，使用用户自己填写的 API Key，费用自负。
 
-<!-- TODO: 首个可交付版本要做的核心能力，按重要性排序。 -->
-**目标功能**：待补充。
+**目标功能**：
+
+1. 图片压缩（Compressor，输出 WebP / JPEG）
+2. 重复照片清理（dHash / pHash + 汉明距离分组，手动勾选删除，走 MediaStore 回收站）
+3. 多张图片合并生成 PDF
+4. 本地文件转 PDF（v1 支持图片 / 文本 / Word，Excel 延后，PPT 不做）
+5. 类豆包语音聊天（录音 → Silero VAD → Whisper → GPT-4o-mini → TTS 播放）
+
+> 完整范围、红线与方案取舍见 [宪法 `.specify/memory/constitution.md`](.specify/memory/constitution.md)。
 
 ---
 
 ## 技术栈
+
+### 当前工程已引入
 
 | 组件 | 版本 | 说明 |
 | --- | --- | --- |
@@ -18,11 +27,27 @@
 | Gradle | 9.6.0 | 已启用 Configuration Cache |
 | Kotlin | 2.2.10 | 仅应用 Compose 编译器插件，Kotlin 编译由 AGP 内置支持 |
 | Jetpack Compose | BOM 2026.02.01 | Material 3 + 动态取色（Android 12+） |
-| compileSdk / targetSdk | 37 | — |
-| minSdk | 24 | Android 7.0 |
+| compileSdk / targetSdk | 37 | 宪法 §10 建议 targetSdk=34，**待拍板** |
+| minSdk | 24 | Android 7.0，与宪法一致 |
 | JVM Target | Java 11 | 编译期 JDK 为 JetBrains Runtime 25 |
 
-依赖版本统一在 [`gradle/libs.versions.toml`](gradle/libs.versions.toml) 中以 Version Catalog 管理，**不要在 `build.gradle.kts` 里硬编码版本号**。
+### 规划技术栈（宪法 §2 锁定，尚未引入）
+
+| 类别 | 选型 | 说明 |
+| --- | --- | --- |
+| 依赖注入 | Koin | 不用 Hilt / Dagger |
+| 架构 | MVI（StateFlow + Channel） | 由 `:base` 统一封装 |
+| 网络 | Ktor Client + kotlinx.serialization | 不用 Retrofit；统一封装在 `:base` |
+| 导航 | Jetpack Navigation 3 | 封装在 `:common`，业务模块不写 NavHost |
+| 图片加载 | Coil 3 | 禁止在业务模块直接 new ImageLoader |
+| 本地存储 | Room + EncryptedSharedPreferences | 会话历史 / API Key 存储 |
+| 语音端点检测 | Silero VAD（ONNX，本地） | 不用服务端 VAD |
+| PDF 生成 | 原生 `PdfDocument` | 不引 iText / PDFBox |
+| Word 解析 | poi-ooxml-lite | 仅读 `.docx`，用于截长图转 PDF |
+| 图片压缩 | Compressor（zetbaitsu） | 输出 WebP / JPEG |
+
+技术栈由宪法锁定，**禁止替换，新增依赖须先改宪法第 2 节**。依赖版本统一在
+[`gradle/libs.versions.toml`](gradle/libs.versions.toml) 中以 Version Catalog 管理，**不要在 `build.gradle.kts` 里硬编码版本号**。
 
 ## 环境要求
 
@@ -73,6 +98,8 @@ Windows 下用 `gradlew.bat`。安装到已连接设备/模拟器：
 
 ## 项目结构
 
+当前仓库仍为单模块（`:app`）模板：
+
 ```
 Foolproof/
 ├── app/
@@ -87,14 +114,38 @@ Foolproof/
 │       │   └── res/                     # 资源与图标
 │       ├── test/                        # 本地单元测试
 │       └── androidTest/                 # 仪器化测试
+├── docs/requirements.md          # 原始需求记录（已由宪法取代）
 ├── gradle/
 │   ├── libs.versions.toml        # 依赖版本目录
 │   └── wrapper/                  # Gradle Wrapper 9.6
-├── .specify/                     # spec-kit 脚手架：模板、脚本、工作流
+├── .specify/                     # spec-kit 脚手架：模板、脚本、工作流、宪法
 ├── .dsh/skills/                  # 本项目的 speckit 命令技能
 ├── .gitattributes                # 换行符规范（gradlew 保持 LF）
 └── build.gradle.kts              # 根构建脚本
 ```
+
+## 模块规划（宪法 §3，尚未创建）
+
+```
+:app                             # 底部导航壳，不写业务
+:base                            # MVI 基类、Koin、Ktor 封装、LogUtil、BaseApplication
+:common                          # 导航封装、common/api 网络出口、通用工具
+:features:image-compression      # 功能 1
+:features:duplicate-cleanup      # 功能 2（UI 与 image-compression 同页）
+:features:file-conversion        # 功能 3 + 4
+:features:voice-chat             # 功能 5
+```
+
+依赖方向单一，**禁止反向与横穿**：
+
+```
+app → base, common, features/*
+feature → base, common        （feature 之间禁止互相依赖）
+common → base
+base → 无业务依赖
+```
+
+底部导航 3 个 tab：图片压缩 / 文件转换 / AI 语音聊天。
 
 ## AGP 9 约定
 
@@ -126,12 +177,13 @@ Foolproof/
 constitution → specify → plan → tasks → implement
 ```
 
-- 宪法：[`.specify/memory/constitution.md`](.specify/memory/constitution.md)（v1.0.0，2026-10-20 批准）
-- 原始需求记录：[`docs/requirements.md`](docs/requirements.md)
+- 宪法：[`.specify/memory/constitution.md`](.specify/memory/constitution.md)（**v1.2**，2026-10-20，最高约束）
+- 原始需求记录：[`docs/requirements.md`](docs/requirements.md)（已被宪法取代，仅作历史留存）
 - 特性规格：`specs/<feature>/`（尚未创建）
 - 完整流水线定义：[`.specify/workflows/speckit/workflow.yml`](.specify/workflows/speckit/workflow.yml)
 
-新功能从 `/speckit.specify` 开始，描述需求即可，无需手写规格文档结构。
+新功能从 `/speckit.specify` 开始，描述需求即可，无需手写规格文档结构。**动手前先读宪法**：
+技术栈、模块边界、MVI 约定、权限与隐私红线都在里面，违反即退回。
 
 ## 提交规范
 
@@ -154,3 +206,4 @@ chore: 构建/依赖/配置调整
 ## 许可证
 
 尚未指定。若需开源，请在此补充 License 并添加 `LICENSE` 文件。
+

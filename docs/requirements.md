@@ -1,8 +1,19 @@
 # 原始需求与约束
 
-> 本文件保存项目负责人写下的原始需求（原样保留，未做改写），用于起草
-> [`.specify/memory/constitution.md`](../.specify/memory/constitution.md) 与后续 feature 规格。
-> 定稿后本文件可删除或归档。
+> **⚠️ 本文件已被 [宪法 v1.2](../.specify/memory/constitution.md) 取代，仅作为项目负责人最初的原始输入留存。**
+> 实现时**一律以宪法为准**；本文件与宪法冲突之处，宪法胜出。已知的演进点：
+>
+> | 本文件原写法 | 宪法 v1.2 的最终决定 |
+> | --- | --- |
+> | `Retrofit` 封装 HttpClient | **Ktor Client** + kotlinx.serialization |
+> | 模块 `base` + `conmon` | `:base` + `:common` + `:features:*`（5 个 feature 模块） |
+> | 只提到「图片压缩 / 去重 / PDF / 转 PDF / 语音聊天」5 项 | 细化为 5 个功能规格，含 Word 截长图方案、Excel/PPT 的取舍 |
+> | 未提 UI 技术 | Jetpack Compose + Navigation 3 |
+> | 未提存储 | Room（会话历史）+ EncryptedSharedPreferences（API Key） |
+
+---
+
+以下为原始输入，原样保留、未做改写，用于追溯需求来源：
 
 ---
 
