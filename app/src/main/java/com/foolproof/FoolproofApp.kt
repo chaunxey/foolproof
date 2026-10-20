@@ -2,6 +2,7 @@ package com.foolproof
 
 import com.foolproof.base.BaseApplication
 import com.foolproof.features.compression.di.imageCompressionModule
+import com.foolproof.features.duplicates.di.duplicateCleanupModule
 import org.koin.core.module.Module
 
 /**
@@ -9,5 +10,6 @@ import org.koin.core.module.Module
  */
 class FoolproofApp : BaseApplication() {
 
-    override fun koinModules(): List<Module> = super.koinModules() + imageCompressionModule
+    override fun koinModules(): List<Module> =
+        super.koinModules() + imageCompressionModule + duplicateCleanupModule
 }

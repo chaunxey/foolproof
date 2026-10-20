@@ -7,7 +7,7 @@
 
 **目标功能**：
 
-1. 图片压缩（Compressor，输出 WebP / JPEG）
+1. 图片压缩（自研编码，输出 WebP / JPEG）
 2. 重复照片清理（dHash / pHash + 汉明距离分组，手动勾选删除，走 MediaStore 回收站）
 3. 多张图片合并生成 PDF
 4. 本地文件转 PDF（v1 支持图片 / 文本 / Word，Excel 延后，PPT 不做）
@@ -123,20 +123,30 @@ Foolproof/
 │       │   └── network/                  # Ktor 封装 + ApiResult + NetworkError
 │       └── test/java/com/foolproof/base/ # 33 个单元测试
 ├── features/
-│   └── image-compression/          # 功能 1：图片压缩
+│   ├── image-compression/          # 功能 1：图片压缩
+│   │   ├── build.gradle.kts
+│   │   └── src/
+│   │       ├── main/java/com/foolproof/features/compression/
+│   │       │   ├── CompressionSection.kt     # 对外唯一 Composable
+│   │       │   ├── CompressionViewModel.kt   # MVI + 批量串行 + 防抖预估
+│   │       │   ├── domain/                   # 模型与三个接口（测试接缝）
+│   │       │   └── data/                     # 自研压缩 / MediaStore / 元数据读取
+│   │       └── test/java/...                 # 30 个单元测试 + 4 条仪器化测试
+│   └── duplicate-cleanup/          # 功能 2：重复照片清理
 │       ├── build.gradle.kts
 │       └── src/
-│           ├── main/java/com/foolproof/features/compression/
-│           │   ├── CompressionSection.kt     # 对外唯一 Composable
-│           │   ├── CompressionViewModel.kt   # MVI + 批量串行 + 防抖预估
-│           │   ├── domain/                   # 模型与三个接口（测试接缝）
-│           │   ├── data/                     # Compressor / MediaStore / 元数据读取
-│           │   └── platform/                 # SDK 能力判定与采样计算
-│           └── test/java/...                 # 33 个单元测试
+│           ├── main/java/com/foolproof/features/duplicates/
+│           │   ├── DuplicateSection.kt       # 对外唯一 Composable
+│           │   ├── DuplicateViewModel.kt     # MVI + 扫描状态机 + 删除流程
+│           │   ├── domain/                   # dHash / 分组 / 预选（纯函数）+ 两个接口
+│           │   ├── data/                     # MediaStore 扫描与删除、缩略图采样
+│           │   └── ui/                       # 分组网格 + 全屏预览
+│           └── test/java/...                 # 31 个单元测试
 ├── docs/requirements.md            # 原始需求记录（已由宪法取代）
 ├── specs/
 │   ├── 001-base-module/            # base 模块的 spec / plan / tasks
-│   └── 002-image-compression/      # 图片压缩的 spec / plan / tasks
+│   ├── 002-image-compression/      # 图片压缩的 spec / plan / tasks
+│   └── 003-duplicate-cleanup/      # 重复照片清理的 spec / plan / tasks
 ├── gradle/
 │   ├── libs.versions.toml          # 依赖版本目录
 │   └── wrapper/                    # Gradle Wrapper 9.8.2
@@ -153,7 +163,7 @@ Foolproof/
 :base                            # MVI 基类、Koin、Ktor 封装、日志  ✅ 已建
 :features:image-compression      # 功能 1：图片压缩                  ✅ 已建
 :common                          # 导航封装、common/api、通用工具    ⏳ 待建
-:features:duplicate-cleanup      # 功能 2（与图片压缩同页，见 §3.2）
+:features:duplicate-cleanup      # 功能 2（与图片压缩同页，见 §3.2）  ✅ 已建
 :features:file-conversion        # 功能 3 + 4
 :features:voice-chat             # 功能 5
 ```
@@ -181,6 +191,23 @@ base → 无业务依赖
 
 > 为什么自研而不用现成库（宪法 §2 v1.9）：Compressor 已于 2021 年停更，且有两处隐藏行为需规避；
 > Luban 2 虽在维护，但 API 不接受质量/格式/尺寸参数（自动压到「朋友圈画质」），与「可选参数」的规格不符。
+
+## 重复照片清理（已实现）
+
+与压缩同页，位于压缩区**下方**（宪法 §3.2 v1.8）。
+
+- **判定**：8×8 dHash（64 bit）+ 汉明距离 **≤ 5** 分组；纯色/低方差图有额外保护
+  （方差 < 16 视为低信息量，须宽高比接近且体积差 < 2% 才合并）
+- **预选**：每组默认勾选「除体积最大一张以外的其余项」，用户可逐张改选（宪法 v1.10）；
+  **绝不自动删除**，删除前必弹二次确认并显示张数与总大小
+- **删除**：API ≥ 30 走 `MediaStore.createDeleteRequest`（回收站、可恢复）；
+  API ≤ 29 走 SAF 且**不可恢复**，未授权目录时删除入口置灰
+- **结果以查询为准**：系统回调码不保证每张都删成功，删除后重新查询这些 Uri 是否存在
+- **权限**：仅 `READ_MEDIA_IMAGES`（33+）/ `READ_EXTERNAL_STORAGE`（≤32），**不申请任何写权限**
+- **性能**：API ≥ 29 用 `loadThumbnail` 走系统缩略图缓存；扫描分批、显示进度、可取消
+
+**已知局限（v1 接受）**：dHash 比较水平相邻像素，水平镜像会使哈希近似按位取反（距离接近 64），
+因此镜像副本**不会**被识别为重复——这是漏判，不是误判，不会误删用户的图。
 
 ## base 模块
 
