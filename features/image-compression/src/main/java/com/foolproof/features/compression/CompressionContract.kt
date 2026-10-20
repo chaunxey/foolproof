@@ -76,6 +76,12 @@ sealed interface CompressionEffect : UiEffect {
 
     enum class MessageKind {
         NOTHING_SELECTED,
+
+        /** 用户选了图，但张张都读不出来（格式/权限/解码问题）。 */
+        READ_FAILED,
+
+        /** 已成功写入系统相册。 */
+        SAVED,
         SHARE_FAILED,
         SAVE_FAILED,
         SAVE_UNSUPPORTED,

@@ -18,32 +18,63 @@ class ContentResolverImageMetadataReader(
 ) : ImageMetadataReader {
 
     override suspend fun read(ids: List<String>): List<SourceImage> = withContext(Dispatchers.IO) {
-        ids.mapNotNull { id -> runCatching { readOne(id) }.getOrNull() }
+        ids.mapNotNull { id ->
+            try {
+                readOne(id)
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                // 不静默吞掉：读不出来的原因必须可诊断，否则界面只会显示"没有选择任何图片"
+                logUtil.w {
+                    "metadata read failed for ${id.takeLast(12)}: " +
+                        "${throwable::class.simpleName}: ${throwable.message}"
+                }
+                null
+            }
+        }
     }
 
     private fun readOne(id: String): SourceImage {
         val uri = Uri.parse(id)
         val resolver = context.contentResolver
 
-        var displayName = DEFAULT_NAME
+        var displayName = uri.lastPathSegment?.takeIf { it.isNotBlank() } ?: DEFAULT_NAME
         var sizeBytes = 0L
-        resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE), null, null, null)
-            ?.use { cursor ->
+
+        // 某些来源（如 Photo Picker 的 picker:// 风格 Uri）不支持完整的 projection，
+        // 逐列兜底：查询失败不致命，名字/大小都可以从别处补。
+        runCatching {
+            resolver.query(uri, null, null, null, null)?.use { cursor ->
                 if (cursor.moveToFirst()) {
                     val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                    if (nameIndex >= 0) displayName = cursor.getString(nameIndex) ?: displayName
+                    if (nameIndex >= 0) {
+                        cursor.getString(nameIndex)?.takeIf { it.isNotBlank() }?.let { displayName = it }
+                    }
                     val sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE)
-                    if (sizeIndex >= 0 && !cursor.isNull(sizeIndex)) sizeBytes = cursor.getLong(sizeIndex)
+                    if (sizeIndex >= 0 && !cursor.isNull(sizeIndex)) {
+                        sizeBytes = cursor.getLong(sizeIndex)
+                    }
                 }
             }
+        }.onFailure { logUtil.d { "query failed (${it::class.simpleName}), fallback to afd" } }
+
+        if (sizeBytes <= 0L) {
+            runCatching {
+                resolver.openAssetFileDescriptor(uri, "r")?.use { descriptor ->
+                    sizeBytes = descriptor.length.coerceAtLeast(0L)
+                }
+            }
+        }
 
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.openInputStream(uri)?.use { stream ->
-            BitmapFactory.decodeStream(stream, null, bounds)
-        } ?: throw IllegalStateException("无法打开输入流: $id")
+        val opened = resolver.openInputStream(uri)
+            ?: throw IllegalStateException("openInputStream returned null")
+        opened.use { BitmapFactory.decodeStream(it, null, bounds) }
 
         if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
-            throw IllegalStateException("无法读取尺寸，可能是系统不支持的格式: $displayName")
+            throw IllegalStateException(
+                "decode bounds failed (mime=${resolver.getType(uri)})",
+            )
         }
 
         return SourceImage(

@@ -54,7 +54,7 @@ fun CompressionSection(
         viewModel.dispatch(CompressionAction.ImagesPicked(uris.map { it.toString() }))
     }
 
-    var message by remember { mutableStateOf<String?>(null) }
+    var message by remember { mutableStateOf<UiMessage?>(null) }
 
     androidx.compose.runtime.LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -63,9 +63,21 @@ fun CompressionSection(
                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
                 )
 
-                is CompressionEffect.Message -> message = effect.kind.label()
+                is CompressionEffect.Message -> message = UiMessage(
+                    text = effect.kind.label(),
+                    isError = effect.kind.isError(),
+                )
+
                 is CompressionEffect.Share -> Unit
             }
+        }
+    }
+
+    // 提示自动消失，避免"卡在屏幕上"或被用户误认为状态
+    androidx.compose.runtime.LaunchedEffect(message) {
+        if (message != null) {
+            kotlinx.coroutines.delay(2500)
+            message = null
         }
     }
 
@@ -127,10 +139,14 @@ fun CompressionSection(
             )
         }
 
-        message?.let { text ->
+        message?.let { uiMessage ->
             Text(
-                text = text,
-                color = MaterialTheme.colorScheme.error,
+                text = uiMessage.text,
+                color = if (uiMessage.isError) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -276,10 +292,18 @@ private fun statusColor(outcome: CompressionOutcome) = when (outcome.status) {
 
 private fun CompressionEffect.MessageKind.label(): String = when (this) {
     CompressionEffect.MessageKind.NOTHING_SELECTED -> "没有选择任何图片"
+    CompressionEffect.MessageKind.READ_FAILED -> "所选图片无法读取（格式或权限问题）"
+    CompressionEffect.MessageKind.SAVED -> "已保存到相册（Pictures/Foolproof）"
     CompressionEffect.MessageKind.SHARE_FAILED -> "分享失败"
     CompressionEffect.MessageKind.SAVE_FAILED -> "保存到相册失败"
     CompressionEffect.MessageKind.SAVE_UNSUPPORTED -> "当前系统版本不支持直接保存到相册"
 }
+
+/** 成功类提示用正常文字色，失败类用错误色。 */
+private fun CompressionEffect.MessageKind.isError(): Boolean =
+    this != CompressionEffect.MessageKind.SAVED
+
+private data class UiMessage(val text: String, val isError: Boolean)
 
 internal fun formatBytes(bytes: Long): String = when {
     bytes >= 1024L * 1024 * 1024 -> "%.1f GB".format(bytes / (1024.0 * 1024 * 1024))

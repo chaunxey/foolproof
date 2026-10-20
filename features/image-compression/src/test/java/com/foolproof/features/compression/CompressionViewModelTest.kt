@@ -321,6 +321,37 @@ class CompressionViewModelTest {
     }
 
     @Test
+    fun `successful gallery save emits a confirmation`() = runTest(dispatcher) {
+        val exporter = FakeExporter(canSave = true)
+        val images = listOf(image("a"))
+        val vm = CompressionViewModel(
+            compressor = FakeCompressor(),
+            exporter = exporter,
+            metadataReader = FakeReader(images),
+            caps = PlatformCapabilities(33),
+            logger = LogUtil(enabled = false),
+        )
+        val effects = mutableListOf<CompressionEffect>()
+        val job = launch { vm.effect.collect { effects += it } }
+        advanceUntilIdle()
+
+        vm.dispatch(CompressionAction.ImagesPicked(listOf("a")))
+        advanceUntilIdle()
+        vm.dispatch(CompressionAction.Start)
+        advanceUntilIdle()
+        vm.dispatch(CompressionAction.SaveToGallery("a"))
+        advanceUntilIdle()
+
+        assertTrue(
+            "保存成功后必须给出反馈，否则用户会重复点击",
+            effects.any {
+                it is CompressionEffect.Message && it.kind == CompressionEffect.MessageKind.SAVED
+            },
+        )
+        job.cancel()
+    }
+
+    @Test
     fun `save to gallery is refused below api 29`() = runTest(dispatcher) {
         val exporter = FakeExporter(canSave = false)
         val vm = CompressionViewModel(

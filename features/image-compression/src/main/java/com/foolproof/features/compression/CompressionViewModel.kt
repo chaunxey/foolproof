@@ -69,7 +69,8 @@ class CompressionViewModel(
         launch {
             val images = metadataReader.read(ids)
             if (images.isEmpty()) {
-                sendEffect(CompressionEffect.Message(CompressionEffect.MessageKind.NOTHING_SELECTED))
+                // 区分"没选"和"选了但读不出来"——后者是故障，不能提示成前者
+                sendEffect(CompressionEffect.Message(CompressionEffect.MessageKind.READ_FAILED))
                 return@launch
             }
             updateState { state ->
@@ -216,7 +217,13 @@ class CompressionViewModel(
             sendFailed(CompressionEffect.MessageKind.SAVE_FAILED)
             return
         }
-        launch { if (!exporter.saveToGallery(path)) sendFailed(CompressionEffect.MessageKind.SAVE_FAILED) }
+        launch {
+            if (exporter.saveToGallery(path)) {
+                sendEffect(CompressionEffect.Message(CompressionEffect.MessageKind.SAVED))
+            } else {
+                sendFailed(CompressionEffect.MessageKind.SAVE_FAILED)
+            }
+        }
     }
 
     private fun sendFailed(kind: CompressionEffect.MessageKind) {
