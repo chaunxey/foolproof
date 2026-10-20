@@ -1,4 +1,4 @@
-﻿# Tasks: 图片压缩（image-compression）
+# Tasks: 图片压缩（image-compression）
 
 **Input**: Design documents from `specs/002-image-compression/`
 
@@ -115,7 +115,11 @@
 - [x] T041 全仓检索 `android.util.Log` 与 `println(`，生产代码 **0 处**（FR-019）
 - [x] T042 运行 `./gradlew :app:assembleRelease` 通过（R8 下 Compressor/Coil/Compose 不缺类）
 - [x] T043 更新 `README.md`：模块规划标注 image-compression 已建、测试数更新
-- [ ] T044 真机冒烟：选图 → 压缩 → 对比体积 → 分享 → 保存相册（≥29）→ HEIC 在 27/28 上的差异（本机无设备，待执行）
+- [ ] T044 真机人工冒烟（剩余部分）：Photo Picker 实际选图交互、HEIC 素材、系统分享面板；
+  压缩管线与存相册已由 T045 覆盖
+- [x] T045 新增仪器化测试并在 API 34 模拟器跑通（4 条）：Compressor 管线（含输出尺寸不变）、WebP 输出可解码、
+  API ≥ 29 免权限写入 MediaStore、SDK 能力判定。实测暴露并修复了 Compressor 的两个坑
+  （612×816 默认尺寸、扩展名变化时落点错误）
 
 ---
 

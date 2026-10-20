@@ -135,6 +135,15 @@ app/
 **缓解**：所有参数映射收敛到一个 `CompressionOption.toCompressFormat()` + 一个 `CompressRequest`，
 用单测把「质量、格式、SDK 分支」锁住。将来它若行为变化，测试先红，而不是线上才发现。
 
+**真机测试补充的三个实测结论（2026-10-21，API 34 模拟器）**：
+
+1. `DefaultConstraint` 默认把图缩到 **612×816 / 质量 80** —— 必须显式 `resolution()` 覆盖，否则"压缩"变"缩图"；
+2. 传 `Bitmap.CompressFormat.WEBP_LOSSY`（API 30+ 常量）会失败：Compressor 3.0.1 只认 `JPEG/PNG/WEBP`。
+   因此统一用 `WEBP`，`PlatformCapabilities.useLossyWebp` 已删除；
+3. 输入文件**没有扩展名**且输出扩展名变化时，它会自算一个不可写的落点
+   （实测为 `/data/user/0/<包名>.<ext>`）→ `EACCES`。修法：临时输入文件带上目标扩展名，
+   并在返回路径与目标不一致时做一次兜底搬移。
+
 ### R2. Photo Picker 的回退不是我们的事
 
 `ActivityResultContracts.PickMultipleVisualMedia` 在无系统照片选择器的设备上，
