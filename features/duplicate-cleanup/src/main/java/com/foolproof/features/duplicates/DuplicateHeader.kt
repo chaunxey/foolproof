@@ -37,16 +37,18 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.foolproof.base.util.ByteFormat
-import com.foolproof.features.duplicates.ui.DuplicateGroupGrid
 import com.foolproof.features.duplicates.ui.PhotoPreviewDialog
 import kotlinx.coroutines.delay
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
- * 重复照片清理的对外入口（宪法 §3.2：只提供 Section，整页由 `:app` 组装）。
+ * 重复照片清理的**头部**（标题、查询按钮、进度、勾选汇总、确认框与预览框）。
+ *
+ * 结果区的网格由 `:app` 的 `LazyVerticalGrid` 通过 `duplicatePhotoRows(...)` 贡献 item，
+ * 这样缩略图是懒加载的（宪法 §3.2 v1.12）。
  */
 @Composable
-fun DuplicateSection(
+fun DuplicateHeader(
     modifier: Modifier = Modifier,
     viewModel: DuplicateViewModel = koinViewModel(),
 ) {
@@ -210,12 +212,12 @@ fun DuplicateSection(
                     Text("删除")
                 }
             }
-
-            DuplicateGroupGrid(
-                groups = state.groups,
-                selected = state.selected,
-                onToggle = { viewModel.dispatch(DuplicateAction.Toggle(it)) },
-                onOpen = { viewModel.dispatch(DuplicateAction.OpenPreview(it)) },
+            // 结果区由 :app 的 LazyVerticalGrid 以 item 形式贡献（duplicatePhotoRows），
+            // 这里只留一行说明，避免把网格塞回 Section 里再次变成"非懒加载"。
+            Text(
+                text = "结果见下方，点击缩略图可放大查看",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else {
             val hint = when {

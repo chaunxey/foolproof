@@ -98,11 +98,17 @@ feature 之间  →  禁止互相依赖
 
 UI 容器：三列网格 + 跨列头部分组（**纵向顺序：图片压缩区在上，重复照片清理区在下**，v1.8 定案）：
 
-> **整页滚动归 `:app`（v1.11）**：整页只有一个滚动容器（`CompressionTabScreen` 里的 `verticalScroll`），
-> **feature 的 Section 不得自带可滚动容器**（`LazyColumn` / `LazyVerticalGrid` / `LazyRow`），
-> 否则会出现"两半各自滚动、整页不动"的体验问题；`verticalScroll` 内部放懒加载容器还会因高度无界而崩溃。
-> Section 用普通 `Column` / `Row` 渲染，必要时对渲染条数设上限并提示。
-> 缩略图 MUST 用 `ContentScale.Fit` **完整显示整张图**，禁止用 `Crop` 裁剪（用户需要看清内容才敢删）。
+> **整页滚动归 `:app`（v1.11 / v1.12）**：整页只有一个滚动容器，由 `:app` 持有
+> （当前是 `CompressionTabScreen` 里的 `LazyVerticalGrid`）。
+>
+> - feature 的 Section **不得自带可滚动容器**（`LazyColumn` / `LazyVerticalGrid` / `LazyRow`），
+>   否则会出现"两半各自滚动、整页不动"的体验问题；`verticalScroll` 内嵌懒加载容器还会因高度无界而崩溃。
+> - 列表型内容由 feature 以 **`LazyGridScope` 扩展函数**贡献 item（如 `duplicatePhotoRows`），
+>   由 `:app` 的网格统一懒加载；非列表部分可以作为整行 item 嵌入。
+> - 网格缩略图 MUST 用系统缩略图（`loadThumbnail`）或采样解码，**禁止为格子解码原图**，
+>   并应有内存缓存，避免滑出视口后重复解码。
+> - 缩略图 MUST 完整显示整张图（按原图宽高比排版或 `ContentScale.Fit`），禁止 `Crop` 裁剪
+>   ——用户要看清内容才敢删。
 
 ```kotlin
 items(groupItems) { group ->
@@ -424,3 +430,11 @@ AudioRecord(PCM 16k/24k)
     动机：初版把整页拆成两个 `weight(1f)` 的半屏区块、各自内部滚动，用户反馈「无法整体滑动」；
     而 `verticalScroll` 内嵌懒加载容器会因高度无界崩溃，所以规则必须落在「谁是唯一滚动者」上。
     缩略图裁剪则会让用户看不清内容却要决定删除，风险不对等。
+
+- v1.12（2026-10-21）：
+
+  - **§3.2**：把「整页单一滚动」细化为——滚动/懒加载容器由 `:app` 持有（`LazyVerticalGrid`），
+    feature 以 `LazyGridScope` 扩展贡献 item；缩略图必须用系统缩略图 + 内存缓存，禁止为格子解码原图。
+    动机：v1.11 的"Section 用普通 Column 渲染"在数据量大时会一次性组合并解码全部缩略图，
+    实测出现 200–250ms 的掉帧尖峰；改为逐行懒加载 + 系统缩略图后，90 分位从 26ms 降到 13ms，
+    尖峰消失。同时保留"按原图比例完整显示"，不裁切。
