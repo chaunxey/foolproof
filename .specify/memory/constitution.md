@@ -9,13 +9,14 @@
 
 ### 1.1 做什么
 
-纯本地工具 App，5 个功能：
+纯本地工具 App，6 个功能：
 
 1. 图片压缩（自研：平台解码 + 重编码，输出 WebP/JPEG）
 2. 重复照片清理（dHash/pHash + 汉明距离分组）
 3. 多张图片合并生成 PDF
 4. 本地文件转 PDF
 5. 类豆包语音聊天（用户自填 OpenAI API Key，回合制：Whisper → GPT-4o-mini → TTS）
+6. 视频压缩（Media3 Transformer：预设分辨率/码率档位 + 裁剪时长，v1.13 新增）
 
 ### 1.2 不做什么（红线，本版不实现）
 
@@ -23,7 +24,8 @@
 - ❌ 不做云同步、不做相册备份、不做社交分享
 - ❌ 不内置 OpenAI Key，不代理、不转卖 API 调用
 - ❌ 不做通用 AI 聊天机器人（仅限语音问答形态）
-- ❌ 不做视频处理、不做云盘、不做笔记类功能
+- ❌ 不做视频剪辑 / 多轨编辑 / 变速 / 视频转 GIF 等**压缩与裁剪时长以外**的视频处理
+- ❌ 不做云盘、不做笔记类功能
 
 ***
 
@@ -38,6 +40,7 @@
 | 序列化 | kotlinx.serialization | Ktor 官方配套 |
 | 导航 | **Jetpack Navigation 3** | 封装在 common，禁止业务模块自己写 NavHost |
 | 图片压缩 | **自研**（`BitmapFactory` + `Bitmap.compress`） | 不引第三方压缩库；`androidx.exifinterface` 仅用于纠正方向 |
+| 视频压缩 | **Media3 Transformer** 1.11.1（+ `media3-effect`） | 官方 AndroidX，Apache-2.0；只做转码/缩放/裁剪，不引 FFmpeg |
 | 图片加载 | **Coil 3** | 业务模块禁止直接 new ImageLoader |
 | 本地存储 | **Room** + **EncryptedSharedPreferences** | 会话历史用 Room；API Key 必须用 EncryptedSP |
 | 语音端点 | Silero VAD（ONNX，本地） | 不用服务端 VAD |
@@ -60,6 +63,7 @@
 :features:duplicate-cleanup      // 功能 2（重复照片清理），UI 与 image-compression 同页（见 §3.2）
 :features:file-conversion        // 功能 3+4（图片合并 PDF、文件转 PDF）
 :features:voice-chat             // 功能 5（类豆包语音聊天）
+:features:video-compression      // 功能 6（视频压缩：转码 + 缩放 + 裁剪时长，v1.13）
 ```
 
 ### 模块依赖规则（单向，禁止反向）
@@ -430,6 +434,21 @@ AudioRecord(PCM 16k/24k)
     动机：初版把整页拆成两个 `weight(1f)` 的半屏区块、各自内部滚动，用户反馈「无法整体滑动」；
     而 `verticalScroll` 内嵌懒加载容器会因高度无界崩溃，所以规则必须落在「谁是唯一滚动者」上。
     缩略图裁剪则会让用户看不清内容却要决定删除，风险不对等。
+
+- v1.13（2026-10-21）：
+
+  - **§1.1 / §1.2**：新增功能 6「视频压缩」，并把红线从「不做视频处理」收窄为
+    「不做视频剪辑 / 多轨 / 变速 / 转 GIF 等压缩与裁剪时长以外的处理」。
+    动机：负责人要求增加视频压缩；原红线与需求冲突，必须显式修订而不是绕过。
+  - **§2**：视频压缩锁定 **Media3 Transformer 1.11.1 + media3-effect**（Apache-2.0，官方维护，
+    无 native 库）。评估过的替代方案与结论：
+    - 纯自研 `MediaCodec + MediaMuxer`：零依赖，但要自行处理 PTS/EOS/封装/旋转/编码器回退，
+      工期与真机兼容风险高，且 Transformer 已把这些做对；
+    - FFmpeg（`dev.ffmpegkit-maintained:ffmpeg-kit-min:8.1.9`）：APK +8–12MB/ABI，软编在手机上不可用，
+      x264 版本为 GPL，闭源分发有法务风险；
+    - LightCompressor 1.3.3：仅 JitPack、版本旧，且 API < 29 要求 `WRITE_EXTERNAL_STORAGE`，
+      与 §8「不申请写权限」直接冲突。
+  - **§3**：新增 `:features:video-compression` 模块。
 
 - v1.12（2026-10-21）：
 
