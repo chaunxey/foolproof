@@ -3,7 +3,7 @@ package com.foolproof.base.log
 import com.foolproof.base.BuildConfig
 
 /**
- * 全局日志工具（宪法 §6）。
+ * 日志工具（宪法 §6）。由 Koin 以单例提供（宪法 §5），业务侧注入使用，不再依赖全局 object。
  *
  * - 仅 debug 构建输出，release 完全静默；
  * - 输出带「调用处文件名:行号」；
@@ -12,18 +12,16 @@ import com.foolproof.base.BuildConfig
  *
  * 生产代码禁止直接使用 `android.util.Log`，唯一例外是本文件的默认 [sink]。
  */
-object LogUtil {
+class LogUtil(enabled: Boolean = BuildConfig.DEBUG) {
 
-    private const val TAG = "Foolproof"
-
-    private val API_KEY = Regex("sk-[A-Za-z0-9_\\-]{6,}")
-    private val AUTH_HEADER = Regex("(?i)(authorization\\s*[:=]\\s*)(\\S+)")
+    private val apiKey = Regex("sk-[A-Za-z0-9_\\-]{6,}")
+    private val authHeader = Regex("(?i)(authorization\\s*[:=]\\s*)(\\S+)")
 
     /** 输出实现，测试时可替换。 */
     var sink: (String) -> Unit = { line -> android.util.Log.d(TAG, line) }
 
-    /** 总开关。默认跟随构建类型；release 下[不可]被打开。 */
-    var enabled: Boolean = BuildConfig.DEBUG
+    /** 总开关。release 构建下无法被打开（初始值同样受此约束）。 */
+    var enabled: Boolean = enabled && BuildConfig.DEBUG
         set(value) {
             field = value && BuildConfig.DEBUG
         }
@@ -37,8 +35,8 @@ object LogUtil {
     fun e(message: () -> String) = write("E", message)
 
     /** 对任意文本做脱敏，便于在其它日志通道复用。 */
-    fun sanitize(text: String): String = AUTH_HEADER
-        .replace(API_KEY.replace(text) { key -> "sk-***${key.value.takeLast(4)}" }) { match ->
+    fun sanitize(text: String): String = authHeader
+        .replace(apiKey.replace(text) { key -> "sk-***${key.value.takeLast(4)}" }) { match ->
             "${match.groupValues[1]}***"
         }
 
@@ -54,5 +52,9 @@ object LogUtil {
             frame.className != self && !frame.className.startsWith("java.lang.")
         } ?: return "Unknown:0"
         return "${frame.fileName ?: "Unknown"}:${frame.lineNumber}"
+    }
+
+    companion object {
+        private const val TAG = "Foolproof"
     }
 }

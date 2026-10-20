@@ -18,15 +18,18 @@ import kotlinx.serialization.json.Json
 /**
  * 构造全局唯一的 [HttpClient]。业务代码不得自行创建客户端（宪法 §5 / FR-016）。
  */
-fun createHttpClient(config: HttpConfig): HttpClient = HttpClient(OkHttp) {
-    applyHttpConfig(config)
+fun createHttpClient(config: HttpConfig, logUtil: LogUtil): HttpClient = HttpClient(OkHttp) {
+    applyHttpConfig(config, logUtil)
 }
 
 /**
  * 把 [HttpConfig] 应用到任意引擎上。抽出为扩展函数是为了让单元测试能用 MockEngine
  * 验证「默认请求头 / 超时 / 日志开关」确实生效。
  */
-internal fun <T : HttpClientEngineConfig> HttpClientConfig<T>.applyHttpConfig(config: HttpConfig) {
+internal fun <T : HttpClientEngineConfig> HttpClientConfig<T>.applyHttpConfig(
+    config: HttpConfig,
+    logUtil: LogUtil,
+) {
     // 非 2xx 不抛异常，交给 NetworkClient 判定，便于统一映射。
     expectSuccess = false
 
@@ -56,7 +59,7 @@ internal fun <T : HttpClientEngineConfig> HttpClientConfig<T>.applyHttpConfig(co
             level = LogLevel.INFO
             logger = object : Logger {
                 override fun log(message: String) {
-                    LogUtil.d { message }
+                    logUtil.d { message }
                 }
             }
         }

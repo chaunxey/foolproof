@@ -1,7 +1,6 @@
 package com.foolproof.base.log
 
 import com.foolproof.base.BuildConfig
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -11,23 +10,18 @@ import org.junit.Test
 class LogUtilTest {
 
     private val lines = mutableListOf<String>()
+    private lateinit var logUtil: LogUtil
 
     @Before
     fun setUp() {
         lines.clear()
-        LogUtil.sink = { line -> lines += line }
-        LogUtil.enabled = true
-    }
-
-    @After
-    fun tearDown() {
-        LogUtil.sink = {}
-        LogUtil.enabled = BuildConfig.DEBUG
+        logUtil = LogUtil(enabled = true)
+        logUtil.sink = { line -> lines += line }
     }
 
     @Test
     fun `output contains file name line number and message`() {
-        LogUtil.d { "hello world" }
+        logUtil.d { "hello world" }
 
         val line = lines.single()
         assertTrue("缺少文件名: $line", line.contains("LogUtilTest.kt:"))
@@ -36,20 +30,20 @@ class LogUtilTest {
 
     @Test
     fun `disabled log writes nothing`() {
-        LogUtil.enabled = false
+        logUtil.enabled = false
 
-        LogUtil.d { "should not appear" }
-        LogUtil.e { "should not appear either" }
+        logUtil.d { "should not appear" }
+        logUtil.e { "should not appear either" }
 
         assertTrue(lines.isEmpty())
     }
 
     @Test
     fun `disabled log does not evaluate the message lambda`() {
-        LogUtil.enabled = false
+        logUtil.enabled = false
         var evaluations = 0
 
-        LogUtil.d {
+        logUtil.d {
             evaluations++
             "expensive ${'$'}{1 + 1}"
         }
@@ -59,7 +53,7 @@ class LogUtilTest {
 
     @Test
     fun `api key and authorization header are masked`() {
-        val masked = LogUtil.sanitize(
+        val masked = logUtil.sanitize(
             "key=sk-abcdef123456 header=Authorization: Bearer abc.def"
         )
 
@@ -71,8 +65,7 @@ class LogUtilTest {
 
     @Test
     fun `enabled cannot be turned on in release builds`() {
-        // release 下 enabled 恒为 false；此处验证 setter 与 BuildConfig.DEBUG 的组合逻辑。
-        LogUtil.enabled = true
-        assertEquals(BuildConfig.DEBUG, LogUtil.enabled)
+        logUtil.enabled = true
+        assertEquals(BuildConfig.DEBUG, logUtil.enabled)
     }
 }

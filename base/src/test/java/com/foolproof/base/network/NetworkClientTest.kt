@@ -1,5 +1,6 @@
 package com.foolproof.base.network
 
+import com.foolproof.base.log.LogUtil
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
@@ -24,13 +25,16 @@ class NetworkClientTest {
     @Serializable
     data class Item(val id: Int, val name: String)
 
+    private val quietLog = LogUtil(enabled = false)
+
     private fun client(
         config: HttpConfig = HttpConfig(baseUrl = "https://api.test/"),
+        logUtil: LogUtil = quietLog,
         handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData,
     ): NetworkClient {
         val httpClient = HttpClient(MockEngine) {
             engine { addHandler(handler) }
-            applyHttpConfig(config)
+            applyHttpConfig(config, logUtil)
         }
         return NetworkClient(httpClient, config.baseUrl)
     }
@@ -107,8 +111,7 @@ class NetworkClientTest {
     }
 
     @Test
-    fun `configured default headers are attached to every request`() = runTest {
-        var seenToken: String? = null
+    fun `configured default headers are attached to every request`() = runTest {        var seenToken: String? = null
         val network = client(
             handler = { request ->
                 seenToken = request.headers["X-Token"]
@@ -168,5 +171,49 @@ class NetworkClientTest {
         network.get<Item>("https://other.test/ping")
 
         assertEquals("https://other.test/ping", url)
+    }
+
+    @Test
+    fun `requests are logged through LogUtil when logging is enabled`() = runTest {
+        val logged = mutableListOf<String>()
+        val logUtil = LogUtil(enabled = true).also { it.sink = { line -> logged += line } }
+
+        val network = client(
+            config = HttpConfig(baseUrl = "https://api.test/", loggingEnabled = true),
+            logUtil = logUtil,
+        ) {
+            respond(
+                content = """{"id":1,"name":"x"}""",
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+            )
+        }
+
+        network.get<Item>("items/1")
+
+        assertTrue("启用日志后 sink 应收到内容，实际为空", logged.isNotEmpty())
+        // 日志由 HttpClientFactory 里的 Logger 对象产生，因此定位到该文件；格式由 LogUtilTest 覆盖。
+        assertTrue("日志格式应含级别标记，实际: $logged", logged.any { it.contains(" D ") })
+    }
+
+    @Test
+    fun `requests are not logged when logging is disabled`() = runTest {
+        val logged = mutableListOf<String>()
+        val logUtil = LogUtil(enabled = true).also { it.sink = { line -> logged += line } }
+
+        val network = client(
+            config = HttpConfig(baseUrl = "https://api.test/", loggingEnabled = false),
+            logUtil = logUtil,
+        ) {
+            respond(
+                content = """{"id":1,"name":"x"}""",
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+            )
+        }
+
+        network.get<Item>("items/1")
+
+        assertTrue("关闭日志后 sink 不应收到内容，实际: $logged", logged.isEmpty())
     }
 }
