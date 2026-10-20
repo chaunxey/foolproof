@@ -121,7 +121,7 @@ Foolproof/
 │       │   ├── log/LogUtil.kt            # debug-only 日志
 │       │   ├── mvi/                      # MviContract + BaseViewModel
 │       │   └── network/                  # Ktor 封装 + ApiResult + NetworkError
-│       └── test/java/com/foolproof/base/ # 30 个单元测试
+│       └── test/java/com/foolproof/base/ # 33 个单元测试
 ├── docs/requirements.md            # 原始需求记录（已由宪法取代）
 ├── specs/001-base-module/          # 本 feature 的 spec / plan / tasks
 ├── gradle/
@@ -160,16 +160,20 @@ base → 无业务依赖
 
 `base` 提供四件地基，业务模块只依赖它、不重复造轮子。
 
-**MVI**：继承 `BaseViewModel<S, E>`，状态用 `updateState`，副作用用 `sendEffect`。
+**MVI**：继承 `BaseViewModel<S, E>`，状态用 `updateState`，副作用用 `sendEffect`；
+协程用基类的 `launch {}`，异常会被统一捕获并交给 `onError`（默写日志，可覆写）。
 
 ```kotlin
 data class PhotoState(val count: Int = 0) : UiState
 sealed interface PhotoEffect : UiEffect { data object Saved : PhotoEffect }
 
-class PhotoViewModel : BaseViewModel<PhotoState, PhotoEffect>(PhotoState()) {
+class PhotoViewModel(logger: LogUtil) :
+    BaseViewModel<PhotoState, PhotoEffect>(PhotoState(), logger) {
+
     override fun onAction(action: UiAction) {
         updateState { it.copy(count = it.count + 1) }
         sendEffect(PhotoEffect.Saved)
+        launch { /* 失败会进 onError，不会裸抛 */ }
     }
 }
 ```

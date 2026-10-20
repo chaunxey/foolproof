@@ -178,7 +178,8 @@ items(groupItems) { group ->
 2. 状态容器：`private val _uiState = MutableStateFlow(State())`，对外暴露 `uiState: StateFlow<...>`
 3. 副作用：`private val _effect = Channel<Effect>(Channel.BUFFERED)`，对外 `effect: Flow<Effect>`
 4. 禁止在 ViewModel 里持有 View / Context（用 `@ApplicationContext` 或参数传入）
-5. 所有业务调用走 `viewModelScope.launch`，异常统一走 `CoroutineExceptionHandler` 或封装的 `runCatching`
+5. 所有业务调用走基类的 `launch {}`（内部已捕获非取消异常并交给 `onError`），异常 **MUST NOT** 裸抛到
+   `viewModelScope`；子类可覆写 `onError`，把错误映射为状态或一次性副作用
 6. Intent 由 UI 层单向发送：`viewModel.dispatch(Action.Xxx)`
 
 ***
@@ -278,8 +279,8 @@ AudioRecord(PCM 16k/24k)
 4. **Room 位置**：voice-chat 私有 OK；以后多 feature 共用时是否抽到 common？
 5. **低版本能力边界**（v1.4 新列）：API 24–29 上「删除照片」（§3.2 依赖 API 30+ 的回收站）与
    「HEIC 解码」（需 API 28+）都不能按 v1 方案实现，需要决定：降级为不支持、或走 SAF
-6. **ViewModel 异常策略**（v1.4 新列）：§4 要求统一异常处理，但 `BaseViewModel.launch` 目前未提供，
-   需决定是在基类里统一捕获，还是改回各 VM 自行处理
+6. ~~**ViewModel 异常策略**~~ → **已定（v1.5）**：由 `BaseViewModel.launch {}` 统一捕获非取消异常，
+   默认写日志、子类可覆写 `onError` 做状态/副作用映射；业务代码不再直接调用 `viewModelScope.launch`。
 
 ***
 
@@ -344,3 +345,11 @@ AudioRecord(PCM 16k/24k)
     与测试框架（JUnit4 / ktor-client-mock / koin-test / coroutines-test，仅 test 配置）。
   - **§10**：标题改为「已决（累积，截至 v1.4）」；修正「输入范围含 PPT」与 §3.3「PPT v1 不做」的矛盾；
     Conventional Commits 标记为已启用；新增两项待拍板（低版本能力边界、ViewModel 异常策略）。
+
+- v1.5（2026-10-20）：
+
+  - **§4-5**：协程异常策略定案并落地——`BaseViewModel.launch {}` 统一捕获非取消异常交给 `onError`，
+    默认写 `LogUtil`，子类可覆写映射为状态/副作用；取消异常照常向上传播。
+    动机：原条文只写「统一走 CoroutineExceptionHandler 或 runCatching」，但基类并未提供，
+    业务侧直接 `viewModelScope.launch` 会把异常裸抛成崩溃。
+  - **§10-6**：标记为已定；§10 尚未拍板的只剩「targetSdk 口径」「Room 位置」「低版本能力边界」三项。

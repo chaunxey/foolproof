@@ -1,5 +1,6 @@
 package com.foolproof.base.di
 
+import com.foolproof.base.log.LogUtil
 import com.foolproof.base.mvi.BaseViewModel
 import com.foolproof.base.mvi.UiAction
 import com.foolproof.base.mvi.UiEffect
@@ -20,7 +21,8 @@ class ViewModelRegistrationTest {
 
     private sealed interface DemoEffect : UiEffect
 
-    private class DemoViewModel : BaseViewModel<DemoState, DemoEffect>(DemoState()) {
+    private class DemoViewModel :
+        BaseViewModel<DemoState, DemoEffect>(DemoState(), LogUtil(enabled = false)) {
         override fun onAction(action: UiAction) = Unit
     }
 

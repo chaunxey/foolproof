@@ -163,6 +163,9 @@ API Key 之类的敏感串在输出前被脱敏。
   规则以 `base/consumer-rules.pro` 形式随 AAR 提供给消费方。
 - **FR-025**: ViewModel MUST 通过 Koin 的 `viewModel { }` DSL 注册后注入（对应宪法 §5），
   `:base` MUST 提供可验证的注册范式（见 `ViewModelRegistrationTest`）。
+- **FR-026**: `BaseViewModel` 的协程启动入口 MUST 统一捕获非取消异常并交给可覆写的 `onError`
+  （默认写日志），MUST NOT 让异常裸抛到 `viewModelScope`；`CancellationException` MUST 照常传播。
+  <!-- 2026-10-20 补：对应宪法 §4-5，原 spec 漏了异常策略。 -->
 
 ### Key Entities
 

@@ -108,6 +108,7 @@
 - [x] T040 按负责人决定把 `LogUtil` 从 `object` 改为 Koin 注入的单例类，同步更新 `HttpClientFactory`、`BaseModule` 与全部测试（对应 FR-006/FR-018）
 - [x] T041 新增 `base/consumer-rules.pro` 并在 `build.gradle.kts` 声明 `consumerProguardFiles`，覆盖 kotlinx.serialization 的 keep 规则；以 `app/build/outputs/mapping/release/configuration.txt` 确认规则已进入 R8（对应 FR-024）
 - [x] T042 在 `NetworkClientTest` 补两条日志断言：logging 开启时 sink 收到内容、关闭时为空（对应 US2 验收场景 5、FR-020）
+- [x] T043 给 `BaseViewModel.launch` 加统一异常捕获（非取消异常交给可覆写的 `onError`，取消照常传播），并补三条测试：异常进 onError、取消不报错、默认实现写日志（对应 FR-026、宪法 §4-5）
 
 ---
 
@@ -156,6 +157,7 @@ Phase 1 (T001–T006)
 | FR-023（测试） | T012、T017、T018、T021、T022、T026、T035、T039、T042 |
 | FR-024（release keep） | T032（构建）、T041（规则文件） |
 | FR-025（ViewModel 注入范式） | T039 |
+| FR-026（协程异常统一处理） | T043 |
 | SC-002 / SC-003（零散落调用） | T033、T034 |
 | SC-005（release 静默） | T022（开关逻辑）、T042（网络日志）、T038（运行时，待执行） |
 | SC-001 / SC-006（跨 feature 验收） | 不在本 feature 内验证，移交首个业务 feature |

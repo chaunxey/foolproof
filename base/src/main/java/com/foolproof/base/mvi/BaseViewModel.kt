@@ -2,6 +2,8 @@ package com.foolproof.base.mvi
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.foolproof.base.log.LogUtil
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,12 +18,17 @@ import kotlinx.coroutines.launch
  *
  * - 状态：以只读 [StateFlow] 暴露，可变容器为 private，仅能经受保护的 [updateState] 修改；
  * - 副作用：走 [Channel] + [receiveAsFlow]，保证同一事件只被一个收集者消费一次；
- * - 入口：UI 只能调用 [dispatch]，不允许直接改状态。
+ * - 入口：UI 只能调用 [dispatch]，不允许直接改状态；
+ * - 异常：通过 [launch] 启动的协程，异常统一交给 [onError]，不会裸抛导致崩溃。
  *
  * @param S 不可变状态
  * @param E 一次性副作用
+ * @param logger 统一日志（由 Koin 提供）
  */
-abstract class BaseViewModel<S : UiState, E : UiEffect>(initialState: S) : ViewModel() {
+abstract class BaseViewModel<S : UiState, E : UiEffect>(
+    initialState: S,
+    private val logger: LogUtil,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(initialState)
 
@@ -53,8 +60,31 @@ abstract class BaseViewModel<S : UiState, E : UiEffect>(initialState: S) : ViewM
     /** 发送一次性副作用。非阻塞：缓冲满时丢弃并返回 false，不影响调用方。 */
     protected fun sendEffect(effect: E): Boolean = _effect.trySend(effect).isSuccess
 
-    /** 在 ViewModel 作用域内启动协程，异常交由调用方自行处理。 */
+    /**
+     * 在 ViewModel 作用域内启动协程；异常统一交给 [onError]，取消则正常向上传播。
+     *
+     * 业务代码应始终用它而不是直接调用 `viewModelScope.launch`，否则异常会裸抛。
+     */
     protected fun launch(block: suspend () -> Unit) {
-        viewModelScope.launch { block() }
+        viewModelScope.launch {
+            try {
+                block()
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (throwable: Throwable) {
+                onError(throwable)
+            }
+        }
+    }
+
+    /**
+     * 统一异常出口。默认只记录日志、不改变状态；
+     * 子类可覆写以把错误映射为错误态或一次性副作用。
+     */
+    protected open fun onError(error: Throwable) {
+        logger.e {
+            "unhandled error in ${this::class.simpleName}: " +
+                "${error::class.simpleName}: ${error.message}"
+        }
     }
 }
