@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.foolproof.base.util.ByteFormat
 import com.foolproof.features.compression.domain.CompressionOutcome
 import com.foolproof.features.compression.domain.OutcomeStatus
 import com.foolproof.features.compression.domain.OutputFormat
@@ -102,7 +103,7 @@ fun CompressionSection(
             enabled = !state.isRunning,
             estimate = when {
                 state.estimateLoading -> "预估中…"
-                state.estimateBytes != null -> "预估 ${formatBytes(state.estimateBytes!!)}"
+                state.estimateBytes != null -> "预估 ${ByteFormat.formatBytes(state.estimateBytes!!)}"
                 else -> null
             },
             onFormatChange = { viewModel.dispatch(CompressionAction.ChangeFormat(it)) },
@@ -134,7 +135,7 @@ fun CompressionSection(
         if (state.images.isNotEmpty()) {
             Text(
                 text = "共 ${state.images.size} 张，已完成 ${state.completedCount} 张" +
-                    if (state.totalSavedBytes > 0) "，节省 ${formatBytes(state.totalSavedBytes)}" else "",
+                    if (state.totalSavedBytes > 0) "，节省 ${ByteFormat.formatBytes(state.totalSavedBytes)}" else "",
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -262,9 +263,9 @@ private fun ImageRow(
 }
 
 private fun sizeSummary(image: SourceImage, outcome: CompressionOutcome): String {
-    val before = formatBytes(image.sizeBytes)
+    val before = ByteFormat.formatBytes(image.sizeBytes)
     val after = outcome.compressedBytes ?: return before
-    return "$before → ${formatBytes(after)}"
+    return "$before → ${ByteFormat.formatBytes(after)}"
 }
 
 private fun OutcomeStatus.label(outcome: CompressionOutcome): String = when (this) {
@@ -305,11 +306,5 @@ private fun CompressionEffect.MessageKind.isError(): Boolean =
 
 private data class UiMessage(val text: String, val isError: Boolean)
 
-internal fun formatBytes(bytes: Long): String = when {
-    bytes >= 1024L * 1024 * 1024 -> "%.1f GB".format(bytes / (1024.0 * 1024 * 1024))
-    bytes >= 1024L * 1024 -> "%.1f MB".format(bytes / (1024.0 * 1024))
-    bytes >= 1024L -> "%.0f KB".format(bytes / 1024.0)
-    else -> "$bytes B"
-}
 
 private const val MAX_PICK_COUNT = 50

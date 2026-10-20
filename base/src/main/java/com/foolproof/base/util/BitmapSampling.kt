@@ -1,9 +1,12 @@
-package com.foolproof.features.compression.platform
+package com.foolproof.base.util
 
 /**
  * 大图降采样计算。纯函数，不触碰 Android API，可直接单测。
  *
  * `inSampleSize` 必须是 2 的幂，这是 `BitmapFactory` 的要求。
+ *
+ * 从 `:features:image-compression` 下沉到 `:base`：重复照片清理同样需要采样解码，
+ * 而 feature 之间禁止互引（宪法 §3、§6）。
  */
 object BitmapSampling {
 

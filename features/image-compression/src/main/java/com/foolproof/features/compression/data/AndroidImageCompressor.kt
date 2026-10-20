@@ -1,4 +1,4 @@
-package com.foolproof.features.compression.data
+﻿package com.foolproof.features.compression.data
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -15,7 +15,7 @@ import com.foolproof.features.compression.domain.FailureReason
 import com.foolproof.features.compression.domain.ImageCompressor
 import com.foolproof.features.compression.domain.OutputFormat
 import com.foolproof.features.compression.domain.SourceImage
-import com.foolproof.features.compression.platform.BitmapSampling
+import com.foolproof.base.util.BitmapSampling
 import java.io.File
 import java.io.IOException
 import kotlin.coroutines.cancellation.CancellationException

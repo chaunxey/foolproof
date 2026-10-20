@@ -1,6 +1,5 @@
-package com.foolproof.features.compression
+﻿package com.foolproof.base.util
 
-import com.foolproof.features.compression.platform.BitmapSampling
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
