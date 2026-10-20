@@ -41,17 +41,19 @@
 | 图片加载 | **Coil 3** | 业务模块禁止直接 new ImageLoader |
 | 本地存储 | **Room** + **EncryptedSharedPreferences** | 会话历史用 Room；API Key 必须用 EncryptedSP |
 | 语音端点 | Silero VAD（ONNX，本地） | 不用服务端 VAD |
+| 语音推理运行时 | **onnxruntime-android** | 仅承载 Silero VAD，版本在引入时确定（v1.4 补登记） |
 | 异步 | Coroutine + Flow | 禁止 RxJava |
 | UI | **Jetpack Compose** | 本版全面用 Compose，不再写 XML；MVI 状态驱动重组 |
 | PDF 生成 | **原生 android.graphics.pdf.PdfDocument** | 不引入 iText/PDFBox 等第三方 PDF 库 |
 | Word 解析 | **poi-ooxml-lite**（Apache POI，仅读 docx） | 只用于转简易 HTML→WebView 截图，不引 PDFBox |
+| 测试 | **JUnit4 + ktor-client-mock + koin-test + kotlinx-coroutines-test** | 仅 test 配置，不进入 release（v1.4 补登记） |
 
 ***
 
 ## 3. 模块结构
 
 ```
-:app                             // 首页 + 底部导航，只做壳，不写业务
+:app                             // 导航与页面组装（布局 + 依赖组合），不写业务逻辑与状态机
 :base                            // MVI 基类、Koin、Ktor 封装、日志、BaseApplication
 :common                          // 跨业务通用：导航封装、API 层、工具类
 :features:image-compression      // 功能 1（图片压缩）
@@ -76,20 +78,21 @@ feature 之间  →  禁止互相依赖
 
   - `BaseApplication`（Koin 启动入口）
   - `BaseViewModel<S, E>`：`StateFlow<S>` 持状态，`Channel<E>` 发副作用
-  - Ktor `HttpClient` 封装：对外只暴露 `get()` / `post()`，支持配置日志、请求头、全局错误拦截
-  - `LogUtil`（Koin 单例类）：仅 debug 打印，输出 `文件名:行号 + 信息`，release 全砍
+  - `NetworkClient`（Ktor 封装）：对外只暴露 `get()` / `post()`，支持配置日志、请求头、全局错误处理
+  - `LogUtil`（Koin 单例类）：仅 debug 打印，输出 `文件名:行号 级别 信息`，release 全砍
 
 - **:common**
 
   - 导航组件封装：过滤重复跳转；返回首页时重置导航栈
-  - `common/api/`：所有 API 调用唯一出口（见第 6 节）
+  - `common/api/`：可选的 service 与 endpoint 常量定义位置（网络规范见 §5，位置不强制）
   - 通用工具：加密 SP 封装、权限请求基类、文件工具
 
 - **:app**
 
   - 底部导航 3 tab：图片压缩 / 文件转换 / AI 语音聊天
-  - tab 切换不重复入栈（3 个都是首页，返回栈不叠加）
-  - 重复照片清理与图片压缩**合并在同一个 tab 页面**内（见 §3.2）
+  - tab 切换不重复入栈，返回首页时重置导航栈（实现见 `:common` 导航封装）
+  - 重复照片清理与图片压缩**合并在同一个 tab 页面**内（见 §3.2）；该页面由 `:app` 组装，
+    两个 feature 各自只提供 `XxxSection` composable 与 `XxxViewModel`，**互不依赖**
 
 ### 3.2 重复照片清理页面交互规范（与 image-compression 同页）
 
@@ -124,6 +127,8 @@ items(groupItems) { group ->
 - **绝对不能自动删除**，必须用户手动勾选确认
 - 删除前调用 MediaStore 回收站（Android 11+），可恢复，不直接 unlink
 - 大图分批加载（Coil + 分页），防止 OOM
+- **页面归属**：整页由 `:app` 组装，`image-compression` 与 `duplicate-cleanup` 各自只暴露
+  `Section` composable 与 `ViewModel`，两者**互不依赖**（v1.4 定案）
 
 ### 3.3 文件转换能力分级（file-conversion）
 
@@ -167,9 +172,9 @@ items(groupItems) { group ->
 
 ## 4. MVI 架构规范（base 模块强制）
 
-每个 ViewModel 必须：
+每个 ViewModel **必须继承 `BaseViewModel<S, E>`**，并且：
 
-1. 定义 `State`（data class，不可变）和 `Effect`（sealed class，一次性事件）
+1. 定义 `State`（data class，不可变）和 `Effect`（sealed interface，一次性事件）
 2. 状态容器：`private val _uiState = MutableStateFlow(State())`，对外暴露 `uiState: StateFlow<...>`
 3. 副作用：`private val _effect = Channel<Effect>(Channel.BUFFERED)`，对外 `effect: Flow<Effect>`
 4. 禁止在 ViewModel 里持有 View / Context（用 `@ApplicationContext` 或参数传入）
@@ -249,25 +254,32 @@ AudioRecord(PCM 16k/24k)
 - ❌ 在 release 包留 `Log.d` / `printStackTrace`
 - ❌ 用 Java 写新业务
 - ❌ 为了"复用"在公共组件里加 `if (feature == X)` 分支
+- ❌ 在 `:app` 里写业务状态机或业务规则（只允许布局与依赖组合）
 
 ***
 
 ## 10. 待拍板事项
 
-### 已决（v1.1）
+### 已决（累积，截至 v1.4）
 
-- ✅ 重复照片清理：新建 `:features:duplicate-cleanup`，UI 与 image-compression 同页
+- ✅ 重复照片清理：新建 `:features:duplicate-cleanup`，UI 与 image-compression 同页；
+  **页面由 `:app` 组装，两个 feature 互不依赖**（v1.4 定案，见 §3 模块职责）
 - ✅ PDF 生成：原生 `PdfDocument`
 - ✅ UI 技术栈：Jetpack Compose（替换原 ViewBinding+XML）
-- ✅ 文件转 PDF 输入范围：图片 / 文本 / Word / Excel / PPT
+- ✅ 文件转 PDF 输入范围：图片 / 文本 / Word（v1）；Excel 延后 v1.1；**PPT v1 不做**（见 §3.3）
+- ✅ Git 提交规范：启用 Conventional Commits（feat/fix/docs/refactor/test/chore）
 
 ### 待你拍板
 
 1. ~~Office 转 PDF 方案~~ → 已定：A + Word 截长图曲线方案（§3.4）；Excel v1.1，PPT v1 不做
 2. ✅ **包名**：定为 `com.foolproof`（v1.3 已决，不再变更；模块包名 `com.foolproof.base` 等）
-3. **minSdk / targetSdk / compileSdk**：建议 minSdk=24，targetSdk=34
+3. **minSdk / targetSdk / compileSdk**：目前工程为 `minSdk=24 / compileSdk=37 / targetSdk=37`；
+   原建议 targetSdk=34 与现状不符，需拍板是否回到 34
 4. **Room 位置**：voice-chat 私有 OK；以后多 feature 共用时是否抽到 common？
-5. **Git 提交规范**：是否启用 Conventional Commits（feat/fix/chore）？
+5. **低版本能力边界**（v1.4 新列）：API 24–29 上「删除照片」（§3.2 依赖 API 30+ 的回收站）与
+   「HEIC 解码」（需 API 28+）都不能按 v1 方案实现，需要决定：降级为不支持、或走 SAF
+6. **ViewModel 异常策略**（v1.4 新列）：§4 要求统一异常处理，但 `BaseViewModel.launch` 目前未提供，
+   需决定是在基类里统一捕获，还是改回各 VM 自行处理
 
 ***
 
@@ -316,3 +328,19 @@ AudioRecord(PCM 16k/24k)
     动机：base 已提供唯一出口 `NetworkClient`，强制目录位置没有带来额外收益，反而增加跳转成本。
   - **§6**：代码复用规则第 2 条同步改为「API 调用统一走 `NetworkClient`」。
   - **§10-2**：包名定为 `com.foolproof`（不再变更）。
+
+- v1.4（2026-10-20，跨章节一致性校验后修订）：
+
+  - **§3 / §9（C1 定案）**：解决「同页」与「feature 互不依赖」的矛盾——整页由 **`:app` 组装**，
+    feature 各自只提供 `Section` + `ViewModel`。`:app` 的角色由「只做壳，不写业务」
+    收紧为「只做导航与页面组装，不写业务逻辑与状态机」，并在 §9 增加对应一票否决项。
+    动机：方案对比过「允许 feature 单向依赖」「合并模块」「改二级页」，前者松动依赖底座且不可逆，
+    后两者分别牺牲模块粒度与产品交互。
+  - **§3**：修正 `common/api/` 的过期描述（v1.3 已取消「唯一出口」，§3 仍写着，且章节引用错标 §6）。
+  - **§3**：`NetworkClient` 术语统一（原只写「Ktor HttpClient 封装」）、日志格式补「级别」、
+    删除与 §3.2 重复的入栈表述。
+  - **§4**：明确「必须继承 `BaseViewModel<S, E>`」；`Effect` 由 `sealed class` 更正为 `sealed interface`（与实现一致）。
+  - **§2**：补登记 `onnxruntime-android`（§7 已锁定 Silero VAD 用 ONNX，缺登记会与 §9「禁止第 2 节外框架」冲突）
+    与测试框架（JUnit4 / ktor-client-mock / koin-test / coroutines-test，仅 test 配置）。
+  - **§10**：标题改为「已决（累积，截至 v1.4）」；修正「输入范围含 PPT」与 §3.3「PPT v1 不做」的矛盾；
+    Conventional Commits 标记为已启用；新增两项待拍板（低版本能力边界、ViewModel 异常策略）。
