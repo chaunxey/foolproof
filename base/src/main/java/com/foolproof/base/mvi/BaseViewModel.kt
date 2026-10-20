@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.foolproof.base.log.LogUtil
 import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -66,6 +68,13 @@ abstract class BaseViewModel<S : UiState, E : UiEffect>(
      * 业务代码应始终用它而不是直接调用 `viewModelScope.launch`，否则异常会裸抛。
      */
     protected fun launch(block: suspend () -> Unit) {
+        launchJob { block() }
+    }
+
+    /**
+     * 与 [launch] 相同，但返回 [Job]，便于调用方取消（例如批量任务的中断）。
+     */
+    protected fun launchJob(block: suspend CoroutineScope.() -> Unit): Job =
         viewModelScope.launch {
             try {
                 block()
@@ -75,7 +84,6 @@ abstract class BaseViewModel<S : UiState, E : UiEffect>(
                 onError(throwable)
             }
         }
-    }
 
     /**
      * 统一异常出口。默认只记录日志、不改变状态；
