@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  重复照片清理：只需要「读相册」权限（宪法 §8）。
+  不申请任何写存储权限：API ≥ 30 的删除走系统回收站请求，API ≤ 29 走 SAF，两者都不需要写权限。
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Android 13+ 的分段媒体权限 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- Android 12 及以下：旧版整卡读权限，限定 maxSdkVersion 以免在新系统上被要求 -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+</manifest>
