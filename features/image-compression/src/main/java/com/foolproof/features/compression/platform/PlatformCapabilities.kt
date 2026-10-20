@@ -16,13 +16,8 @@ class PlatformCapabilities(val sdkInt: Int) {
     val canSaveToGallery: Boolean
         get() = sdkInt >= API_Q
 
-    /** WebP 应使用有损常量（API 30 起 `WEBP` 被 `WEBP_LOSSY` 取代）。 */
-    val useLossyWebp: Boolean
-        get() = sdkInt >= API_R
-
     private companion object {
         const val API_P = 28
         const val API_Q = 29
-        const val API_R = 30
     }
 }

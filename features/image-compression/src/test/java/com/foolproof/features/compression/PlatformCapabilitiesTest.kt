@@ -23,10 +23,4 @@ class PlatformCapabilitiesTest {
         assertFalse(PlatformCapabilities(28).canSaveToGallery)
         assertTrue(PlatformCapabilities(29).canSaveToGallery)
     }
-
-    @Test
-    fun `lossy webp constant requires API 30`() {
-        assertFalse(PlatformCapabilities(29).useLossyWebp)
-        assertTrue(PlatformCapabilities(30).useLossyWebp)
-    }
 }

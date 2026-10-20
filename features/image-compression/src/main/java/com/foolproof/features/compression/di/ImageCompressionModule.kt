@@ -20,7 +20,7 @@ val imageCompressionModule = module {
 
     single { PlatformCapabilities(Build.VERSION.SDK_INT) }
 
-    single<ImageCompressor> { CompressorImageCompressor(get(), get(), get()) }
+    single<ImageCompressor> { CompressorImageCompressor(get(), get()) }
 
     single<ImageMetadataReader> { ContentResolverImageMetadataReader(get(), get()) }
 

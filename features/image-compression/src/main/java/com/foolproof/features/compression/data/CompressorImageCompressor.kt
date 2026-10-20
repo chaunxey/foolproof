@@ -12,7 +12,6 @@ import com.foolproof.features.compression.domain.ImageCompressor
 import com.foolproof.features.compression.domain.OutputFormat
 import com.foolproof.features.compression.domain.SourceImage
 import com.foolproof.features.compression.platform.BitmapSampling
-import com.foolproof.features.compression.platform.PlatformCapabilities
 import id.zelory.compressor.Compressor
 import id.zelory.compressor.constraint.destination
 import id.zelory.compressor.constraint.format
@@ -34,12 +33,11 @@ import kotlinx.coroutines.withContext
  */
 class CompressorImageCompressor(
     private val context: Context,
-    private val caps: PlatformCapabilities,
     private val logUtil: LogUtil,
 ) : ImageCompressor {
 
     override suspend fun compress(image: SourceImage, option: CompressionOption): CompressedFile {
-        val input = copyToCache(image)
+        val input = copyToCache(image, option)
         return try {
             withContext(Dispatchers.IO) {
                 val outputDir = File(context.filesDir, OUTPUT_DIR).apply { mkdirs() }
@@ -49,10 +47,15 @@ class CompressorImageCompressor(
                 val result = Compressor.compress(context, input, Dispatchers.IO) {
                     quality(option.quality)
                     format(option.toCompressFormat())
-                    destination(target)
                     resolution(maxWidth, maxHeight)
+                    // destination 必须最后设置：约束按顺序链式生效，放在前面会被后续约束绕过
+                    destination(target)
                 }
-                CompressedFile(path = result.absolutePath, bytes = result.length())
+                // 保险：若底层把结果写到了别处（旧版在扩展名变化时会自算落点），搬回我们的目标路径
+                if (result.absolutePath != target.absolutePath) {
+                    result.copyTo(target, overwrite = true)
+                }
+                CompressedFile(path = target.absolutePath, bytes = target.length())
             }
         } catch (cancellation: CancellationException) {
             throw cancellation
@@ -76,18 +79,20 @@ class CompressorImageCompressor(
         return width to height
     }
 
+    /**
+     * Compressor 3.0.1 只认识 `JPEG` / `PNG` / `WEBP` 三个常量；传 API 30 才有的 `WEBP_LOSSY`
+     * 会在它内部抛异常（真机测试已验证）。因此 WebP 一律用 `WEBP`，平台默认即有损。
+     */
     private fun CompressionOption.toCompressFormat(): Bitmap.CompressFormat = when (format) {
         OutputFormat.JPEG -> Bitmap.CompressFormat.JPEG
-        OutputFormat.WEBP -> if (caps.useLossyWebp) {
-            Bitmap.CompressFormat.WEBP_LOSSY
-        } else {
-            @Suppress("DEPRECATION")
-            Bitmap.CompressFormat.WEBP
-        }
+        @Suppress("DEPRECATION")
+        OutputFormat.WEBP -> Bitmap.CompressFormat.WEBP
     }
 
-    private fun copyToCache(image: SourceImage): File {
-        val target = File(context.cacheDir, "source_${System.nanoTime()}")
+    private fun copyToCache(image: SourceImage, option: CompressionOption): File {
+        // 输入临时文件带上目标扩展名：Compressor 3.0.1 在「输入无扩展名 + 输出扩展名变化」时
+        // 会自行推算落点（落到不可写的目录），带扩展名可让它就地覆盖
+        val target = File(context.cacheDir, "source_${System.nanoTime()}.${option.extension}")
         return try {
             val input = context.contentResolver.openInputStream(Uri.parse(image.id))
                 ?: throw IllegalStateException("无法打开输入流")
