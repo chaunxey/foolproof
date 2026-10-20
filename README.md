@@ -126,7 +126,8 @@ Foolproof/
 constitution → specify → plan → tasks → implement
 ```
 
-- 宪法：[`.specify/memory/constitution.md`](.specify/memory/constitution.md)（当前仍为模板占位，需先撰写）
+- 宪法：[`.specify/memory/constitution.md`](.specify/memory/constitution.md)（v1.0.0，2026-10-20 批准）
+- 原始需求记录：[`docs/requirements.md`](docs/requirements.md)
 - 特性规格：`specs/<feature>/`（尚未创建）
 - 完整流水线定义：[`.specify/workflows/speckit/workflow.yml`](.specify/workflows/speckit/workflow.yml)
 
