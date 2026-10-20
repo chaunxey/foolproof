@@ -140,11 +140,16 @@ items(groupItems) { group ->
 
 | 输入格式 | 方案 | 状态 |
 | --- | --- | --- |
-| 图片（JPG/PNG/WebP/HEIC）→ PDF | 原生 `PdfDocument`，逐页 draw Bitmap | ✅ v1 实现 |
+| 图片（JPG/PNG/WebP/HEIC）→ PDF | 原生 `PdfDocument`，逐页 draw Bitmap | ✅ v1 实现（HEIC 限 API 28+，见下方门槛） |
 | 文本（TXT/MD）→ PDF | 原生 `PdfDocument`，Canvas 画文字 | ✅ v1 实现 |
 | Word（DOCX）→ PDF | **截长图曲线方案**（见 §3.4） | ✅ v1 实现（.docx 优先，.doc 后续） |
 | Excel（XLS/XLSX）→ PDF | 同上思路，表格转 HTML | ⏳ v1.1 再做 |
 | PPT（PPT/PPTX）→ PDF | 自由排版，截长图方案不适用 | ❌ v1 不做 |
+
+**HEIC 版本门槛（v1.7 定案）**：HEIC 解码依赖平台能力（`ImageDecoder` 为 API 28+，且需设备带 HEIF 编解码器），
+因此**所有涉及 HEIC 输入的能力**——图片压缩的源图、重复照片扫描、转 PDF——在 **API 24–27** 上
+必须明确提示「当前系统不支持 HEIC 格式」并跳过该文件，**不得静默失败、不得崩溃**。
+不引入 `libheif` 等 native 解码库（无官方 Android 制品，且涉及 LGPL-3.0 与 HEVC 专利合规成本）。
 
 ### 3.4 Word 转 PDF：截长图曲线方案
 
@@ -276,7 +281,7 @@ AudioRecord(PCM 16k/24k)
 - ✅ 文件转 PDF 输入范围：图片 / 文本 / Word（v1）；Excel 延后 v1.1；**PPT v1 不做**（见 §3.3）
 - ✅ Git 提交规范：启用 Conventional Commits（feat/fix/docs/refactor/test/chore）
 
-### 待你拍板
+### 待你拍板（截至 v1.7：已全部拍板，无遗留项）
 
 1. ~~Office 转 PDF 方案~~ → 已定：A + Word 截长图曲线方案（§3.4）；Excel v1.1，PPT v1 不做
 2. ✅ **包名**：定为 `com.foolproof`（v1.3 已决，不再变更；模块包名 `com.foolproof.base` 等）
@@ -286,8 +291,8 @@ AudioRecord(PCM 16k/24k)
    等出现第二个真正需要 Room 的 feature 时再评估（宪法 §7 YAGNI）
 5. **低版本能力边界**（拆分处理）：
    - ✅ **删除照片**（v1.6 已定）：API 30+ 走 MediaStore 回收站；API 24–29 走 SAF 且明确不可恢复，见 §3.2
-   - **HEIC 解码**（待定）：`libheif` 无官方 Android 制品（Maven Central 无、JitPack 无、
-     `androidx.heifwriter` 只能编码），API 24–27 的解码方式需在「降级提示」与「自建 native 库」之间选择
+   - ✅ **HEIC 解码**（v1.7 已定）：采用降级方案——API 28+ 用平台解码，API 24–27 明确提示不支持
+     （见 §3.3 门槛说明）；不引入 native 解码库
 6. ~~**ViewModel 异常策略**~~ → **已定（v1.5）**：由 `BaseViewModel.launch {}` 统一捕获非取消异常，
    默认写日志、子类可覆写 `onError` 做状态/副作用映射；业务代码不再直接调用 `viewModelScope.launch`。
 
@@ -372,3 +377,11 @@ AudioRecord(PCM 16k/24k)
     动机：回收站 API 是 API 30 才有的系统能力，低版本无法伪装；申请写权限又与 §8 冲突。
   - **§10-5（HEIC 部分）**：查证后 `libheif` 无官方 Android 制品，原「补依赖解 HEIC」方案不成立，
     留待单独决定。
+
+- v1.7（2026-10-20）：
+
+  - **§3.3 / §10-5（HEIC）**：定案为降级方案——API 28+ 依赖平台解码，API 24–27 明确提示「系统不支持」，
+    并跳过该文件；不引入 `libheif` 等 native 库。
+    动机：libheif 无官方 Android 制品（Maven Central 无、JitPack 返回空、`androidx.heifwriter` 只能编码），
+    自建 native 需承担 LGPL-3.0 合规与 HEVC 专利评估，为极少数老设备上的 HEIC 场景不划算。
+  - 该门槛同时适用于图片压缩源图、重复照片扫描与转 PDF 三处 HEIC 输入，不只是 §3.3。
