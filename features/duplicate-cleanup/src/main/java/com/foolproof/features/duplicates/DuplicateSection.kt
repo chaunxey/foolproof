@@ -216,7 +216,6 @@ fun DuplicateSection(
                 selected = state.selected,
                 onToggle = { viewModel.dispatch(DuplicateAction.Toggle(it)) },
                 onOpen = { viewModel.dispatch(DuplicateAction.OpenPreview(it)) },
-                modifier = Modifier.weight(1f),
             )
         } else {
             val hint = when {

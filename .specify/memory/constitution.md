@@ -96,7 +96,13 @@ feature 之间  →  禁止互相依赖
 
 ### 3.2 重复照片清理页面交互规范（与 image-compression 同页）
 
-UI 容器：`LazyVerticalGrid`，跨列头部分组（**纵向顺序：图片压缩区在上，重复照片清理区在下**，v1.8 定案）：
+UI 容器：三列网格 + 跨列头部分组（**纵向顺序：图片压缩区在上，重复照片清理区在下**，v1.8 定案）：
+
+> **整页滚动归 `:app`（v1.11）**：整页只有一个滚动容器（`CompressionTabScreen` 里的 `verticalScroll`），
+> **feature 的 Section 不得自带可滚动容器**（`LazyColumn` / `LazyVerticalGrid` / `LazyRow`），
+> 否则会出现"两半各自滚动、整页不动"的体验问题；`verticalScroll` 内部放懒加载容器还会因高度无界而崩溃。
+> Section 用普通 `Column` / `Row` 渲染，必要时对渲染条数设上限并提示。
+> 缩略图 MUST 用 `ContentScale.Fit` **完整显示整张图**，禁止用 `Crop` 裁剪（用户需要看清内容才敢删）。
 
 ```kotlin
 items(groupItems) { group ->
@@ -409,3 +415,12 @@ AudioRecord(PCM 16k/24k)
   - **§3.2**：明确重复照片清理的**默认预选规则**——每组预选「除最大一张以外的其余项」，用户可改选；
     预选不等于自动删除，删除仍需二次确认。动机：`003-duplicate-cleanup` 规格里这一条与
     「必须用户手动勾选确认」的字面表述存在张力，若只写在 spec 里，实现者可能按旧条理解成「默认全不选」。
+
+- v1.11（2026-10-21）：
+
+  - **§3.2**：新增「整页滚动归 `:app`」规则——整页只允许一个滚动容器，feature 的 Section
+    禁止自带 `LazyColumn` / `LazyVerticalGrid`；并把网格容器的表述从「`LazyVerticalGrid`」改为
+    「三列网格 + 跨列组头」。同时规定缩略图必须 `ContentScale.Fit` 完整显示，禁止 `Crop` 裁剪。
+    动机：初版把整页拆成两个 `weight(1f)` 的半屏区块、各自内部滚动，用户反馈「无法整体滑动」；
+    而 `verticalScroll` 内嵌懒加载容器会因高度无界崩溃，所以规则必须落在「谁是唯一滚动者」上。
+    缩略图裁剪则会让用户看不清内容却要决定删除，风险不对等。

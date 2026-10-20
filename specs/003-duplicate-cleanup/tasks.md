@@ -1,4 +1,4 @@
-﻿# Tasks: 重复照片清理（duplicate-cleanup）
+# Tasks: 重复照片清理（duplicate-cleanup）
 
 **Input**: Design documents from `specs/003-duplicate-cleanup/`
 
@@ -128,6 +128,8 @@ SC-002 / SC-003，不依赖真机。
 - [ ] T044 **真机验证（待设备）**：相册扫描分组准确性（同图不同压缩必须同组、纯色图不互并）、
   API ≥ 30 删除后可在系统回收站恢复（SC-006）、权限拒绝与永久拒绝的引导
 - [x] T045 更新 `README.md`：模块规划标注 duplicate-cleanup 已建，补一节说明与「dHash 镜像不敏感」的已知局限
+- [x] T046 修复真机反馈的排版问题（宪法 §3.2 v1.11）：整页改为单一滚动容器，
+  Section 不再自带 `LazyColumn` / `LazyVerticalGrid`；缩略图由 `Crop` 改为按原图比例完整显示
 
 ---
 

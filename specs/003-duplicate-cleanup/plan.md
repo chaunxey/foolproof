@@ -96,7 +96,7 @@ features/duplicate-cleanup/
     │       │   ├── ThumbnailPixelSource.kt      # loadThumbnail(29+) / 采样解码(≤28)
     │       │   └── MediaStorePhotoDeleter.kt    # PendingIntent(30+) / SAF(≤29)
     │       └── ui/
-    │           ├── DuplicateGroupGrid.kt        # LazyVerticalGrid + 跨列组头
+    │           ├── DuplicateGroupGrid.kt        # 三列网格（按原图比例排版，无滚动容器）
     │           └── PhotoPreviewDialog.kt        # 全屏预览
     └── test/java/com/foolproof/features/duplicates/
         ├── PerceptualHashTest.kt

@@ -1,4 +1,4 @@
-package com.foolproof.features.compression
+﻿package com.foolproof.features.compression
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
@@ -152,11 +150,11 @@ fun CompressionSection(
             )
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth().weight(1f).padding(top = 8.dp),
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(state.images, key = { it.id }) { image ->
+            state.images.forEach { image ->
                 ImageRow(
                     image = image,
                     outcome = state.outcomeOf(image.id),
