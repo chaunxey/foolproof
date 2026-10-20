@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- 压缩结果只从 files/compressed/ 暴露给 FileProvider -->
+    <files-path
+        name="compressed"
+        path="compressed/" />
+</paths>

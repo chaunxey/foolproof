@@ -13,6 +13,9 @@ koin = "4.2.2"
 ktor = "3.6.0"
 kotlinxSerialization = "1.12.0"
 kotlinxCoroutines = "1.11.0"
+# feature 模块
+compressor = "3.0.1"
+coil = "3.6.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -49,6 +52,11 @@ ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref =
 # Koin
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
+koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
+
+# 图片压缩与加载
+compressor = { group = "id.zelory", name = "compressor", version.ref = "compressor" }
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

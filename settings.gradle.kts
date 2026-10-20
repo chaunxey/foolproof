@@ -25,3 +25,4 @@ dependencyResolutionManagement {
 rootProject.name = "Foolproof"
 include(":app")
 include(":base")
+include(":features:image-compression")
