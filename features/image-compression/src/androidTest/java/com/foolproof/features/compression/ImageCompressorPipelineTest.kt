@@ -1,4 +1,4 @@
-package com.foolproof.features.compression
+﻿package com.foolproof.features.compression
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -6,7 +6,7 @@ import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.foolproof.base.log.LogUtil
-import com.foolproof.features.compression.data.CompressorImageCompressor
+import com.foolproof.features.compression.data.AndroidImageCompressor
 import com.foolproof.features.compression.domain.CompressionOption
 import com.foolproof.features.compression.domain.OutputFormat
 import com.foolproof.features.compression.domain.CompressionFailure
@@ -20,15 +20,15 @@ import org.junit.runner.RunWith
 
 /**
  * 真机/模拟器上的压缩管线验证。覆盖 JVM 单测做不到的部分：
- * 1. Compressor 3.0.1 的真实调用是否成功；
+ * 1. 自研压编码管线的真实调用是否成功；
  * 2. `resolution()` 覆盖是否生效——**输出尺寸必须等于原尺寸**，而不是它默认的 612×816。
  */
 @RunWith(AndroidJUnit4::class)
-class CompressorPipelineTest {
+class ImageCompressorPipelineTest {
 
     private val context = ApplicationProvider.getApplicationContext<android.content.Context>()
 
-    private fun compressor() = CompressorImageCompressor(
+    private fun imageCompressor() = AndroidImageCompressor(
         context = context,
         logUtil = LogUtil(enabled = false),
     )
@@ -62,7 +62,7 @@ class CompressorPipelineTest {
                 height = 900,
             )
 
-            val result = compressor().compress(image, CompressionOption(OutputFormat.JPEG, 80))
+            val result = imageCompressor().compress(image, CompressionOption(OutputFormat.JPEG, 80))
 
             val output = File(result.path)
             assertTrue("输出文件不存在: ${result.path}", output.exists())
@@ -96,7 +96,7 @@ class CompressorPipelineTest {
             )
 
             val result = try {
-                compressor().compress(image, CompressionOption(OutputFormat.WEBP, 70))
+                imageCompressor().compress(image, CompressionOption(OutputFormat.WEBP, 70))
             } catch (failure: CompressionFailure) {
                 throw AssertionError("WebP 压缩失败，底层原因: ${failure.cause}", failure.cause)
             }

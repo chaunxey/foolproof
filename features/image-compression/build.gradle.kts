@@ -40,7 +40,7 @@ dependencies {
     // 显式声明协程，压住 Compressor 传递进来的 coroutines 1.3.3
     implementation(libs.kotlinx.coroutines.android)
 
-    implementation(libs.compressor)
+    implementation(libs.androidx.exifinterface)
     implementation(libs.coil.compose)
     implementation(libs.koin.compose.viewmodel)
 

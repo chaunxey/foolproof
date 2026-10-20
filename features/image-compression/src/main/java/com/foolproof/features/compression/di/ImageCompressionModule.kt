@@ -2,7 +2,7 @@ package com.foolproof.features.compression.di
 
 import android.os.Build
 import com.foolproof.features.compression.CompressionViewModel
-import com.foolproof.features.compression.data.CompressorImageCompressor
+import com.foolproof.features.compression.data.AndroidImageCompressor
 import com.foolproof.features.compression.data.ContentResolverImageMetadataReader
 import com.foolproof.features.compression.data.MediaStoreResultExporter
 import com.foolproof.features.compression.domain.ImageCompressor
@@ -20,7 +20,7 @@ val imageCompressionModule = module {
 
     single { PlatformCapabilities(Build.VERSION.SDK_INT) }
 
-    single<ImageCompressor> { CompressorImageCompressor(get(), get()) }
+    single<ImageCompressor> { AndroidImageCompressor(get(), get()) }
 
     single<ImageMetadataReader> { ContentResolverImageMetadataReader(get(), get()) }
 
