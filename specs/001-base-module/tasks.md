@@ -1,4 +1,4 @@
-﻿# Tasks: base 模块（架构基建）
+# Tasks: base 模块（架构基建）
 
 **Input**: Design documents from `specs/001-base-module/`
 
@@ -86,7 +86,7 @@
 
 - [x] T024 [US4] 创建 `base/src/main/java/com/foolproof/base/di/BaseModule.kt`：注册 `HttpConfig`、`HttpClient`（单例）、`NetworkClient`（单例）（对应 FR-006/FR-016）
 - [x] T025 [US4] 创建 `base/src/main/java/com/foolproof/base/BaseApplication.kt`：`open fun koinModules(): List<Module> = listOf(baseModule)`，`onCreate` 中幂等启动 Koin（已启动则跳过，对应 FR-004/FR-005）
-- [x] T026 [US4] 创建 `base/src/test/java/com/foolproof/base/di/BaseModuleTest.kt`：用 `koin-test` 的 `verify()` 校验装配，并断言重复启动不抛致命异常、未登记类型 resolve 抛可见异常（对应 US4 三条验收场景、FR-023）
+- [x] T026 [US4] 创建 `base/src/test/java/com/foolproof/base/di/BaseModuleTest.kt`：逐类型 `resolve` 校验装配（不用 `verify()`，它会误报 `HttpClient.engine`），并断言重复启动不抛致命异常、未登记类型 resolve 抛可见异常（对应 US4 三条验收场景、FR-023）
 - [x] T027 [US4] 运行 `./gradlew :base:testDebugUnitTest --tests "*BaseModuleTest*"` 通过
 
 ---
@@ -97,13 +97,17 @@
 - [x] T029 创建 `app/src/main/java/com/foolproof/FoolproofApp.kt`：`class FoolproofApp : BaseApplication()`，覆写 `koinModules()` 以便后续追加 app 级模块
 - [x] T030 在 `app/src/main/AndroidManifest.xml` 的 `<application>` 上设置 `android:name=".FoolproofApp"`
 - [x] T031 运行 `./gradlew :app:assembleDebug`，确认整工程构建通过（对应 FR-001、SC-006）
-- [x] T032 运行 `./gradlew :app:assembleRelease`，验证 R8 下 Ktor/serialization 可用；若被裁，在 `base/src/main/keepRules/` 补规则后再验（对应 FR-024）
-- [x] T033 全仓检索 `android.util.Log` 与 `println(`，确认生产代码 0 处（对应 FR-022、SC-003）
-- [x] T034 全仓检索 `HttpClient(` / `OkHttpClient(` 构造，确认 `:base` 之外 0 处（对应 FR-016、SC-002）
+- [x] T032 运行 `./gradlew :app:assembleRelease`，确认 release **构建**通过（R8 不缺类）；运行时行为不在此验证，见 T038（对应 FR-024 的构建侧）
+- [x] T033 全仓检索 `android.util.Log` 与 `println(`，确认生产代码 0 处（`LogUtil` 的默认 sink 为唯一例外，对应 FR-022、SC-003）
+- [x] T034 全仓检索 `HttpClient(` / `OkHttpClient(` 构造，确认 `:base` 之外 0 处（对应 FR-006、SC-002）
 - [x] T035 运行完整 `./gradlew :base:testDebugUnitTest`，确认全部测试通过（对应 FR-023）
-- [x] T036 更新 `README.md`：模块结构加上 `base/`、技术栈表补上锁定的依赖版本与「为何不用最新版」
+- [x] T036 更新 `README.md`：模块结构加上 `base/`、技术栈表补上真实依赖版本与工具链版本
 - [x] T037 更新宪法 §11 公共组件登记清单：补 `NetworkClient`、`BaseViewModel`、`BaseApplication` 的位置（宪法要求新公共组件登记）
 - [ ] T038 真机 / 模拟器冒烟：安装 release 包，发起一次真实请求并观察无日志输出、混淆后反序列化正常（本机无设备，待执行）
+- [x] T039 [US4] 新增 `base/src/test/java/com/foolproof/base/di/ViewModelRegistrationTest.kt`：验证 `viewModel { }` DSL 注册 `BaseViewModel` 子类后可解析，锁住注入范式（对应 FR-025）
+- [x] T040 按负责人决定把 `LogUtil` 从 `object` 改为 Koin 注入的单例类，同步更新 `HttpClientFactory`、`BaseModule` 与全部测试（对应 FR-006/FR-018）
+- [x] T041 新增 `base/consumer-rules.pro` 并在 `build.gradle.kts` 声明 `consumerProguardFiles`，覆盖 kotlinx.serialization 的 keep 规则；以 `app/build/outputs/mapping/release/configuration.txt` 确认规则已进入 R8（对应 FR-024）
+- [x] T042 在 `NetworkClientTest` 补两条日志断言：logging 开启时 sink 收到内容、关闭时为空（对应 US2 验收场景 5、FR-020）
 
 ---
 
@@ -144,10 +148,14 @@ Phase 1 (T001–T006)
 | 需求 | 覆盖任务 |
 | --- | --- |
 | FR-001 / FR-002 / FR-003（模块与依赖） | T001、T003、T004、T028、T031 |
-| FR-004 / FR-005 / FR-006（Koin 与入口） | T024、T025、T026 |
+| FR-004 / FR-005 / FR-006（Koin 与入口） | T024、T025、T026、T040 |
 | FR-007 ~ FR-011（MVI） | T007、T011、T012、T013 |
-| FR-012 ~ FR-017（网络） | T008、T009、T010、T014–T019 |
-| FR-018 ~ FR-022（日志） | T020–T023、T033 |
-| FR-023（测试） | T012、T017、T018、T021、T022、T026、T035 |
-| FR-024（release keep） | T032 |
+| FR-012 ~ FR-015（网络） | T008、T009、T010、T014–T019 |
+| FR-016 / FR-017（已合并至 FR-006 / FR-020） | 无独立任务；约束由 FR-006、FR-020 的任务覆盖 |
+| FR-018 ~ FR-022（日志） | T020–T023、T033、T040、T042 |
+| FR-023（测试） | T012、T017、T018、T021、T022、T026、T035、T039、T042 |
+| FR-024（release keep） | T032（构建）、T041（规则文件） |
+| FR-025（ViewModel 注入范式） | T039 |
 | SC-002 / SC-003（零散落调用） | T033、T034 |
+| SC-005（release 静默） | T022（开关逻辑）、T042（网络日志）、T038（运行时，待执行） |
+| SC-001 / SC-006（跨 feature 验收） | 不在本 feature 内验证，移交首个业务 feature |

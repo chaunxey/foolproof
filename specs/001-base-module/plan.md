@@ -61,7 +61,7 @@
 | §3 职责 | `BaseApplication`、`BaseViewModel<S,E>`、Ktor 封装、`LogUtil` 四项职责与宪法列出的完全一致 | ✅ 通过 |
 | §4 MVI 规范 | `StateFlow` 持状态、`Channel` 发副作用、`dispatch(action)` 单向入口、`Buffer` 策略 | ✅ 通过 |
 | §5 克制的注入 | 仅注入：网络客户端（需外部配置 + 单例）、`LogUtil`（需配置 debug 开关）、ViewModel（便于测试） | ✅ 通过 |
-| §6 日志 | `object LogUtil`，debug-only，含文件名行号，禁 `android.util.Log` | ✅ 通过 |
+| §6 日志 | `LogUtil` 由 Koin 提供单例（v1.3 起为 class），debug-only，含文件名行号，禁 `android.util.Log` | ✅ 通过 |
 | §7 YAGNI | 不做导航、不做 Room、不做 API service、不做拦截器插件体系 | ✅ 通过 |
 | §9 一票否决项 | 无 feature 直连网络、无明文密钥、无 ViewModel 内 `startActivity` | ✅ 通过 |
 | 质量门槛 | US1–US4 每条验收场景都有对应测试，`:base:testDebugUnitTest` 为完成标准 | ✅ 通过 |
@@ -176,9 +176,12 @@ R8 在 release 下可直接裁掉整个方法体。
 
 ### R6. R8 与序列化
 
-`kotlinx.serialization` 由插件在编译期生成 serializer，运行时依赖反射较少；
-Ktor 自带 consumer R8 规则。落地时以一次 `assembleRelease` + 手动发一次请求验证，
-若被裁掉再在 `:base` 的 consumer 规则里补 `-keep`（AGP 9 下位置为 `src/main/keepRules/`）。
+`kotlinx.serialization` 由插件在编译期生成 serializer，运行时依赖反射较少；Ktor 自带 consumer R8 规则。
+
+**实施结果**：已新增 `base/consumer-rules.pro`（保留 `Companion` / `serializer(...)` / `$serializer` 类，
+并对 `kotlinx.serialization` 关闭警告），在 `defaultConfig` 里以 `consumerProguardFiles` 声明。
+已确认规则真的进了 R8：`app/build/outputs/mapping/release/configuration.txt` 中可见本文件内容。
+注意 AGP 9 不再把 consumer 规则作为 `proguard.txt` 塞进 AAR，只能通过映射文件验证。
 
 ---
 
@@ -223,10 +226,13 @@ NetworkClient（对外门面，仅 get/post）
 
 ### D3. 日志
 
+> 2026-10-20 修订：按负责人决定，`LogUtil` 由 `object` 改为 **Koin 注入的单例类**，
+> 以便与「依赖经 Koin 提供」统一，并让 sink / 开关在测试中可替换。
+
 ```kotlin
-object LogUtil {
+class LogUtil(enabled: Boolean = BuildConfig.DEBUG) {
     var sink: (String) -> Unit = { android.util.Log.d(TAG, it) }   // 唯一允许用 Log 的地方
-    var enabled: Boolean = BuildConfig.DEBUG
+    var enabled: Boolean = enabled && BuildConfig.DEBUG
     fun d(message: () -> String)   // lambda：未启用时不求值，避免字符串拼接
 }
 ```
@@ -239,8 +245,9 @@ object LogUtil {
 ```kotlin
 val baseModule = module {
     single { HttpConfig.default() }
-    single { createHttpClient(get()) }      // HttpClient 单例
-    single { NetworkClient(get()) }
+    single { LogUtil() }                    // 日志单例
+    single { createHttpClient(get(), get()) }  // HttpClient 单例
+    single { NetworkClient(get(), get<HttpConfig>().baseUrl) }
 }
 ```
 

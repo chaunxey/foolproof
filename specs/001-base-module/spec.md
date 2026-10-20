@@ -15,7 +15,7 @@
 1. **应用入口**：`BaseApplication` 负责 Koin 容器启动；
 2. **MVI 基类**：统一「状态用 `StateFlow`、副作用用 `Channel`」的 ViewModel 契约，消除各页面重复样板；
 3. **网络出口**：Ktor `HttpClient` 统一封装，对外只暴露 `get` / `post`，错误统一映射，禁止业务层直接接触 Ktor；
-4. **日志**：`LogUtil` 单例，仅 debug 输出，带文件名与行号。
+4. **日志**：`LogUtil` 单例（由 Koin 提供），仅 debug 输出，带文件名与行号。
 
 它**不含**任何 UI、导航、业务逻辑，也不依赖 `:app` / `:common` / 任何 `feature` 模块（宪法 §3）。
 
@@ -65,7 +65,8 @@
 
 ### User Story 3 - 日志统一，可定位到行，且不会泄露密钥 (Priority: P1)
 
-开发者只调用 `LogUtil.d/i/w/e`，输出形如 `MainActivity.kt:42 → xxx`；release 包中完全不输出；
+开发者注入 `LogUtil` 后调用 `logUtil.d/i/w/e { ... }`，输出形如 `MainActivity.kt:42 D xxx`；
+release 包中完全不输出；
 API Key 之类的敏感串在输出前被脱敏。
 
 **Why this priority**: 宪法 §6 与 §9 的硬约束（release 留 `Log.d` 即一票否决）。
@@ -74,7 +75,7 @@ API Key 之类的敏感串在输出前被脱敏。
 
 **Acceptance Scenarios**:
 
-1. **Given** debug 开关打开，**When** 调用 `LogUtil.d("hello")`，**Then** 输出包含当前文件名、行号与 `hello`。
+1. **Given** debug 开关打开，**When** 调用 `logUtil.d { "hello" }`，**Then** 输出包含当前文件名、行号与 `hello`。
 2. **Given** debug 开关关闭，**When** 调用任意日志方法，**Then** 输出 sink 收不到任何内容。
 3. **Given** 日志内容包含 `sk-abcdef123456`，**When** 输出，**Then** 实际内容为脱敏形式（如 `sk-***3456`）。
 
@@ -122,7 +123,9 @@ API Key 之类的敏感串在输出前被脱敏。
 
 - **FR-004**: 系统 MUST 提供 `BaseApplication`，在 `onCreate` 中启动 Koin 并装配 `base` 自带的模块。
 - **FR-005**: Koin 启动 MUST 幂等——重复调用不抛致命异常（便于测试与多入口场景）。
-- **FR-006**: 网络客户端、`LogUtil`、MVI 相关依赖 MUST 经 Koin 提供，业务代码通过注入获取而非自行 `new`。
+- **FR-006**: 网络客户端、`LogUtil`、ViewModel MUST 经 Koin 提供，业务代码通过注入获取而非自行 `new`；
+  网络客户端 MUST 在全应用内唯一（`single`），业务模块不得自行创建。
+  <!-- 2026-10-20 修订：原 FR-016「客户端唯一实例」已并入本条，不再单列。 -->
 
 **MVI 基类**
 
@@ -138,21 +141,28 @@ API Key 之类的敏感串在输出前被脱敏。
 - **FR-013**: 所有请求 MUST 返回统一结果类型（成功携带反序列化数据、失败携带结构化错误），MUST NOT 向调用方抛 IO 异常。
 - **FR-014**: 网络错误 MUST 映射为可区分类型，至少覆盖：无网络、超时、未授权（401）、客户端错误（4xx）、服务端错误（5xx）、响应解析失败。
 - **FR-015**: 网络层 MUST 支持配置：基础地址、默认请求头、连接/请求超时、日志开关。
-- **FR-016**: 全应用 MUST 只有一个网络客户端实例（由 Koin 提供），业务模块不得自行创建。
-- **FR-017**: 日志开关关闭时（release），网络层 MUST 不输出任何请求/响应内容，包括请求头中的凭据。
+- **FR-016**（已并入 FR-006）: 保留编号仅为历史追溯，无独立约束。
+- **FR-017**（已并入 FR-020）: 保留编号仅为历史追溯，无独立约束。
 
 **日志**
 
-- **FR-018**: 系统 MUST 提供单例日志工具 `LogUtil`（`object`，宪法 §2），并支持可替换的输出实现（便于测试）。
+- **FR-018**: 系统 MUST 提供日志工具 `LogUtil`，由 Koin 以单例（`single`）提供，业务侧注入使用；
+  其输出实现 MUST 可替换（便于测试）。
+  <!-- 2026-10-20 修订：原为 `object` 全局单例，按负责人决定改为 Koin 注入的类，
+       使 FR-006「依赖经 Koin 提供」与本节不再冲突。 -->
 - **FR-019**: 日志输出 MUST 包含：调用处文件名、行号、消息。
-- **FR-020**: 日志 MUST 仅在 debug 构建输出；release 构建 MUST 静默。
+- **FR-020**: 日志 MUST 仅在 debug 构建输出；release 构建 MUST 静默——包括网络请求/响应日志
+  与请求头中的凭据（本条吸收原 FR-017）。
 - **FR-021**: 日志 MUST 对敏感串（`sk-` 开头的密钥、`Authorization` 头）做脱敏。
 - **FR-022**: `:base` 内生产代码 MUST 不使用 `android.util.Log`、`println` 或第三方日志库（review + 静态检查保证）。
 
 **质量**
 
 - **FR-023**: `:base` MUST 为 US1–US4 的验收场景提供自动化测试，`./gradlew :base:testDebugUnitTest` 通过。
-- **FR-024**: release 构建 MUST 配置 Ktor / kotlinx.serialization 所需 keep 规则，保证混淆后网络与序列化可用。
+- **FR-024**: release 构建 MUST 具备 Ktor / kotlinx.serialization 的 keep 规则，保证混淆后网络与序列化可用；
+  规则以 `base/consumer-rules.pro` 形式随 AAR 提供给消费方。
+- **FR-025**: ViewModel MUST 通过 Koin 的 `viewModel { }` DSL 注册后注入（对应宪法 §5），
+  `:base` MUST 提供可验证的注册范式（见 `ViewModelRegistrationTest`）。
 
 ### Key Entities
 
@@ -169,18 +179,22 @@ API Key 之类的敏感串在输出前被脱敏。
 
 ### Measurable Outcomes
 
-- **SC-001**: 新增一个带副作用的页面，只需继承 `BaseViewModel` 并实现状态与 action 处理，**不再出现** `MutableStateFlow`、`Channel`、`receiveAsFlow` 的重复声明（不含业务逻辑的新页面 ViewModel 少于 40 行）。
+- **SC-001**（跨 feature 验收）: 新增一个带副作用的页面，只需继承 `BaseViewModel` 并实现状态与 action 处理，
+  **不再出现** `MutableStateFlow`、`Channel`、`receiveAsFlow` 的重复声明（不含业务逻辑的新页面 ViewModel 少于 40 行）。
+  需真实页面才能度量，因此移到首个业务 feature 的验收中执行。
 - **SC-002**: 全工程搜索 `OkHttpClient(` / `HttpClient(` 的构造调用，**`:base` 之外出现 0 处**。
-- **SC-003**: 全工程搜索 `android.util.Log` 与 `println(`，生产代码 **0 处**。
+- **SC-003**: 全工程搜索 `android.util.Log` 与 `println(`，生产代码 **0 处**（`LogUtil` 的默认 sink 为唯一例外）。
 - **SC-004**: `MockEngine` 覆盖的 5 类响应（200 / 401 / 500 / 超时 / 非法 JSON）**全部**映射到预期结果，测试全绿。
 - **SC-005**: release 构建产物运行时不产生任何日志输出（以注入 sink 的 release 变体验证）。
-- **SC-006**: 下游接入成本：新建 feature 模块后，30 分钟内完成「编译通过 + 发起一次 GET 并渲染结果」的最简链路。
+- **SC-006**（跨 feature 验收）: 下游接入成本可计数——新增一个 feature 模块并跑通一次 GET，
+  改动文件 ≤ 4 个（模块构建脚本、`settings.gradle.kts` 注册、service 定义、调用点），无需修改 `:base`。
+  需下游模块才能验证，移到首个业务 feature 验收。
 
 ---
 
 ## 假设
 
-- **包名**：沿用现有 `com.foolproof`，`base` 模块包名 `com.foolproof.base`（宪法 §10-2 包名待拍板，若改名需同步调整）。
+- **包名**：沿用 `com.foolproof`，`base` 模块包名 `com.foolproof.base`（2026-10-20 已由负责人拍板，宪法 §10-2 同步标记为已决）。
 - **Ktor 引擎**：默认使用 OkHttp 引擎（与 Android 生态及后续 Coil 共存，不引入第二套网络栈）。
 - **序列化**：`kotlinx.serialization` + `ContentNegotiation`。
 - **范围外**：导航封装、API service 定义（属 `:common`）、Room、EncryptedSharedPreferences、图片处理、任何业务逻辑与页面。

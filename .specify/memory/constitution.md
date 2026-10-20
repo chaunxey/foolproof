@@ -77,7 +77,7 @@ feature 之间  →  禁止互相依赖
   - `BaseApplication`（Koin 启动入口）
   - `BaseViewModel<S, E>`：`StateFlow<S>` 持状态，`Channel<E>` 发副作用
   - Ktor `HttpClient` 封装：对外只暴露 `get()` / `post()`，支持配置日志、请求头、全局错误拦截
-  - `LogUtil`（object 单例）：仅 debug 打印，输出 `文件名:行号 + 信息`，release 全砍
+  - `LogUtil`（Koin 单例类）：仅 debug 打印，输出 `文件名:行号 + 信息`，release 全砍
 
 - **:common**
 
@@ -178,21 +178,21 @@ items(groupItems) { group ->
 
 ***
 
-## 5. 网络层规范（common/api/）
+## 5. 网络层规范
 
-- 所有 HTTP 请求**只能**在 `common/api/` 目录下定义 service interface
-- feature 模块**禁止**直接 `HttpClient.get/post`、禁止直接 import Ktor 的 request builder
-- feature 只依赖 `common/api/` 暴露的 service 接口，实现由 Koin 提供
+- HTTP 请求统一使用 `:base` 提供的 `NetworkClient`（只暴露 `get` / `post`）；service interface 允许定义在 `common/api/` 或 feature 模块内部，**位置不强制**
+  <!-- v1.3 移除「所有 HTTP 请求只能在 common/api/ 下定义 service interface」的强制约束 -->
+- feature 模块**禁止**直接 `HttpClient.get/post`、禁止直接 import Ktor 的 request builder，也禁止自行构造客户端
 - 统一错误模型：sealed class `ApiResult<T>` / `NetworkError`，业务层不直接捕 `IOException`
 - 请求头、超时、日志开关在 base 的 Ktor 配置里统一管理
-- OpenAI endpoint 常量集中在 `common/api/OpenAiEndpoints.kt`，禁止业务模块写死 URL
+- endpoint 常量集中在 `common/api/OpenAiEndpoints.kt`（或同名常量类），禁止业务模块写死 URL
 
 ***
 
 ## 6. 代码复用规则（补充原规范）
 
 1. 同一 UI 模式 / 同一逻辑**出现第 2 次**就必须抽公共（比原规范的"第 3 次"更严，因为本项目模块多、重复风险高）
-2. API 调用只走 `common/api/`，组件里不准直接 fetch
+2. API 调用统一走 `NetworkClient`（或基于它封装的 service 接口），组件里不准直接 fetch
 3. 工具函数放 `common/util/`，业务层禁止复制粘贴
 4. 跨 feature 需要复用的业务逻辑，下沉到 common 或抽 UseCase，**feature 之间不互引**
 5. 新增公共组件前，先在 common 里搜；找不到再写，写了要登记到第 11 节清单
@@ -264,7 +264,7 @@ AudioRecord(PCM 16k/24k)
 ### 待你拍板
 
 1. ~~Office 转 PDF 方案~~ → 已定：A + Word 截长图曲线方案（§3.4）；Excel v1.1，PPT v1 不做
-2. **包名**：`com.xxx.toolbox`？
+2. ✅ **包名**：定为 `com.foolproof`（v1.3 已决，不再变更；模块包名 `com.foolproof.base` 等）
 3. **minSdk / targetSdk / compileSdk**：建议 minSdk=24，targetSdk=34
 4. **Room 位置**：voice-chat 私有 OK；以后多 feature 共用时是否抽到 common？
 5. **Git 提交规范**：是否启用 Conventional Commits（feat/fix/chore）？
@@ -275,7 +275,7 @@ AudioRecord(PCM 16k/24k)
 
 | 组件 | 位置 | 用途 | 注册时间 |
 | --- | --- | --- | --- |
-| LogUtil | base/log | 统一日志 | 初始 |
+| LogUtil | base/log | 统一日志（Koin 单例，class 非 object） | 初始 |
 | HttpClient | base/network | Ktor 封装（工厂：`createHttpClient`） | 初始 |
 | NavHost 封装 | common/navigation | 导航 | 初始 |
 | EncryptedSP 封装 | common/util | API Key 存储 | 初始 |
@@ -306,3 +306,13 @@ AudioRecord(PCM 16k/24k)
   - 新增依赖：`poi-ooxml-lite`（约 5~10MB），不引 PDFBox
   - 能力范围：v1 支持图片/文本/docx 转 PDF；Excel 延后 v1.1；PPT v1 不做
   - 明确输出为位图 PDF（文字不可选中），UI 需告知用户
+
+- v1.3（2026-10-20，随 `001-base-module` 落地修订）：
+
+  - **§3/§11**：`LogUtil` 由 `object` 改为 **Koin 提供的单例类**，业务侧注入使用。
+    动机：原写法与 §5「依赖经 Koin 提供」自相矛盾，统一为注入后两处一致，且 sink/开关可被测试替换。
+  - **§5**：移除「所有 HTTP 请求只能在 `common/api/` 下定义 service interface」的强制约束；
+    service 可定义在 `common/api/` 或 feature 内部，但**仍禁止**直接操作 `HttpClient` 或自建客户端。
+    动机：base 已提供唯一出口 `NetworkClient`，强制目录位置没有带来额外收益，反而增加跳转成本。
+  - **§6**：代码复用规则第 2 条同步改为「API 调用统一走 `NetworkClient`」。
+  - **§10-2**：包名定为 `com.foolproof`（不再变更）。

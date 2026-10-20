@@ -113,6 +113,7 @@ Foolproof/
 │       └── res/
 ├── base/                           # 架构基建库（详见下方「base 模块」）
 │   ├── build.gradle.kts
+│   ├── consumer-rules.pro          # 随 AAR 提供给消费方的 R8 规则
 │   └── src/
 │       ├── main/java/com/foolproof/base/
 │       │   ├── BaseApplication.kt        # Koin 启动（幂等）
@@ -120,7 +121,7 @@ Foolproof/
 │       │   ├── log/LogUtil.kt            # debug-only 日志
 │       │   ├── mvi/                      # MviContract + BaseViewModel
 │       │   └── network/                  # Ktor 封装 + ApiResult + NetworkError
-│       └── test/java/com/foolproof/base/ # 26 个单元测试
+│       └── test/java/com/foolproof/base/ # 30 个单元测试
 ├── docs/requirements.md            # 原始需求记录（已由宪法取代）
 ├── specs/001-base-module/          # 本 feature 的 spec / plan / tasks
 ├── gradle/
@@ -183,8 +184,8 @@ when (result) {
 }
 ```
 
-**日志**：`LogUtil.d { "..." }`（传 lambda，关闭时零开销），输出形如 `MainActivity.kt:42 D ...`，
-`sk-` 开头的密钥与 `Authorization` 头自动脱敏。
+**日志**：注入 `LogUtil` 后调用 `logUtil.d { "..." }`（传 lambda，关闭时零开销），输出形如 `MainActivity.kt:42 D ...`，
+`sk-` 开头的密钥与 `Authorization` 头自动脱敏。`LogUtil` 由 Koin 提供单例，不再是全局 object。
 
 **应用入口**：`FoolproofApp : BaseApplication()`，需要额外模块时覆写 `koinModules()`。
 
