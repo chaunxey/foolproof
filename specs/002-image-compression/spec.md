@@ -123,7 +123,9 @@ API 24–28 下该入口不可见、仅提供分享，且不申请任何写权�
 
 **压缩能力**
 
-- **FR-005**: 压缩 MUST 使用 `id.zelory:compressor`（zetbaitsu/Compressor），MUST NOT 自研压缩实现或替换为其他库。
+- **FR-005**: 压缩 MUST 采用自研实现（`BitmapFactory` 采样解码 + `Bitmap.compress` 编码），
+  MUST NOT 引入第三方压缩库；拍照方向用 `androidx.exifinterface` 纠正。
+  <!-- 2026-10-21 修订（宪法 v1.9）：原定使用 Compressor（已停更），改为自研。 -->
 - **FR-006**: 输出格式 MUST 限定为 JPEG 与 WebP；质量 MUST 可调（0–100），默认 JPEG / 80。
 - **FR-007**: 系统 MUST 支持一次多选；处理 MUST 串行进行（逐张），并逐张暴露状态。
 - **FR-008**: 结果 MUST 展示原大小、压缩后大小与节省比例；压缩后未变小时 MUST 明确标注「无收益」。
@@ -146,7 +148,7 @@ API 24–28 下该入口不可见、仅提供分享，且不申请任何写权�
 
 **质量**
 
-- **FR-018**: 压缩参数到 Compressor 的映射、HEIC 版本门槛、状态机流转、批量串行与失败隔离 MUST 有单元测试，
+- **FR-018**: 压缩参数映射、HEIC 版本门槛、状态机流转、批量串行与失败隔离 MUST 有单元测试，
   `./gradlew :features:image-compression:testDebugUnitTest` 通过。
 - **FR-019**: 生产代码 MUST NOT 使用 `android.util.Log` / `println`，统一用注入的 `LogUtil`。
 
@@ -177,14 +179,12 @@ API 24–28 下该入口不可见、仅提供分享，且不申请任何写权�
 
 - **选择器**：使用 AndroidX Photo Picker（`androidx.activity` 1.13 已具备），免存储权限；
   不可用时回退 `ACTION_OPEN_DOCUMENT`（同样免权限）。
-- **Compressor 版本**：`id.zelory:compressor:3.0.1`（Maven Central 最新，也是 2021 年的最后发布）。
-  宪法 §2 锁定该库，因此**不替换**；维护停滞的风险在 plan 中记录并给出缓解手段。
+- **压缩实现**：自研（宪法 §2 v1.9）。采样规则见 `BitmapSampling`（长边 > 8192px 或 > 40MP 才降采样），
+  编码用 `Bitmap.compress`，方向用 `androidx.exifinterface` 纠正；不引第三方压缩库、无 native 组件。
+  <!-- 2026-10-21 修订：原方案是 Compressor 3.0.1（2021 停更）；Luban 2 因不支持质量/格式参数而不适用。 -->
 - **输出位置**：应用私有目录 `files/compressed/`；分享经 `FileProvider`。
 - **后台任务**：v1 不引入 WorkManager，压缩仅在前台进行，离开页面即取消（避免新增未登记依赖）。
-- **WebP 编码**：统一使用 `Bitmap.CompressFormat.WEBP`（有损）。
-  <!-- 2026-10-21 修正：原计划 API ≥ 30 用 WEBP_LOSSY，但真机测试证明 Compressor 3.0.1 不认识该常量。 -->
-- **Compressor 的两个坑**（真机测试发现，实现已规避）：它默认会把图缩到 612×816、质量 80，必须显式传
-  `resolution()`；且**输入文件没有扩展名而输出扩展名变化时，它会自算一个不可写的落点**，因此临时输入文件需带目标扩展名。
+- **WebP 编码**：API ≥ 30 使用 `WEBP_LOSSY`，更低版本用 `WEBP`（自研实现可直接选常量）。
 - **不做「目标体积」压缩**：需要反复试压，v1 不做。
 - **范围外**：重复照片清理（另一个 feature，同页但独立模块）、相册批量浏览、云端备份。
 
@@ -205,7 +205,7 @@ API 24–28 下该入口不可见、仅提供分享，且不申请任何写权�
 | --- | --- | --- |
 | FR-001 / FR-002 / FR-003 | §3 模块结构 · §3.2 页面归属（v1.4） | feature 之间禁止互引；同页由 `:app` 组装，feature 只提供 Section + ViewModel |
 | FR-004 | §8 权限最小化 | 不申请 `WRITE_EXTERNAL_STORAGE`（Scoped Storage） |
-| FR-005 | §2 技术栈锁定 | 图片压缩 = Compressor（zetbaitsu），禁止替换 |
+| FR-005 | §2 技术栈锁定（v1.9） | 图片压缩 = 自研（平台解码 + 重编码），不引第三方压缩库 |
 | FR-006 | §1.1 做什么 | 图片压缩输出 WebP/JPEG |
 | FR-007 / FR-012 | §7 简洁优先 · §3.2 约束 | 不预埋抽象；大图分批/采样防 OOM |
 | FR-008 | §1.1 | 工具类应用要有可见结果 |

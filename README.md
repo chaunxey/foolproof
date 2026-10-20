@@ -174,12 +174,13 @@ base → 无业务依赖
 `:features:image-compression`，只对外暴露一个 `CompressionSection`，整页由 `:app` 组装（宪法 §3.2）。
 
 - **零权限**：选图走系统 Photo Picker，写图走应用私有目录 + `FileProvider`；不申请 `READ_MEDIA_*` / `WRITE_*`
-- **压缩**：Compressor（`id.zelory:compressor:3.0.1`），输出 JPEG / WebP，质量 0–100
+- **压缩**：自研实现（`BitmapFactory` 采样 + `Bitmap.compress`），输出 JPEG / WebP，质量 0–100；
+  拍照方向用 `androidx.exifinterface` 纠正，重编码后不保留 EXIF（含定位）
 - **版本门槛**：HEIC 仅在 API ≥ 28 可解码，24–27 提示不支持；「保存到相册」仅 API ≥ 29 出现
 - **行为**：批量串行压缩、单张失败隔离可重试、参数改动 300ms 防抖后出预估体积
 
-> Compressor 3.0.1 的两个坑（真机测试后已在实现里规避）：① 它的默认约束会把图缩到 612×816，需显式传 `resolution()`；
-> ② 输入文件无扩展名而输出扩展名变化时，它会自算一个不可写的落点，因此临时文件要带目标扩展名。
+> 为什么自研而不用现成库（宪法 §2 v1.9）：Compressor 已于 2021 年停更，且有两处隐藏行为需规避；
+> Luban 2 虽在维护，但 API 不接受质量/格式/尺寸参数（自动压到「朋友圈画质」），与「可选参数」的规格不符。
 
 ## base 模块
 

@@ -1,4 +1,4 @@
-# Implementation Plan: 图片压缩（image-compression）
+﻿# Implementation Plan: 图片压缩（image-compression）
 
 **Branch**: `feature_foundation1` | **Date**: 2026-10-20 | **Spec**: [spec.md](./spec.md)
 
@@ -9,7 +9,7 @@
 新增 Android Library `:features:image-compression`，对外只暴露一个 Compose `CompressionSection` 与一个
 `CompressionViewModel`；内部完成「选图 → 参数 → 串行压缩 → 体积对比 → 分享/保存」的完整链路。
 
-技术关键点有三个：**Compressor 停更且传递依赖很老**、**HEIC 的版本门槛**、**免权限的选图与导出**。
+技术关键点有三个：**压缩实现选型（最终改为自研）**、**HEIC 的版本门槛**、**免权限的选图与导出**。
 
 ---
 
@@ -22,7 +22,7 @@
 | 依赖 | 版本 | 用途 | 核对结果 |
 | --- | --- | --- | --- |
 | `:base` | 本工程 | MVI 基类、Koin、`LogUtil` | 已有，33 个测试 |
-| `id.zelory:compressor` | **3.0.1** | 唯一压缩实现（宪法 §2） | 最新版，2021-03 停更 |
+| `androidx.exifinterface:exifinterface` | **1.4.2** | 仅用于纠正拍照方向（压缩为自研） | stdlib 与工程一致 ✅ |
 | `io.coil-kt.coil3:coil-compose` | **3.6.3** | 列表缩略图（宪法 §2 已登记） | stdlib 2.4.10 ✅ |
 | `androidx.activity:activity-compose` | 1.13.0 | Photo Picker（`PickMultipleVisualMedia`） | 工程已有 |
 | Compose BOM | 2026.09.00 | Section UI | 工程已有 |
@@ -38,7 +38,7 @@
 
 **Constraints**:
 - 不申请任何存储权限（读走 Photo Picker，写走私有目录）
-- 压缩必须用 Compressor，不得自研或替换
+- 压缩实现为自研（宪法 §2 v1.9），不得引入第三方压缩库
 - 不引 WorkManager / Room / 网络库（§7 YAGNI）
 
 ---
@@ -48,7 +48,7 @@
 | 宪法条款 | 检查点 | 结论 |
 | --- | --- | --- |
 | §1.2 不做什么 | 不联网、不上传；本模块无网络依赖 | ✅ |
-| §2 技术栈锁定 | Compressor 压缩、Coil 3 加载、Compose UI、Koin 注入；未引入表外库 | ✅ |
+| §2 技术栈锁定 | 自研压缩（平台 API）、Coil 3 加载、Compose UI、Koin 注入；未引入表外库 | ✅ |
 | §3 模块结构 | `:features:image-compression` 仅依赖 `:base`，不依赖其他 feature | ✅ |
 | §3.2 页面归属 | 只暴露 `CompressionSection` + `ViewModel`，整页由 `:app` 组装；顺序为压缩在上 | ✅ |
 | §3.3 HEIC 门槛 | API ≥ 28 处理，24–27 标记 `Unsupported` | ✅ |
@@ -59,7 +59,7 @@
 | §8 权限 | 零权限；不申请 `WRITE_EXTERNAL_STORAGE` / `READ_MEDIA_IMAGES` | ✅ |
 | 质量门槛 | 参数映射、HEIC 门槛、状态机、失败隔离均有单测 | ✅ |
 
-**结论：无违反项。** 唯一需要说明的是 Compressor 停更（见风险与 R1），属宪法已锁定项，不构成违反。
+**结论：无违反项。** 压缩实现已按 v1.9 改为自研，见 R1。
 
 ---
 
@@ -78,7 +78,7 @@ specs/002-image-compression/
 
 ```text
 settings.gradle.kts              # + include(":features:image-compression")
-gradle/libs.versions.toml        # + compressor / coil 版本与库条目
+gradle/libs.versions.toml        # + exifinterface / coil 版本与库条目
 
 features/image-compression/
 ├── build.gradle.kts
@@ -98,7 +98,7 @@ features/image-compression/
     │       │   ├── ImageCompressor.kt          # 接口（测试接缝）
     │       │   └── ResultExporter.kt           # 接口（分享 / 存相册）
     │       ├── data/
-    │       │   ├── CompressorImageCompressor.kt
+    │       │   ├── AndroidImageCompressor.kt
     │       │   ├── MediaStoreResultExporter.kt
     │       │   └── ImageMetadataReader.kt
     │       └── platform/
@@ -124,25 +124,33 @@ app/
 
 ## Research（设计前确认的事实）
 
-### R1. Compressor 的现状与风险
+### R1. 压缩实现选型（2026-10-21 变更：改用自研）
+
+> **本节结论已变更**：原计划使用 Compressor，实施后按负责人决定改为**自研**（宪法 v1.9）。
+> 下面保留原调研与实测记录，作为"为什么放弃第三方库"的证据。
+
+**原方案（Compressor 3.0.1）的问题**
 
 - 坐标 `id.zelory:compressor:3.0.1`，Maven Central 最新版，**2021-03 之后停更**。
-- 传递依赖：`kotlin-stdlib-jdk7:1.3.61` + `kotlinx-coroutines-core:1.3.3`（都很老）。
-  工程显式声明 `kotlinx-coroutines-android:1.11.0`，Gradle 冲突解析会取高版本，行为可控。
-- 它的 `compressToFile(File)` 是**阻塞 API**，必须在 `Dispatchers.IO` 调用；
-  它另有一个基于 Flow 的 API，但我们不用（避免与 1.3.3 时代的 Flow 语义纠缠）。
+- 传递依赖很老：`kotlin-stdlib-jdk7:1.3.61` + `kotlinx-coroutines-core:1.3.3`。
+- 真机实测（API 34 模拟器）暴露三个隐藏行为：
+  1. `DefaultConstraint` 默认把图缩到 **612×816 / 质量 80** —— 不显式传 `resolution()` 就是"缩图"而非"压缩"；
+  2. 传 `WEBP_LOSSY`（API 30+ 常量）会失败：它只认 `JPEG/PNG/WEBP`；
+  3. 输入文件**无扩展名**且输出扩展名变化时，会自算一个不可写落点（`/data/user/0/<包名>.<ext>`）→ `EACCES`。
 
-**缓解**：所有参数映射收敛到一个 `CompressionOption.toCompressFormat()` + 一个 `CompressRequest`，
-用单测把「质量、格式、SDK 分支」锁住。将来它若行为变化，测试先红，而不是线上才发现。
+**评估过的替代品**
 
-**真机测试补充的三个实测结论（2026-10-21，API 34 模拟器）**：
+| 候选 | 结论 |
+| --- | --- |
+| `top.zibin:luban:2.0.3`（Luban 2，2026-10 更新） | **不适用**：API 只有 `(context, uri/file, outputDir)`，不接受质量/格式/尺寸参数；策略是自动压到「微信朋友圈画质」（默认 1440px 短边），并引入 TurboJPEG native 库（每 ABI 0.5–1MB） |
+| `PixelDiet` | 未查到任何公开资料（Maven / GitHub / 搜索均无） |
 
-1. `DefaultConstraint` 默认把图缩到 **612×816 / 质量 80** —— 必须显式 `resolution()` 覆盖，否则"压缩"变"缩图"；
-2. 传 `Bitmap.CompressFormat.WEBP_LOSSY`（API 30+ 常量）会失败：Compressor 3.0.1 只认 `JPEG/PNG/WEBP`。
-   因此统一用 `WEBP`，`PlatformCapabilities.useLossyWebp` 已删除；
-3. 输入文件**没有扩展名**且输出扩展名变化时，它会自算一个不可写的落点
-   （实测为 `/data/user/0/<包名>.<ext>`）→ `EACCES`。修法：临时输入文件带上目标扩展名，
-   并在返回路径与目标不一致时做一次兜底搬移。
+**最终方案：自研**
+
+- `BitmapFactory` 采样解码（复用已有的 `BitmapSampling`）+ `Bitmap.compress` 编码；
+- `androidx.exifinterface:exifinterface:1.4.2` 仅用于纠正拍照方向（重编码不写回 EXIF，满足 FR-017）；
+- 收益：无第三方压缩算法、无 native 库、无停更风险，质量/格式/尺寸完全可控；
+- 代价：约 150 行实现，但**既有 4 条仪器化测试原样复用**（只改类名），证明行为等价。
 
 ### R2. Photo Picker 的回退不是我们的事
 
@@ -181,7 +189,7 @@ fun CompressionSection(modifier: Modifier = Modifier)
 
 | 接缝 | 为什么必须 |
 | --- | --- |
-| `ImageCompressor` 接口 | Compressor 需要真实 `Context`，JVM 单测跑不了；接口让 ViewModel 可测 |
+| `ImageCompressor` 接口 | 压缩实现需要真实 `Context`（ContentResolver / Bitmap），JVM 单测跑不了；接口让 ViewModel 可测 |
 | `PlatformCapabilities.sdkInt` 可注入 | HEIC 门槛与 WebP 常量分支必须能测两个 SDK 分支 |
 | `BitmapSampling.calculateInSampleSize()` 纯函数 | 采样算法是最容易写错的地方，必须单测 |
 
@@ -238,14 +246,14 @@ interface ResultExporter {
 ```
 
 - 输出文件名：`{原名去扩展}_q{质量}.{jpg|webp}`，重名追加 `_1`、`_2`；
-- 不复制 EXIF（Compressor 重编码本身不保留；我们也不主动写回）→ FR-017。
+- 不写回 EXIF：方向被"烘焙"进像素，重编码后不携带 GPS 等元数据 → FR-017。
 
 ### D7. 组装与 Koin
 
 ```kotlin
 // :features:image-compression
 val imageCompressionModule = module {
-    single<ImageCompressor> { CompressorImageCompressor(get()) }
+    single<ImageCompressor> { AndroidImageCompressor(get(), get()) }
     single { ImageMetadataReader(get()) }
     single<ResultExporter> { MediaStoreResultExporter(get(), get()) }
     viewModel { CompressionViewModel(get(), get(), get()) }
@@ -262,9 +270,9 @@ override fun koinModules() = super.koinModules() + imageCompressionModule
 
 ## 实施顺序（供 /speckit-tasks 拆解）
 
-1. **骨架**：settings 注册、版本目录加 compressor/coil、模块 build 脚本、空 Manifest、空 Section，`:features:image-compression:assembleDebug` 通过
+1. **骨架**：settings 注册、版本目录加 exifinterface/coil、模块 build 脚本、空 Manifest、空 Section，`:features:image-compression:assembleDebug` 通过
 2. **纯逻辑 + 单测**：`CompressionOption` 映射、`PlatformCapabilities`（HEIC 门槛）、`BitmapSampling`（采样计算）
-3. **数据层**：`ImageMetadataReader`、`CompressorImageCompressor`、`MediaStoreResultExporter`（含 FileProvider 配置）
+3. **数据层**：`ImageMetadataReader`、`AndroidImageCompressor`、`MediaStoreResultExporter`（含 FileProvider 配置）
 4. **ViewModel + 单测**：状态机、串行与失败隔离、取消、采样预览防抖
 5. **UI**：`CompressionSection`（列表、参数区、进度、结果行）+ Preview
 6. **集成**：`:app` 依赖、`CompressionTabScreen`、Koin 追加、`:app:assembleDebug`
@@ -280,7 +288,7 @@ override fun koinModules() = super.koinModules() + imageCompressionModule
 
 | 风险 | 影响 | 缓解 |
 | --- | --- | --- |
-| Compressor 停更、传递依赖过老 | 未来与新 AGP/Kotlin 不兼容 | 版本锁定 + 参数映射单测；`compressToFile` 只在 IO 线程调用；已记录替代评估入口（宪法 §2 变更流程） |
+| 自研解码/编码在极端输入上的健壮性 | 崩溃或产出异常 | 采样有上限、输入防御（尺寸<=0）、仪器化测试覆盖 JPEG/WebP 两条路径 |
 | Photo Picker 在无 Play Services 的国产 ROM 上表现不一 | 选图入口失效 | 依赖 androidx 内部回退；真机冒烟覆盖一台国产 ROM |
 | 大图 OOM | 崩溃 | 先 bounds + 采样；串行处理；SC-003 作为验收指标 |
 | FileProvider authority 与其他模块冲突 | 安装期 manifest 合并失败 | authority 用 `${applicationId}.imagecompression` 保证唯一 |

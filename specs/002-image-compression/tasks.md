@@ -120,6 +120,9 @@
 - [x] T045 新增仪器化测试并在 API 34 模拟器跑通（4 条）：Compressor 管线（含输出尺寸不变）、WebP 输出可解码、
   API ≥ 29 免权限写入 MediaStore、SDK 能力判定。实测暴露并修复了 Compressor 的两个坑
   （612×816 默认尺寸、扩展名变化时落点错误）
+- [x] T046 按负责人决定把压缩实现从 Compressor 换成**自研**（宪法 v1.9）：`BitmapFactory` 采样 +
+  `Bitmap.compress` + `exifinterface` 纠正方向；移除 Compressor 依赖、新增 AndroidImageCompressor、
+  DI 与仪器化测试同步。**4 条仪器化测试原样通过**，证明行为等价
 
 ---
 

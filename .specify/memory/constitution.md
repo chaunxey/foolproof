@@ -11,7 +11,7 @@
 
 纯本地工具 App，5 个功能：
 
-1. 图片压缩（Compressor SDK，输出 WebP/JPEG）
+1. 图片压缩（自研：平台解码 + 重编码，输出 WebP/JPEG）
 2. 重复照片清理（dHash/pHash + 汉明距离分组）
 3. 多张图片合并生成 PDF
 4. 本地文件转 PDF
@@ -37,7 +37,7 @@
 | 网络 | **Ktor Client** | 不用 Retrofit；统一封装在 base |
 | 序列化 | kotlinx.serialization | Ktor 官方配套 |
 | 导航 | **Jetpack Navigation 3** | 封装在 common，禁止业务模块自己写 NavHost |
-| 图片压缩 | **Compressor** (zetbaitsu) | https://github.com/zetbaitsu/Compressor |
+| 图片压缩 | **自研**（`BitmapFactory` + `Bitmap.compress`） | 不引第三方压缩库；`androidx.exifinterface` 仅用于纠正方向 |
 | 图片加载 | **Coil 3** | 业务模块禁止直接 new ImageLoader |
 | 本地存储 | **Room** + **EncryptedSharedPreferences** | 会话历史用 Room；API Key 必须用 EncryptedSP |
 | 语音端点 | Silero VAD（ONNX，本地） | 不用服务端 VAD |
@@ -311,6 +311,7 @@ AudioRecord(PCM 16k/24k)
 | NetworkClient | base/network | 唯一网络出口，只暴露 get/post | 2026-10-20（001-base-module） |
 | ApiResult / NetworkError | base/network | 统一结果与错误模型 | 2026-10-20（001-base-module） |
 | BaseApplication | base | Koin 启动（幂等） | 2026-10-20（001-base-module） |
+| AndroidImageCompressor | features/image-compression/data | 自研压缩实现（采样 + 重编码 + EXIF 方向） | 2026-10-21（002-image-compression） |
 | （后续新增在此登记） |  |  |  |
 
 ***
@@ -390,3 +391,13 @@ AudioRecord(PCM 16k/24k)
 
   - **§3.2**：明确同页的纵向顺序——图片压缩区在上、重复照片清理区在下（`002-image-compression` 规格拍板）。
     动机：页面结构归 §3.2 管，顺序若只写在 feature 规格里，将来两个模块各写一遍就会漂移。
+
+- v1.9（2026-10-21）：
+
+  - **§2 / §1.1**：图片压缩由「Compressor (zetbaitsu)」改为**自研**（`BitmapFactory` 采样解码 +
+    `Bitmap.compress` 编码，`androidx.exifinterface` 仅用于纠正拍照方向）。
+    动机：① Compressor 自 2021 年停更，且实测存在两个隐藏行为（默认把图缩到 612×816、
+    输入无扩展名且输出扩展名变化时会写到不可写路径），需要额外规避；
+    ② 社区替代 Luban 2（`top.zibin:luban:2.0.3`，维护中）的 API **不接受质量/格式/尺寸参数**，
+    其策略是自动压到「微信朋友圈画质」，与 §1.1 要求的「用户可选 WebP/JPEG」不符，不能平替；
+    ③ 自研仅依赖平台 API，无 native 库、无停更风险，且既有仪器化测试可原样复用。
