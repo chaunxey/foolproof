@@ -11,23 +11,23 @@
 错误统一映射为 `ApiResult`）、`LogUtil`（debug-only、带文件名行号、敏感串脱敏）。
 
 技术上无业务逻辑、无 UI、不依赖 `:app`/`:common`/feature 模块。真正的难点不在代码量，而在
-**依赖版本必须与工程现有的 Kotlin 2.2.10 对齐**（见 Research）。
+**依赖版本已按工程实际的 Kotlin 2.4.21 校验，各库取最新稳定版**（见 Research R1）。
 
 ---
 
 ## Technical Context
 
-**Language/Version**: Kotlin 2.2.10（由 AGP 9.4.1 内置编译），JVM Target 11
+**Language/Version**: Kotlin 2.4.21（AGP 9.4.1 内置编译），JVM Target 11
 
 **Primary Dependencies**（版本已逐个核对 Maven Central POM，见 Research）
 
 | 库 | 版本 | 用途 |
 | --- | --- | --- |
-| io.ktor:ktor-client-core / -okhttp / -content-negotiation / -logging | 3.3.3 | 网络客户端与序列化协商 |
-| org.jetbrains.kotlinx:kotlinx-serialization-json | 1.9.0 | JSON 序列化 |
-| io.insert-koin:koin-android / koin-test | 4.1.1 | 依赖注入 |
-| org.jetbrains.kotlinx:kotlinx-coroutines-android / -test | 1.10.2 | 协程（与 Ktor 3.3.3 对齐） |
-| io.ktor:ktor-client-mock | 3.3.3（test） | 网络层单元测试 |
+| io.ktor:ktor-client-core / -okhttp / -content-negotiation / -logging | 3.6.0 | 网络客户端与序列化协商 |
+| org.jetbrains.kotlinx:kotlinx-serialization-json | 1.12.0 | JSON 序列化 |
+| io.insert-koin:koin-android / koin-test | 4.2.2 | 依赖注入 |
+| org.jetbrains.kotlinx:kotlinx-coroutines-android / -test | 1.11.0 | 协程（与 Ktor 3.6.0 对齐） |
+| io.ktor:ktor-client-mock | 3.6.0（test） | 网络层单元测试 |
 | junit | 4.13.2（已有） | 单元测试 |
 
 **Storage**: N/A（`base` 不持有任何持久化数据；API Key 等存储属 `:common`）
@@ -41,7 +41,7 @@
 **Performance Goals**: 网络请求开销可忽略（薄封装）；`LogUtil` 关闭时必须是**零分配零 IO**（release 不产生字符串拼接）
 
 **Constraints**:
-- 依赖版本上限由 Kotlin 2.2.10 决定：Ktor 不得高于 3.3.x、serialization 不得高于 1.9.x、Koin 不得高于 4.1.x
+- 依赖版本受 Kotlin 2.4.21 的 metadata 上限约束：升级任何库前，先确认其编译期 Kotlin ≤ 2.4.21
 - `:base` 不得引入 Compose（UI 依赖不该下沉到库模块），也不申请任何 Android 权限
 - release 构建中日志与网络日志必须完全静默
 
@@ -68,8 +68,8 @@
 
 **结论：无违反项，`Complexity Tracking` 留空。**
 
-> 唯一需要向负责人明示的技术约束：**不能用各库的最新版**。这不是宪法冲突，而是工程现有
-> Kotlin 版本（AGP 9 内置 2.2.10）对二进制兼容性的硬限制，取舍理由见 Research。
+> 实施结果说明：依赖取各库最新稳定版（Ktor 3.6.0 / serialization 1.12.0 / Koin 4.2.2 / coroutines 1.11.0），
+> 与工程 Kotlin 2.4.21 兼容，已通过构建与 26 个单测验证。详见 Research R1 的修正记录。
 
 ---
 
@@ -128,21 +128,27 @@ app/
 
 ## Research（Phase 0 结论）
 
-### R1. 依赖版本必须回退，不能取最新
+### R1. 依赖版本：取各库最新稳定版（已按 Kotlin 2.4.21 校验）
 
-逐个抓取 Maven Central 的 POM，读取各库声明的 `kotlin-stdlib` 版本（等价于其编译期 Kotlin）：
+> **修正记录（实施阶段发现）**：本计划初稿基于「Kotlin 2.2.10」，曾得出「必须回退版本」的结论。
+> 实际工程在计划撰写前已升级到 **Kotlin 2.4.21**（`libs.versions.toml`，Gradle 9.8.2），
+> 该结论随之作废。以下为按 2.4.21 重新核对的结果。
 
-| 库 | 最新版 | 其 stdlib | 可用版本 | 其 stdlib |
-| --- | --- | --- | --- | --- |
-| Ktor | 3.6.0 | **2.3.21** ❌ | **3.3.3** | 2.2.21 ✅ |
-| kotlinx-serialization-json | 1.12.0 | **2.4.10** ❌ | **1.9.0** | 2.2.0 ✅ |
-| Koin | 4.2.2 | **2.3.20** ❌ | **4.1.1** | 2.1.21 ✅ |
+逐个抓取 Maven Central 的 POM，读取各库声明的 `kotlin-stdlib` 版本（等价于其编译期 Kotlin），
+与工程的 Kotlin 2.4.21 对比：
 
-**结论**：工程 Kotlin 为 2.2.10，Kotlin 编译器不能读取比自身更新的 metadata，因此三个库都取
-「最后一批用 2.2.x 编译的稳定版」。这三个版本同时互相兼容（Ktor 3.3.3 依赖 coroutines 1.10.2）。
+| 库 | 采用版本 | 其 stdlib | 与 2.4.21 兼容 |
+| --- | --- | --- | --- |
+| Ktor | **3.6.0**（最新） | 2.3.21 | ✅ |
+| kotlinx-serialization-json | **1.12.0**（最新） | 2.4.10 | ✅ |
+| Koin | **4.2.2**（最新） | 2.3.20 | ✅ |
+| kotlinx-coroutines | **1.11.0**（最新） | 2.2.x | ✅ |
 
-**后续升级路径**：等 AGP 9 内置 Kotlin 升到 2.3+ 后，再统一升 Ktor 3.6 / serialization 1.12 / Koin 4.2。
-升级属于宪法 §2 的「版本变更」，需负责人确认，并在 `libs.versions.toml` 一处改完。
+**结论**：Kotlin 编译器无法读取比自身更新的 metadata，而三个库的编译期 Kotlin 均 ≤ 2.4.21，
+因此**直接取最新稳定版即可**。实际构建（debug + release + 26 个单测）已验证通过。
+
+**教训**：做版本决策前必须先读当前工程的真实版本，不能沿用会话早期的快照——
+本次差点把整个依赖栈无谓地降级两个大版本。
 
 ### R2. 测试栈不引入新框架
 
@@ -244,8 +250,8 @@ val baseModule = module {
 
 ### D5. 版本目录
 
-在 `gradle/libs.versions.toml` 增加 `[versions]` 三元组：
-`ktor = "3.3.3"`、`koin = "4.1.1"`、`serialization = "1.9.0"`、`coroutines = "1.10.2"`，
+在 `gradle/libs.versions.toml` 增加 `[versions]` 条目：
+`ktor = "3.6.0"`、`koin = "4.2.2"`、`kotlinxSerialization = "1.12.0"`、`kotlinxCoroutines = "1.11.0"`，
 以及 libraries 条目；`:base` 与 `:app` 都从目录取版本（宪法 §2：禁止硬编码）。
 
 ---
@@ -270,7 +276,7 @@ val baseModule = module {
 
 | 风险 | 影响 | 缓解 |
 | --- | --- | --- |
-| 依赖版本回退后与 Compose BOM / AGP 9 产生传递冲突 | 编译失败 | 先做最小依赖引入（步骤 1）并 `assembleDebug` 验证，再写代码 |
-| Ktor 3.3.3 与 minSdk 24 的 API 兼容（OkHttp 引擎版本） | 运行时 `NoSuchMethodError` | OkHttp 由 Ktor 传递引入，构建后检查 `minSdk` lint 报告 |
+| 依赖版本与 Compose BOM / AGP 9 产生传递冲突 | 编译失败 | 先做最小依赖引入（步骤 1）并 `assembleDebug` 验证，再写代码 |
+| Ktor 3.6.0 与 minSdk 24 的 API 兼容（OkHttp 引擎版本） | 运行时 `NoSuchMethodError` | OkHttp 由 Ktor 传递引入，构建后检查 `minSdk` lint 报告 |
 | `NetworkClient` 泛型 + 序列化在 R8 后被裁 | 线上崩溃 | 步骤 7 的 release 冒烟验证，必要时补 keep 规则 |
 | `LogUtil` 栈帧定位在不同混淆级别下失效 | 行号错 | release 关闭日志，天然规避；debug 不混淆 |

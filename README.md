@@ -24,9 +24,13 @@
 | 组件 | 版本 | 说明 |
 | --- | --- | --- |
 | Android Gradle Plugin | 9.4.1 | 使用 AGP 9 的新版 DSL（见下方「AGP 9 约定」） |
-| Gradle | 9.6.0 | 已启用 Configuration Cache |
-| Kotlin | 2.2.10 | 仅应用 Compose 编译器插件，Kotlin 编译由 AGP 内置支持 |
-| Jetpack Compose | BOM 2026.02.01 | Material 3 + 动态取色（Android 12+） |
+| Gradle | 9.8.2 | 已启用 Configuration Cache |
+| Kotlin | 2.4.21 | 仅应用 Compose / Serialization 插件，Kotlin 编译由 AGP 内置支持 |
+| Jetpack Compose | BOM 2026.09.00 | Material 3 + 动态取色（Android 12+） |
+| Koin | 4.2.2 | `:base` 的依赖注入 |
+| Ktor Client | 3.6.0 | `:base` 的统一网络出口（OkHttp 引擎） |
+| kotlinx.serialization | 1.12.0 | JSON 序列化 |
+| kotlinx.coroutines | 1.11.0 | 协程与测试构件 |
 | compileSdk / targetSdk | 37 | 宪法 §10 建议 targetSdk=34，**待拍板** |
 | minSdk | 24 | Android 7.0，与宪法一致 |
 | JVM Target | Java 11 | 编译期 JDK 为 JetBrains Runtime 25 |
@@ -35,9 +39,6 @@
 
 | 类别 | 选型 | 说明 |
 | --- | --- | --- |
-| 依赖注入 | Koin | 不用 Hilt / Dagger |
-| 架构 | MVI（StateFlow + Channel） | 由 `:base` 统一封装 |
-| 网络 | Ktor Client + kotlinx.serialization | 不用 Retrofit；统一封装在 `:base` |
 | 导航 | Jetpack Navigation 3 | 封装在 `:common`，业务模块不写 NavHost |
 | 图片加载 | Coil 3 | 禁止在业务模块直接 new ImageLoader |
 | 本地存储 | Room + EncryptedSharedPreferences | 会话历史 / API Key 存储 |
@@ -98,39 +99,46 @@ Windows 下用 `gradlew.bat`。安装到已连接设备/模拟器：
 
 ## 项目结构
 
-当前仓库仍为单模块（`:app`）模板：
-
 ```
 Foolproof/
-├── app/
-│   ├── build.gradle.kts          # 模块配置（AGP 9 DSL）
+├── app/                            # 应用壳
+│   ├── build.gradle.kts
+│   └── src/main/
+│       ├── AndroidManifest.xml
+│       ├── java/com/foolproof/
+│       │   ├── FoolproofApp.kt          # 继承 BaseApplication，启动 Koin
+│       │   ├── MainActivity.kt          # 入口 Activity（Compose）
+│       │   └── ui/theme/                # Material 3 主题
+│       ├── keepRules/rules.keep         # R8 混淆规则（AGP 9 新位置）
+│       └── res/
+├── base/                           # 架构基建库（详见下方「base 模块」）
+│   ├── build.gradle.kts
 │   └── src/
-│       ├── main/
-│       │   ├── AndroidManifest.xml
-│       │   ├── java/com/foolproof/
-│       │   │   ├── MainActivity.kt      # 唯一入口 Activity（Compose）
-│       │   │   └── ui/theme/            # Material 3 主题：Color / Type / Theme
-│       │   ├── keepRules/rules.keep     # R8 混淆规则（AGP 9 新位置）
-│       │   └── res/                     # 资源与图标
-│       ├── test/                        # 本地单元测试
-│       └── androidTest/                 # 仪器化测试
-├── docs/requirements.md          # 原始需求记录（已由宪法取代）
+│       ├── main/java/com/foolproof/base/
+│       │   ├── BaseApplication.kt        # Koin 启动（幂等）
+│       │   ├── di/BaseModule.kt          # 容器装配
+│       │   ├── log/LogUtil.kt            # debug-only 日志
+│       │   ├── mvi/                      # MviContract + BaseViewModel
+│       │   └── network/                  # Ktor 封装 + ApiResult + NetworkError
+│       └── test/java/com/foolproof/base/ # 26 个单元测试
+├── docs/requirements.md            # 原始需求记录（已由宪法取代）
+├── specs/001-base-module/          # 本 feature 的 spec / plan / tasks
 ├── gradle/
-│   ├── libs.versions.toml        # 依赖版本目录
-│   └── wrapper/                  # Gradle Wrapper 9.6
-├── .specify/                     # spec-kit 脚手架：模板、脚本、工作流、宪法
-├── .dsh/skills/                  # 本项目的 speckit 命令技能
-├── .gitattributes                # 换行符规范（gradlew 保持 LF）
-└── build.gradle.kts              # 根构建脚本
+│   ├── libs.versions.toml          # 依赖版本目录
+│   └── wrapper/                    # Gradle Wrapper 9.8.2
+├── .specify/                       # spec-kit：模板、脚本、工作流、宪法
+├── .dsh/skills/                    # 本项目的 speckit 命令技能
+├── .gitattributes                  # 换行符规范（gradlew 保持 LF）
+└── build.gradle.kts                # 根构建脚本
 ```
 
-## 模块规划（宪法 §3，尚未创建）
+## 模块规划（宪法 §3）
 
 ```
-:app                             # 底部导航壳，不写业务
-:base                            # MVI 基类、Koin、Ktor 封装、LogUtil、BaseApplication
-:common                          # 导航封装、common/api 网络出口、通用工具
-:features:image-compression      # 功能 1
+:app                             # 底部导航壳，不写业务            ✅ 已建
+:base                            # MVI 基类、Koin、Ktor 封装、日志  ✅ 已建
+:common                          # 导航封装、common/api、通用工具    ⏳ 待建
+:features:image-compression      # 功能 1                          ⏳ 待建
 :features:duplicate-cleanup      # 功能 2（UI 与 image-compression 同页）
 :features:file-conversion        # 功能 3 + 4
 :features:voice-chat             # 功能 5
@@ -146,6 +154,41 @@ base → 无业务依赖
 ```
 
 底部导航 3 个 tab：图片压缩 / 文件转换 / AI 语音聊天。
+
+## base 模块
+
+`base` 提供四件地基，业务模块只依赖它、不重复造轮子。
+
+**MVI**：继承 `BaseViewModel<S, E>`，状态用 `updateState`，副作用用 `sendEffect`。
+
+```kotlin
+data class PhotoState(val count: Int = 0) : UiState
+sealed interface PhotoEffect : UiEffect { data object Saved : PhotoEffect }
+
+class PhotoViewModel : BaseViewModel<PhotoState, PhotoEffect>(PhotoState()) {
+    override fun onAction(action: UiAction) {
+        updateState { it.copy(count = it.count + 1) }
+        sendEffect(PhotoEffect.Saved)
+    }
+}
+```
+
+**网络**：从容器取 `NetworkClient`，只调 `get` / `post`，失败不抛异常。
+
+```kotlin
+val result: ApiResult<Model> = networkClient.get("models", query = mapOf("page" to "1"))
+when (result) {
+    is ApiResult.Success -> render(result.data)
+    is ApiResult.Failure -> toast(result.error.describe())
+}
+```
+
+**日志**：`LogUtil.d { "..." }`（传 lambda，关闭时零开销），输出形如 `MainActivity.kt:42 D ...`，
+`sk-` 开头的密钥与 `Authorization` 头自动脱敏。
+
+**应用入口**：`FoolproofApp : BaseApplication()`，需要额外模块时覆写 `koinModules()`。
+
+> 约定：`:base` 不含 UI、不申请权限、不发起任何请求；网络客户端全项目唯一，业务模块不得自行创建。
 
 ## AGP 9 约定
 

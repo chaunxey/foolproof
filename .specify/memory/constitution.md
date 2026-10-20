@@ -275,10 +275,15 @@ AudioRecord(PCM 16k/24k)
 
 | 组件 | 位置 | 用途 | 注册时间 |
 | --- | --- | --- | --- |
-| LogUtil | base/util | 统一日志 | 初始 |
-| HttpClient | base/network | Ktor 封装 | 初始 |
+| LogUtil | base/log | 统一日志 | 初始 |
+| HttpClient | base/network | Ktor 封装（工厂：`createHttpClient`） | 初始 |
 | NavHost 封装 | common/navigation | 导航 | 初始 |
 | EncryptedSP 封装 | common/util | API Key 存储 | 初始 |
+| BaseViewModel\<S, E\> | base/mvi | MVI 基类（StateFlow + Channel） | 2026-10-20（001-base-module） |
+| MviContract（UiState / UiEffect / UiAction） | base/mvi | MVI 标记接口 | 2026-10-20（001-base-module） |
+| NetworkClient | base/network | 唯一网络出口，只暴露 get/post | 2026-10-20（001-base-module） |
+| ApiResult / NetworkError | base/network | 统一结果与错误模型 | 2026-10-20（001-base-module） |
+| BaseApplication | base | Koin 启动（幂等） | 2026-10-20（001-base-module） |
 | （后续新增在此登记） |  |  |  |
 
 ***
