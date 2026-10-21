@@ -1,11 +1,9 @@
 package com.foolproof.ui.settings
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
-import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,19 +19,22 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.foolproof.R
 import androidx.compose.ui.window.Dialog
+import com.foolproof.R
 import kotlin.math.roundToInt
 
-/** 设置页：字体大小 + 语言。字体即时生效；语言切换后重建 Activity 让资源重新加载。 */
+/**
+ * 设置页：字体大小 + 语言。
+ *
+ * 两者都即时生效：字体改 Density.fontScale；语言替换 CompositionLocal 里的
+ * Context/Configuration，**不重建 Activity**。选完语言直接关闭弹窗回到首页。
+ */
 @Composable
 fun SettingsDialog(onDismiss: () -> Unit) {
     val scale by SettingsStore.fontScale.collectAsState()
     val language by SettingsStore.language.collectAsState()
-    val context = LocalContext.current
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(shape = MaterialTheme.shapes.large, tonalElevation = 6.dp) {
@@ -62,26 +63,14 @@ fun SettingsDialog(onDismiss: () -> Unit) {
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(top = 16.dp),
                 )
-                Row(
-                    modifier = Modifier.padding(top = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    AppLanguage.entries.forEach { option ->
-                        FilterChip(
-                            selected = language == option,
-                            onClick = {
-                                if (language != option) {
-                                    SettingsStore.setLanguage(context, option)
-                                    // 33+ 由系统按 LocaleManager 重建；低版本自己重建才能重载资源
-                                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                                        context.findActivity()?.recreate()
-                                    }
-                                }
-                            },
-                            label = { Text(stringResource(option.labelRes())) },
-                        )
-                    }
-                }
+                LanguageChips(
+                    current = language,
+                    onSelect = {
+                        SettingsStore.setLanguage(it)
+                        // 需求：切换语言后回到首页
+                        onDismiss()
+                    },
+                )
 
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
@@ -98,18 +87,20 @@ fun SettingsDialog(onDismiss: () -> Unit) {
     }
 }
 
-/** 语言选项 → 可翻译的显示名（总是用各自语言显示自己）。 */
-private fun AppLanguage.labelRes(): Int = when (this) {
-    AppLanguage.SYSTEM -> R.string.settings_language_system
-    AppLanguage.CHINESE -> R.string.settings_language_zh
-    AppLanguage.ENGLISH -> R.string.settings_language_en
-}
-
-private fun Context.findActivity(): Activity? {
-    var current: Context? = this
-    while (current is ContextWrapper) {
-        if (current is Activity) return current
-        current = current.baseContext
+/** 6 个选项用 FlowRow，窄屏自动换行。 */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun LanguageChips(current: AppLanguage, onSelect: (AppLanguage) -> Unit) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        AppLanguage.entries.forEach { option ->
+            FilterChip(
+                selected = current == option,
+                onClick = { if (current != option) onSelect(option) },
+                label = { Text(stringResource(option.labelRes)) },
+            )
+        }
     }
-    return null
 }
