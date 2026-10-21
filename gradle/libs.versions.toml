@@ -19,6 +19,7 @@ kotlinxCoroutines = "1.11.0"
 exifinterface = "1.4.2"
 coil = "3.6.3"
 media3 = "1.11.1"
+camerax = "1.4.2"
 # 广告
 audienceNetwork = "6.22.0"
 
@@ -67,6 +68,10 @@ coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref 
 # 视频压缩（Media3）
 media3-transformer = { group = "androidx.media3", name = "media3-transformer", version.ref = "media3" }
 media3-effect = { group = "androidx.media3", name = "media3-effect", version.ref = "media3" }
+androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "camerax" }
+androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
 
 # 广告
 audience-network = { group = "com.facebook.android", name = "audience-network-sdk", version.ref = "audienceNetwork" }

@@ -40,4 +40,10 @@
     <string name="conversion_msg_text_too_large">Textdatei zu groß (Limit 2 MB)</string>
     <string name="conversion_msg_no_share_app">Keine App zum Teilen verfügbar</string>
     <string name="conversion_msg_no_pdf_app">Keine App zum Öffnen von PDFs verfügbar</string>
+    <string name="camera_flash">Blitz</string>
+    <string name="camera_close">Schließen</string>
+    <string name="conversion_camera_denied">Kamera-Berechtigung erforderlich</string>
+    <string name="conversion_take_photo">Foto aufnehmen</string>
+    <string name="camera_error">Aufnahme fehlgeschlagen, bitte erneut versuchen</string>
+    <string name="camera_switch">Kamera wechseln</string>
 </resources>

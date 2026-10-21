@@ -1,6 +1,8 @@
 package com.foolproof.features.conversion.ui
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
@@ -30,6 +32,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.collectAsState
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import android.content.Intent
 import java.io.File
@@ -51,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import com.foolproof.base.ads.AdGateProvider
 import com.foolproof.base.ads.FeatureId
 import com.foolproof.common.ui.FoolproofButton
+import com.foolproof.common.ui.FoolproofSecondaryButton
 import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.ByteFormat
 import com.foolproof.base.util.findActivity
@@ -80,6 +84,19 @@ fun FileConversionSection(
     val context = LocalContext.current
     val activity = context.findActivity()
     var message by remember { mutableStateOf<Pair<Int, Boolean>?>(null) }
+    var showCamera by remember { mutableStateOf(false) }
+    val hasCamera = remember {
+        context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
+    }
+    val cameraPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) {
+            showCamera = true
+        } else {
+            message = R.string.conversion_camera_denied to true
+        }
+    }
 
     // 每成功生成一次 PDF 记一次
     LaunchedEffect(state.phase) {
@@ -173,24 +190,40 @@ fun FileConversionSection(
 
         when (state.mode) {
             ConversionMode.IMAGES -> {
-                OutlinedButton(
-                    onClick = {
-                        imagePicker.launch(
-                            PickVisualMediaRequest(
-                                ActivityResultContracts.PickVisualMedia.ImageOnly,
-                            ),
-                        )
-                    },
-                    enabled = !state.isConverting,
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(top = 12.dp),
                 ) {
-                    Text(
-                        if (state.images.isEmpty()) {
+                    FoolproofSecondaryButton(
+                        text = if (state.images.isEmpty()) {
                             stringResource(R.string.conversion_pick_images)
                         } else {
                             stringResource(R.string.conversion_add_images)
                         },
+                        onClick = {
+                            imagePicker.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly,
+                                ),
+                            )
+                        },
+                        enabled = !state.isConverting,
                     )
+                    if (hasCamera) {
+                        FoolproofSecondaryButton(
+                            text = stringResource(R.string.conversion_take_photo),
+                            onClick = {
+                                val granted = ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.CAMERA,
+                                ) == PackageManager.PERMISSION_GRANTED
+                                if (granted) showCamera = true else {
+                                    cameraPermission.launch(Manifest.permission.CAMERA)
+                                }
+                            },
+                            enabled = !state.isConverting,
+                        )
+                    }
                 }
 
                 if (state.images.isNotEmpty()) {
@@ -370,6 +403,16 @@ fun FileConversionSection(
                 }
             }
         }
+    }
+
+    if (showCamera) {
+        CameraCaptureDialog(
+            onDismiss = { showCamera = false },
+            onCaptured = { uri ->
+                showCamera = false
+                viewModel.dispatch(ConversionAction.ImagesPicked(listOf(uri)))
+            },
+        )
     }
 }
 

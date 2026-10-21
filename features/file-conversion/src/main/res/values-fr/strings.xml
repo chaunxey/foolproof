@@ -40,4 +40,10 @@
     <string name="conversion_msg_text_too_large">Fichier texte trop volumineux (limite 2 MB)</string>
     <string name="conversion_msg_no_share_app">Aucune application pour partager</string>
     <string name="conversion_msg_no_pdf_app">Aucune application pour ouvrir les PDF</string>
+    <string name="camera_flash">Flash</string>
+    <string name="camera_close">Fermer</string>
+    <string name="conversion_camera_denied">Autorisation caméra requise</string>
+    <string name="conversion_take_photo">Prendre une photo</string>
+    <string name="camera_error">Échec de la capture, réessayez</string>
+    <string name="camera_switch">Changer de caméra</string>
 </resources>

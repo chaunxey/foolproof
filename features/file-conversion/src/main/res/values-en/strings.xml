@@ -40,4 +40,10 @@
     <string name="conversion_msg_text_too_large">Text file too large (2 MB limit)</string>
     <string name="conversion_msg_no_share_app">No app available to share</string>
     <string name="conversion_msg_no_pdf_app">No app available to open PDFs</string>
+    <string name="camera_flash">Flash</string>
+    <string name="camera_close">Close</string>
+    <string name="conversion_camera_denied">Camera permission is required</string>
+    <string name="conversion_take_photo">Take photo</string>
+    <string name="camera_error">Capture failed, try again</string>
+    <string name="camera_switch">Switch camera</string>
 </resources>

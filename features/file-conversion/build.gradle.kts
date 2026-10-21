@@ -43,6 +43,10 @@ dependencies {
     // PDF 生成用框架自带 PdfDocument（宪法 §2：不引第三方 PDF 库）
     // EXIF 方向修正用 androidx.exifinterface（与图片压缩模块同一依赖）
     implementation(libs.androidx.exifinterface)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

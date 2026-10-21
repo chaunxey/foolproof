@@ -40,4 +40,10 @@
     <string name="conversion_msg_text_too_large">ឯកសារអត្ថបទធំពេក (កំណត់ត្រឹម 2 MB)</string>
     <string name="conversion_msg_no_share_app">គ្មានកម្មវិធីសម្រាប់ចែករំលែកទេ</string>
     <string name="conversion_msg_no_pdf_app">គ្មានកម្មវិធីសម្រាប់បើក PDF ទេ</string>
+    <string name="camera_flash">ពន្លឺ</string>
+    <string name="camera_close">បិទ</string>
+    <string name="conversion_camera_denied">ត្រូវការការអនុញ្ញាតកាមេរ៉ា</string>
+    <string name="conversion_take_photo">ថតរូប</string>
+    <string name="camera_error">ការថតបានបរាជ័យ សូមព្យាយាមម្តងទៀត</string>
+    <string name="camera_switch">បញ្ច្រាសកាមេរ៉ា</string>
 </resources>
