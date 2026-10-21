@@ -1,7 +1,9 @@
 package com.foolproof.base.share
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import java.io.File
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,7 +32,7 @@ object SharedContentStore {
     }
 
     @Suppress("DEPRECATION")
-    fun publishFrom(intent: Intent?) {
+    fun publishFrom(context: Context?, intent: Intent?) {
         val action = intent?.action ?: return
         if (action != Intent.ACTION_SEND && action != Intent.ACTION_SEND_MULTIPLE) return
         val mime = intent.type ?: return
@@ -45,6 +47,26 @@ object SharedContentStore {
         } else {
             intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM).orEmpty()
         }
-        publish(kind, uris.map { it.toString() })
+        // PDF 分享的 Uri 权限/Provider 不稳定，先在 Activity 有权限时落到自有缓存
+        val values = if (kind == Kind.PDF && context != null) {
+            uris.map { uri -> copyPdfToCache(context, uri) ?: uri.toString() }
+        } else {
+            uris.map { it.toString() }
+        }
+        publish(kind, values)
     }
+
+    private fun copyPdfToCache(context: Context, uri: Uri): String? = runCatching {
+        val dir = File(context.cacheDir, "shared_pdf").apply { mkdirs() }
+        val target = File(dir, "shared_${System.currentTimeMillis()}.pdf")
+        val input = when (uri.scheme) {
+            null -> File(uri.path ?: return null).inputStream()
+            "file" -> File(uri.path ?: return null).inputStream()
+            else -> context.contentResolver.openInputStream(uri) ?: return null
+        }
+        input.use { source ->
+            target.outputStream().use { output -> source.copyTo(output) }
+        }
+        target.absolutePath
+    }.getOrNull()
 }

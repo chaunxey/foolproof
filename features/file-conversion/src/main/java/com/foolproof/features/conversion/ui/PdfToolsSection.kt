@@ -80,8 +80,11 @@ fun PdfToolsSection(
         if (payload?.kind == com.foolproof.base.share.SharedContentStore.Kind.PDF) {
             viewModel.dispatch(
                 PdfToolsAction.PdfsPicked(
-                    payload.uris.map {
-                        PdfPick(it, context.pdfDisplayName(Uri.parse(it)))
+                    payload.uris.map { uri ->
+                        val name = context.pdfDisplayName(Uri.parse(uri))
+                        // 分享进来的 Uri 权限/Provider 不一定稳定，先落到自有缓存再解析
+                        val local = context.cacheSharedPdf(uri)
+                        PdfPick(local ?: uri, name)
                     },
                 ),
             )
@@ -467,6 +470,19 @@ private fun ImageThumb(path: String) {
         )
     }
 }
+
+private fun Context.cacheSharedPdf(uri: String): String? = runCatching {
+    val parsed = Uri.parse(uri)
+    if (parsed.scheme == null) return uri
+    if (parsed.scheme == "file") return parsed.path
+    val dir = File(cacheDir, "shared_pdf").apply { mkdirs() }
+    dir.listFiles()?.forEach { if (it.isFile && it.lastModified() < System.currentTimeMillis() - 3600_000L) it.delete() }
+    val target = File(dir, "shared_${System.currentTimeMillis()}.pdf")
+    contentResolver.openInputStream(Uri.parse(uri))?.use { input ->
+        target.outputStream().use { output -> input.copyTo(output) }
+    } ?: return null
+    target.absolutePath
+}.getOrNull()
 
 private fun Context.pdfDisplayName(uri: Uri): String {
     val projection = arrayOf(OpenableColumns.DISPLAY_NAME)

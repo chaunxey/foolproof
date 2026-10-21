@@ -46,7 +46,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        SharedContentStore.publishFrom(intent)
+        SharedContentStore.publishFrom(this, intent)
     }
 
     override fun onStart() {
@@ -67,7 +67,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        SharedContentStore.publishFrom(intent)
+        SharedContentStore.publishFrom(this, intent)
         enableEdgeToEdge()
         setContent {
             val scale by SettingsStore.fontScale.collectAsState()

@@ -33,7 +33,9 @@ class PdfBoxToolEngine(
 ) : PdfToolEngine {
 
     override suspend fun pageCount(uri: String): Int? = withContext(Dispatchers.IO) {
-        runCatching { open(uri).use { it.numberOfPages } }.getOrNull()
+        runCatching { open(uri).use { it.numberOfPages } }
+            .onFailure { log.w { "pdf pageCount failed: ${it::class.simpleName} ${it.message}" } }
+            .getOrNull()
     }
 
     override suspend fun merge(
@@ -215,7 +217,7 @@ class PdfBoxToolEngine(
 
     private fun open(uri: String): PDDocument {
         val parsed = Uri.parse(uri)
-        val bytes = if (parsed.scheme == null) {
+        val bytes = if (parsed.scheme == null || parsed.scheme == "file") {
             File(uri).readBytes()
         } else {
             context.contentResolver.openInputStream(parsed)?.use { it.readBytes() }
