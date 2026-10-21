@@ -96,8 +96,8 @@ fun FileConversionSection(
         viewModel.effect.collect { effect ->
             when (effect) {
                 is ConversionEffect.Message -> message = effect.kind.label() to effect.kind.isError()
-                is ConversionEffect.Share -> context.sharePdf(effect.path)
-                is ConversionEffect.Open -> context.openPdf(effect.path)
+                is ConversionEffect.Share -> if (!context.sharePdf(effect.path)) message = "没有可分享的应用" to true
+                is ConversionEffect.Open -> if (!context.openPdf(effect.path)) message = "没有可打开 PDF 的应用" to true
             }
         }
     }
@@ -349,26 +349,26 @@ private fun ConversionEffect.MessageKind.isError(): Boolean = when (this) {
     else -> true
 }
 /** 用唯一 FileProvider 分享 PDF。 */
-private fun Context.sharePdf(path: String) {
+private fun Context.sharePdf(path: String): Boolean {
     val uri = runCatching {
         FileProvider.getUriForFile(this, "$packageName.files", File(path))
-    }.getOrNull() ?: return
+    }.getOrNull() ?: return false
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "application/pdf"
         putExtra(Intent.EXTRA_STREAM, uri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    runCatching { startActivity(Intent.createChooser(intent, null)) }
+    return runCatching { startActivity(Intent.createChooser(intent, null)) }.isSuccess
 }
 
 /** 用系统 PDF 阅读器打开。 */
-private fun Context.openPdf(path: String) {
+private fun Context.openPdf(path: String): Boolean {
     val uri = runCatching {
         FileProvider.getUriForFile(this, "$packageName.files", File(path))
-    }.getOrNull() ?: return
+    }.getOrNull() ?: return false
     val intent = Intent(Intent.ACTION_VIEW).apply {
         setDataAndType(uri, "application/pdf")
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    runCatching { startActivity(intent) }
+    return runCatching { startActivity(intent) }.isSuccess
 }
