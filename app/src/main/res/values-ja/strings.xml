@@ -16,6 +16,10 @@
     <string name="settings_language_ja">日本語</string>
     <string name="settings_language_fr">Français</string>
     <string name="settings_language_de">Deutsch</string>
+    <string name="settings_theme">テーマ</string>
+    <string name="settings_theme_system">システムに従う</string>
+    <string name="settings_theme_light">ライト</string>
+    <string name="settings_theme_dark">ダーク</string>
 
     <!-- Back press -->
     <string name="back_press_again">もう一度戻るボタンを押すと終了します</string>

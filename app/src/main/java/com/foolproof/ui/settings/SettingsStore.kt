@@ -26,16 +26,28 @@ enum class AppLanguage(val tag: String?, val labelRes: Int) {
 }
 
 /**
- * 应用内设置（字体大小、语言）。
+ * 明暗主题。
  *
- * 用 SharedPreferences 而非 DataStore：只存两个小值，不值得为此加依赖。
- * 两者都通过 StateFlow 暴露，由 Compose 层直接消费——**切换不重建 Activity**。
+ * [labelRes] 是设置页显示名，随界面语言翻译。
+ */
+enum class ThemeMode(val labelRes: Int) {
+    SYSTEM(R.string.settings_theme_system),
+    LIGHT(R.string.settings_theme_light),
+    DARK(R.string.settings_theme_dark),
+}
+
+/**
+ * 应用内设置（字体大小、语言、明暗主题）。
+ *
+ * 用 SharedPreferences 而非 DataStore：只存几个小值，不值得为此加依赖。
+ * 都通过 StateFlow 暴露，由 Compose 层直接消费——**切换不重建 Activity**。
  */
 object SettingsStore {
 
     private const val PREFS = "app_settings"
     private const val KEY_SCALE = "font_scale"
     private const val KEY_LANGUAGE = "language"
+    private const val KEY_THEME = "theme"
     const val MIN_SCALE = 0.85f
     const val MAX_SCALE = 1.3f
 
@@ -47,12 +59,18 @@ object SettingsStore {
     private val _language = MutableStateFlow(AppLanguage.SYSTEM)
     val language: StateFlow<AppLanguage> = _language
 
+    private val _themeMode = MutableStateFlow(ThemeMode.SYSTEM)
+    val themeMode: StateFlow<ThemeMode> = _themeMode
+
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         _fontScale.value = prefs.getFloat(KEY_SCALE, 1.0f).coerceIn(MIN_SCALE, MAX_SCALE)
         _language.value = prefs.getString(KEY_LANGUAGE, null)
             ?.let { tag -> AppLanguage.entries.firstOrNull { it.tag == tag } }
             ?: AppLanguage.SYSTEM
+        _themeMode.value = prefs.getString(KEY_THEME, null)
+            ?.let { name -> ThemeMode.entries.firstOrNull { it.name == name } }
+            ?: ThemeMode.SYSTEM
     }
 
     fun setFontScale(scale: Float) {
@@ -63,12 +81,46 @@ object SettingsStore {
         }
     }
 
-    /** 只写偏好；界面由 `MainActivity` 里的 CompositionLocal 立即重组，不重建 Activity。 */
+    /** 只写偏好；界面由 CompositionLocal 立即重组，不重建 Activity。 */
     fun setLanguage(language: AppLanguage) {
         _language.value = language
         if (this::prefs.isInitialized) {
             // putString(key, null) 等价于 remove，SYSTEM 不落盘覆盖值
             prefs.edit().putString(KEY_LANGUAGE, language.tag).apply()
+        }
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        _themeMode.value = mode
+        if (this::prefs.isInitialized) {
+            prefs.edit().putString(KEY_THEME, mode.name).apply()
+        }
+    }
+
+    /**
+     * 包一层 Activity 的 base Context：让 Activity 自身的 resources 也跟随语言设置。
+     *
+     * Compose 主界面可以用 CompositionLocal 覆盖，但 `Dialog`（含 AlertDialog）会新建
+     * 窗口、用 Activity 的 Context 取资源；不包这一层，切换语言后弹窗仍是旧语言。
+     */
+    fun wrapBaseContext(base: Context): Context = LocaleAwareContext(base)
+
+    private class LocaleAwareContext(base: Context) : ContextWrapper(base) {
+
+        private var cachedTag: String? = null
+        private var cachedResources: Resources? = null
+
+        override fun getResources(): Resources {
+            val requested = _language.value.tag ?: return super.getResources()
+            if (requested != cachedTag) {
+                cachedResources = baseContext.createConfigurationContext(
+                    Configuration(baseContext.resources.configuration).apply {
+                        setLocale(Locale.forLanguageTag(requested))
+                    },
+                ).resources
+                cachedTag = requested
+            }
+            return cachedResources ?: super.getResources()
         }
     }
 

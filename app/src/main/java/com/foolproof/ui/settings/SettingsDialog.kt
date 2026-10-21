@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -35,10 +38,18 @@ import kotlin.math.roundToInt
 fun SettingsDialog(onDismiss: () -> Unit) {
     val scale by SettingsStore.fontScale.collectAsState()
     val language by SettingsStore.language.collectAsState()
+    val themeMode by SettingsStore.themeMode.collectAsState()
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(shape = MaterialTheme.shapes.large, tonalElevation = 6.dp) {
-            Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // 选项多了以后小屏会超出一屏，给个上限并允许滚动
+                    .heightIn(max = 560.dp)
+                    .verticalScroll(rememberScrollState())
+                    .padding(20.dp),
+            ) {
                 Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.titleMedium)
 
                 Text(
@@ -72,6 +83,16 @@ fun SettingsDialog(onDismiss: () -> Unit) {
                     },
                 )
 
+                Text(
+                    text = stringResource(R.string.settings_theme),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 16.dp),
+                )
+                ThemeChips(
+                    current = themeMode,
+                    onSelect = { SettingsStore.setThemeMode(it) },
+                )
+
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -87,7 +108,7 @@ fun SettingsDialog(onDismiss: () -> Unit) {
     }
 }
 
-/** 6 个选项用 FlowRow，窄屏自动换行。 */
+/** 6 个语言选项用 FlowRow，窄屏自动换行。 */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LanguageChips(current: AppLanguage, onSelect: (AppLanguage) -> Unit) {
@@ -96,6 +117,24 @@ private fun LanguageChips(current: AppLanguage, onSelect: (AppLanguage) -> Unit)
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         AppLanguage.entries.forEach { option ->
+            FilterChip(
+                selected = current == option,
+                onClick = { if (current != option) onSelect(option) },
+                label = { Text(stringResource(option.labelRes)) },
+            )
+        }
+    }
+}
+
+/** 明暗主题：即时生效，弹窗不关，方便直接看效果。 */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ThemeChips(current: ThemeMode, onSelect: (ThemeMode) -> Unit) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        ThemeMode.entries.forEach { option ->
             FilterChip(
                 selected = current == option,
                 onClick = { if (current != option) onSelect(option) },
