@@ -66,5 +66,18 @@ class PdfBoxToolEngineTest {
         )
         assertTrue(File(compressed.path).length() > 0)
         assertEquals(3, engine.pageCount(compressed.path))
+
+        val imagesDir = File(context.cacheDir, "pdf_images_test").apply {
+            deleteRecursively()
+            mkdirs()
+        }
+        val images = engine.toImages(
+            Uri.fromFile(three).toString(),
+            imagesDir.absolutePath,
+            com.foolproof.features.conversion.domain.PdfCompressQuality.LOW,
+            "Foolproof_IMG_CONV_test",
+        )
+        assertEquals(3, images.size)
+        assertTrue(images.all { File(it.path).length() > 0 })
     }
 }

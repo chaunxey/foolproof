@@ -78,4 +78,7 @@
     <string name="pdf_tools_quality_medium">中</string>
     <string name="pdf_tools_mode_compress">压缩</string>
     <string name="pdf_tools_mode_pages">页面</string>
+    <string name="pdf_tools_share_images">分享图片</string>
+    <string name="pdf_tools_mode_images">转图片</string>
+    <string name="pdf_tools_images_done">已生成 %1$d 张图片</string>
 </resources>

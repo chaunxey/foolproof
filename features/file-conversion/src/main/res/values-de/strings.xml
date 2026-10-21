@@ -68,4 +68,7 @@
     <string name="pdf_tools_quality_medium">Mittel</string>
     <string name="pdf_tools_mode_compress">Komprimieren</string>
     <string name="pdf_tools_mode_pages">Seiten</string>
+    <string name="pdf_tools_share_images">Bilder teilen</string>
+    <string name="pdf_tools_mode_images">Zu Bildern</string>
+    <string name="pdf_tools_images_done">%1$d Bilder erstellt</string>
 </resources>

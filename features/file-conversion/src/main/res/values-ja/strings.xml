@@ -68,4 +68,7 @@
     <string name="pdf_tools_quality_medium">中</string>
     <string name="pdf_tools_mode_compress">圧縮</string>
     <string name="pdf_tools_mode_pages">ページ</string>
+    <string name="pdf_tools_share_images">画像を共有</string>
+    <string name="pdf_tools_mode_images">画像に変換</string>
+    <string name="pdf_tools_images_done">%1$d 枚の画像を生成しました</string>
 </resources>

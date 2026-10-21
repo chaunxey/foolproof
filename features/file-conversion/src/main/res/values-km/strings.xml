@@ -68,4 +68,7 @@
     <string name="pdf_tools_quality_medium">មធ្យម</string>
     <string name="pdf_tools_mode_compress">បង្ហាប់</string>
     <string name="pdf_tools_mode_pages">ទំព័រ</string>
+    <string name="pdf_tools_share_images">ចែករំលែករូបភាព</string>
+    <string name="pdf_tools_mode_images">ទៅជារូបភាព</string>
+    <string name="pdf_tools_images_done">បានបង្កើតរូបភាព %1$d</string>
 </resources>

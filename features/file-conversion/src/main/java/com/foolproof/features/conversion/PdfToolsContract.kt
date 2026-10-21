@@ -19,6 +19,7 @@ data class PdfToolsUiState(
     val quality: PdfCompressQuality = PdfCompressQuality.MEDIUM,
     val phase: PdfToolPhase = PdfToolPhase.IDLE,
     val output: PdfToolResult? = null,
+    val images: List<PdfToolResult> = emptyList(),
     val canSaveToDownloads: Boolean = false,
 ) : UiState {
 
@@ -31,6 +32,7 @@ data class PdfToolsUiState(
                 PdfToolMode.ROTATE -> files.size == 1
                 PdfToolMode.PAGES -> files.size == 1 && pageOrder.isNotEmpty()
                 PdfToolMode.COMPRESS -> files.size == 1
+                PdfToolMode.IMAGES -> files.size == 1
             }
         }
 }

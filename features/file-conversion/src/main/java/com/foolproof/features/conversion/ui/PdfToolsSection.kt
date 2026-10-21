@@ -227,7 +227,9 @@ fun PdfToolsSection(
                 }
             }
 
-            PdfToolMode.COMPRESS -> {
+            PdfToolMode.COMPRESS,
+            PdfToolMode.IMAGES,
+            -> {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(top = 12.dp),
@@ -270,7 +272,27 @@ fun PdfToolsSection(
             )
         }
 
-        state.output?.let { output ->
+        if (state.mode == PdfToolMode.IMAGES && state.images.isNotEmpty()) {
+            Text(
+                text = stringResource(R.string.pdf_tools_images_done, state.images.size),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 12.dp),
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(top = 8.dp),
+            ) {
+                FoolproofButton(
+                    text = stringResource(R.string.pdf_tools_share_images),
+                    onClick = {
+                        context.shareImages(state.images.map { it.path })
+                    },
+                )
+            }
+        }
+
+        if (state.mode != PdfToolMode.IMAGES) {
+            state.output?.let { output ->
             Text(
                 text = stringResource(R.string.pdf_tools_done) +
                     " · " + ByteFormat.formatBytes(output.bytes),
@@ -302,6 +324,7 @@ fun PdfToolsSection(
                     )
                 }
             }
+            }
         }
     }
 }
@@ -312,6 +335,7 @@ private fun PdfToolMode.labelRes(): Int = when (this) {
     PdfToolMode.ROTATE -> R.string.pdf_tools_mode_rotate
     PdfToolMode.PAGES -> R.string.pdf_tools_mode_pages
     PdfToolMode.COMPRESS -> R.string.pdf_tools_mode_compress
+    PdfToolMode.IMAGES -> R.string.pdf_tools_mode_images
 }
 
 private fun PdfCompressQuality.labelRes(): Int = when (this) {
@@ -343,6 +367,23 @@ private fun PdfToolsEffect.MessageKind.isError(): Boolean = when (this) {
     PdfToolsEffect.MessageKind.DONE,
     PdfToolsEffect.MessageKind.SAVED,
     -> false
+}
+
+private fun Context.shareImages(paths: List<String>) {
+    if (paths.isEmpty()) return
+    runCatching {
+        val uris = paths.map {
+            FileProvider.getUriForFile(this, "$packageName.files", File(it))
+        }
+        val intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+            type = "image/jpeg"
+            putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivity(
+            Intent.createChooser(intent, null).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) },
+        )
+    }
 }
 
 private fun Context.pdfDisplayName(uri: Uri): String {

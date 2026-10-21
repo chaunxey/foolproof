@@ -68,4 +68,7 @@
     <string name="pdf_tools_quality_medium">Moyenne</string>
     <string name="pdf_tools_mode_compress">Compresser</string>
     <string name="pdf_tools_mode_pages">Pages</string>
+    <string name="pdf_tools_share_images">Partager les images</string>
+    <string name="pdf_tools_mode_images">Vers images</string>
+    <string name="pdf_tools_images_done">%1$d images créées</string>
 </resources>

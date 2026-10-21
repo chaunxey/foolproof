@@ -1,7 +1,7 @@
 package com.foolproof.features.conversion.domain
 
 /** PDF 工具模式。 */
-enum class PdfToolMode { MERGE, SPLIT, ROTATE, PAGES, COMPRESS }
+enum class PdfToolMode { MERGE, SPLIT, ROTATE, PAGES, COMPRESS, IMAGES }
 
 /** 压缩档：JPEG 质量 + 渲染 DPI（越低越小）。 */
 enum class PdfCompressQuality(val jpegQuality: Int, val dpi: Int) {
@@ -44,6 +44,14 @@ interface PdfToolEngine {
         quality: PdfCompressQuality,
         outputPath: String,
     ): PdfToolResult
+
+    /** PDF 每页渲染为 JPEG；[outputDir] 下按 baseName_01.jpg 命名。 */
+    suspend fun toImages(
+        uri: String,
+        outputDir: String,
+        quality: PdfCompressQuality,
+        baseName: String,
+    ): List<PdfToolResult>
 }
 
 /**

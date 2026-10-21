@@ -65,11 +65,20 @@ fun CompressionSection(
 ) {
     val state by viewModel.uiState.collectAsState()
     val shared by SharedContentStore.content.collectAsState()
+    var quickStart by remember { mutableStateOf(false) }
     LaunchedEffect(shared) {
         val payload = shared
         if (payload?.kind == SharedContentStore.Kind.IMAGE && !state.isRunning) {
             viewModel.dispatch(CompressionAction.ImagesPicked(payload.uris))
             SharedContentStore.consume()
+            quickStart = true
+        }
+    }
+    // 分享进来后直接开始压缩，省掉再点一次“开始压缩”
+    LaunchedEffect(quickStart, state.images, state.isRunning) {
+        if (quickStart && state.images.isNotEmpty() && !state.isRunning) {
+            quickStart = false
+            viewModel.dispatch(CompressionAction.Start)
         }
     }
     val context = LocalContext.current

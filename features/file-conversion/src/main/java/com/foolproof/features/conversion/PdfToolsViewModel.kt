@@ -40,6 +40,7 @@ class PdfToolsViewModel(
                     mode = action.mode,
                     pageOrder = order,
                     output = null,
+                    images = emptyList(),
                     phase = PdfToolPhase.IDLE,
                 )
             }
@@ -50,6 +51,7 @@ class PdfToolsViewModel(
                 state.copy(
                     files = state.files.filterNot { it.uri == action.uri },
                     output = null,
+                    images = emptyList(),
                     phase = PdfToolPhase.IDLE,
                 )
             }
@@ -142,6 +144,10 @@ class PdfToolsViewModel(
     private fun start() {
         val state = currentState
         val mode = state.mode
+        if (mode == PdfToolMode.IMAGES) {
+            startImages(state)
+            return
+        }
         val outputPath = nextOutputPath(mode)
         this.outputPath = outputPath
         updateState { it.copy(phase = PdfToolPhase.WORKING, output = null) }
@@ -210,6 +216,8 @@ class PdfToolsViewModel(
                         }
                         engine.compress(file.uri, state.quality, outputPath)
                     }
+
+                    PdfToolMode.IMAGES -> error("handled in startImages")
                 }
                 updateState { it.copy(phase = PdfToolPhase.DONE, output = result) }
                 sendEffect(PdfToolsEffect.Message(PdfToolsEffect.MessageKind.DONE))
@@ -242,6 +250,42 @@ class PdfToolsViewModel(
         updateState { PdfToolsUiState() }
     }
 
+    private fun startImages(state: PdfToolsUiState) {
+        val file = state.files.firstOrNull()
+        if (file == null) {
+            sendEffect(PdfToolsEffect.Message(PdfToolsEffect.MessageKind.NEED_ONE))
+            return
+        }
+        val dir = File(outputDir.parentFile, "pdf_images").apply {
+            mkdirs()
+            listFiles()?.forEach { if (it.isFile) it.delete() }
+        }
+        val base = OutputNaming
+            .fileName(OutputNaming.MediaType.IMAGE, OutputNaming.Action.CONVERT, "jpg")
+            .removeSuffix(".jpg")
+        updateState {
+            it.copy(phase = PdfToolPhase.WORKING, output = null, images = emptyList())
+        }
+        job = launchJob {
+            try {
+                val images = engine.toImages(file.uri, dir.absolutePath, state.quality, base)
+                updateState {
+                    it.copy(
+                        phase = PdfToolPhase.DONE,
+                        images = images,
+                        output = images.firstOrNull(),
+                    )
+                }
+                sendEffect(PdfToolsEffect.Message(PdfToolsEffect.MessageKind.DONE))
+            } catch (throwable: Throwable) {
+                log.w { "pdf to images failed: ${throwable::class.simpleName}" }
+                dir.listFiles()?.forEach { if (it.isFile) it.delete() }
+                updateState { it.copy(phase = PdfToolPhase.FAILED, images = emptyList()) }
+                sendEffect(PdfToolsEffect.Message(PdfToolsEffect.MessageKind.FAILED))
+            }
+        }
+    }
+
     private fun nextOutputPath(mode: PdfToolMode): String {
         if (!outputDir.exists()) outputDir.mkdirs()
         outputDir.listFiles()?.forEach { if (it.isFile) it.delete() }
@@ -251,6 +295,7 @@ class PdfToolsViewModel(
             PdfToolMode.ROTATE -> OutputNaming.Action.ROTATE
             PdfToolMode.PAGES -> OutputNaming.Action.REORDER
             PdfToolMode.COMPRESS -> OutputNaming.Action.COMPRESS
+            PdfToolMode.IMAGES -> OutputNaming.Action.CONVERT
         }
         return File(
             outputDir,

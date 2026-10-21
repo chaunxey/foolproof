@@ -19,6 +19,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.image.JPEGFactory
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -160,6 +161,45 @@ class PdfBoxToolEngine(
             temp.delete()
         }
         PdfToolResult(outputPath, File(outputPath).length())
+    }
+
+    override suspend fun toImages(
+        uri: String,
+        outputDir: String,
+        quality: PdfCompressQuality,
+        baseName: String,
+    ): List<PdfToolResult> = withContext(Dispatchers.IO) {
+        val temp = File(context.cacheDir, "pdf_images_in.pdf")
+        copyToFile(uri, temp)
+        val descriptor = ParcelFileDescriptor.open(temp, ParcelFileDescriptor.MODE_READ_ONLY)
+        val renderer = PdfRenderer(descriptor)
+        val dir = File(outputDir).apply { mkdirs() }
+        try {
+            (0 until renderer.pageCount).map { index ->
+                val page = renderer.openPage(index)
+                try {
+                    val scale = quality.dpi / 72f
+                    val width = (page.width * scale).toInt().coerceIn(200, 2200)
+                    val height = (page.height * scale).toInt().coerceIn(200, 2200)
+                    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                    bitmap.eraseColor(Color.WHITE)
+                    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+
+                    val file = File(dir, "${baseName}_${(index + 1).toString().padStart(2, '0')}.jpg")
+                    FileOutputStream(file).use { out ->
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, quality.jpegQuality, out)
+                    }
+                    bitmap.recycle()
+                    PdfToolResult(file.absolutePath, file.length())
+                } finally {
+                    page.close()
+                }
+            }
+        } finally {
+            renderer.close()
+            descriptor.close()
+            temp.delete()
+        }
     }
 
     private fun copyToFile(uri: String, target: File) {
