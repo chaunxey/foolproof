@@ -126,6 +126,15 @@ fun CompressionSection(
             }
         }
 
+        if (state.images.isEmpty()) {
+            Text(
+                text = stringResource(R.string.compression_empty_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+        }
+
         OptionRow(
             format = state.option.format,
             quality = state.option.quality,

@@ -64,4 +64,5 @@
     <string name="video_merge_trim">Rogner</string>
     <string name="video_merge_trim_title">Rogner le clip</string>
     <string name="video_merge_confirm">Valider</string>
-    <string name="video_merge_more">Plus</string></resources>
+    <string name="video_merge_more">Plus</string>    <string name="video_empty_hint">Sélectionnez une vidéo, découpez un clip et choisissez un préréglage</string>
+</resources>

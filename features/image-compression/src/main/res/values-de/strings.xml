@@ -39,4 +39,5 @@
     <string name="compression_msg_share_failed">Teilen fehlgeschlagen</string>
     <string name="compression_msg_save_failed">Speichern in Galerie fehlgeschlagen</string>
     <string name="compression_msg_save_unsupported">Diese Systemversion unterstützt das direkte Speichern in der Galerie nicht</string>
+    <string name="compression_empty_hint">Wähle Bilder, um Format und Qualität anzupassen und die Größe zu schätzen</string>
 </resources>

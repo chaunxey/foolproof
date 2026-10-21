@@ -39,4 +39,5 @@
     <string name="compression_msg_share_failed">Sharing failed</string>
     <string name="compression_msg_save_failed">Could not save to gallery</string>
     <string name="compression_msg_save_unsupported">This system version does not support saving directly to the gallery</string>
+    <string name="compression_empty_hint">Pick images to adjust format and quality with a live size estimate</string>
 </resources>

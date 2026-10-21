@@ -52,4 +52,5 @@
     <string name="compression_msg_share_failed">分享失败</string>
     <string name="compression_msg_save_failed">保存到相册失败</string>
     <string name="compression_msg_save_unsupported">当前系统版本不支持直接保存到相册</string>
+    <string name="compression_empty_hint">选择图片后可调整格式、质量，并实时查看预估体积</string>
 </resources>

@@ -39,4 +39,5 @@
     <string name="compression_msg_share_failed">共有に失敗しました</string>
     <string name="compression_msg_save_failed">ギャラリーに保存できませんでした</string>
     <string name="compression_msg_save_unsupported">このシステムバージョンではギャラリーへの直接保存に対応していません</string>
+    <string name="compression_empty_hint">画像を選ぶと、形式・品質の調整とサイズ推定ができます</string>
 </resources>

@@ -257,6 +257,13 @@ fun DuplicateHeader(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else {
+            if (state.scan !is ScanState.Done) {
+                Text(
+                    text = stringResource(R.string.duplicates_empty_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(top = 16.dp),
+                )
+            }
             val hint = when {
                 state.scan is ScanState.Done -> stringResource(R.string.duplicates_hint_no_duplicates)
                 state.scan is ScanState.Cancelled -> stringResource(R.string.duplicates_hint_cancelled)

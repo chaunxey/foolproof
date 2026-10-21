@@ -39,4 +39,5 @@
     <string name="compression_msg_share_failed">ការចែករំលែកបរាជ័យ</string>
     <string name="compression_msg_save_failed">មិនអាចរក្សាទុកទៅវិចិត្រសាលបានទេ</string>
     <string name="compression_msg_save_unsupported">កំណែប្រព័ន្ធនេះមិនគាំទ្រការរក្សាទុកដោយផ្ទាល់ទៅវិចិត្រសាលទេ</string>
+    <string name="compression_empty_hint">ជ្រើសរើសរូបភាព ដើម្បីកែទម្រង់ និងគុណភាព ព្រមទាំងមើលការប៉ាន់ទំហំ</string>
 </resources>

@@ -32,39 +32,60 @@ import kotlinx.coroutines.delay
  */
 @Composable
 fun BannerAd(modifier: Modifier = Modifier) {
-    if (!AdsConfig.configured) {
-        Box(
-            modifier = modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = "AD",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
+    var loaded by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier.fillMaxWidth().height(50.dp)) {
+        if (!AdsConfig.configured) {
+            PlaceholderBanner(Modifier.fillMaxSize())
+        } else {
+            var adView by remember { mutableStateOf<AdView?>(null) }
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = { context ->
+                    AdView(context, AdsConfig.BANNER_PLACEMENT_ID, AdSize.BANNER_HEIGHT_50).apply {
+                        val listener = object : com.facebook.ads.AdListener {
+                            override fun onError(ad: com.facebook.ads.Ad, error: com.facebook.ads.AdError) {
+                                loaded = false
+                            }
+
+                            override fun onAdLoaded(ad: com.facebook.ads.Ad) {
+                                loaded = true
+                            }
+
+                            override fun onAdClicked(ad: com.facebook.ads.Ad) = Unit
+
+                            override fun onLoggingImpression(ad: com.facebook.ads.Ad) = Unit
+                        }
+                        loadAd(buildLoadAdConfig().withAdListener(listener).build())
+                        adView = this
+                    }
+                },
             )
-        }
-        return
-    }
-
-    var adView by remember { mutableStateOf<AdView?>(null) }
-    AndroidView(
-        modifier = modifier.fillMaxWidth().height(50.dp),
-        factory = { context ->
-            AdView(context, AdsConfig.BANNER_PLACEMENT_ID, AdSize.BANNER_HEIGHT_50).apply {
-                loadAd()
-                adView = this
+            // 广告加载前用固定高度骨架占位，避免真实广告出现时布局跳动
+            if (!loaded) {
+                PlaceholderBanner(Modifier.fillMaxSize())
             }
-        },
-    )
-
-    LaunchedEffect(adView) {
-        while (adView != null) {
-            delay(60_000)
-            adView?.loadAd()
+            LaunchedEffect(adView) {
+                while (adView != null) {
+                    delay(60_000)
+                    adView?.loadAd()
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun PlaceholderBanner(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "AD",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.outline,
+        )
     }
 }
 
