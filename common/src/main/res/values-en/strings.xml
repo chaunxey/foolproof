@@ -4,4 +4,5 @@
     <string name="tab_images">Images</string>
     <string name="tab_videos">Videos</string>
     <string name="tab_converter">Convert</string>
+    <string name="tab_settings">Settings</string>
 </resources>

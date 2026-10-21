@@ -2,10 +2,13 @@ package com.foolproof.common.navigation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -62,7 +65,13 @@ fun FoolproofTabHost(
                     modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    IconButton(onClick = onSettingsClick) { Text("⚙") }
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_settings),
+                            contentDescription = stringResource(R.string.tab_settings),
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
                 }
             }
         },
