@@ -136,7 +136,7 @@ class PdfToolsViewModel(
                     )
                 }
             } else {
-                sendEffect(PdfToolsEffect.Message(PdfToolsEffect.MessageKind.FAILED))
+                sendEffect(PdfToolsEffect.Message(PdfToolsEffect.MessageKind.LOAD_FAILED))
             }
         }
     }

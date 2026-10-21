@@ -65,6 +65,7 @@ sealed interface PdfToolsEffect : UiEffect {
         NEED_TWO,
         NEED_PAGES,
         INVALID_RANGE,
+        LOAD_FAILED,
         FAILED,
         DONE,
         SAVED,

@@ -72,4 +72,5 @@
     <string name="pdf_tools_mode_images">Vers images</string>
     <string name="pdf_tools_images_done">%1$d images créées</string>
     <string name="pdf_tools_share_failed">Échec du partage, réessayez</string>
+    <string name="pdf_tools_load_failed">Impossible de lire le PDF partagé</string>
 </resources>

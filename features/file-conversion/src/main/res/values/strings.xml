@@ -82,4 +82,5 @@
     <string name="pdf_tools_mode_images">转图片</string>
     <string name="pdf_tools_images_done">已生成 %1$d 张图片</string>
     <string name="pdf_tools_share_failed">分享失败，请重试</string>
+    <string name="pdf_tools_load_failed">无法读取分享的 PDF</string>
 </resources>

@@ -386,6 +386,7 @@ private fun PdfToolsEffect.MessageKind.labelRes(): Int = when (this) {
     PdfToolsEffect.MessageKind.NEED_TWO -> R.string.pdf_tools_need_two
     PdfToolsEffect.MessageKind.NEED_PAGES -> R.string.pdf_tools_need_pages
     PdfToolsEffect.MessageKind.INVALID_RANGE -> R.string.pdf_tools_invalid_range
+    PdfToolsEffect.MessageKind.LOAD_FAILED -> R.string.pdf_tools_load_failed
     PdfToolsEffect.MessageKind.FAILED -> R.string.pdf_tools_failed
     PdfToolsEffect.MessageKind.DONE -> R.string.pdf_tools_done
     PdfToolsEffect.MessageKind.SAVED -> R.string.conversion_msg_saved
@@ -396,6 +397,7 @@ private fun PdfToolsEffect.MessageKind.isError(): Boolean = when (this) {
     PdfToolsEffect.MessageKind.NEED_ONE,
     PdfToolsEffect.MessageKind.NEED_TWO,
     PdfToolsEffect.MessageKind.NEED_PAGES,
+    PdfToolsEffect.MessageKind.LOAD_FAILED,
     PdfToolsEffect.MessageKind.INVALID_RANGE,
     PdfToolsEffect.MessageKind.FAILED,
     PdfToolsEffect.MessageKind.SAVE_FAILED,
