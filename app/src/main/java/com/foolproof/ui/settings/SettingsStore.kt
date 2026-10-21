@@ -1,7 +1,10 @@
 package com.foolproof.ui.settings
 
+import android.app.LocaleManager
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Build
+import android.os.LocaleList
 import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,9 +46,25 @@ object SettingsStore {
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         _fontScale.value = prefs.getFloat(KEY_SCALE, 1.0f).coerceIn(MIN_SCALE, MAX_SCALE)
-        _language.value = prefs.getString(KEY_LANGUAGE, null)
+
+        val stored = prefs.getString(KEY_LANGUAGE, null)
             ?.let { tag -> AppLanguage.entries.firstOrNull { it.tag == tag } }
             ?: AppLanguage.SYSTEM
+        // 33+ 的「应用语言」由系统单独存；系统设置改过就以系统为准，并回写到本地偏好
+        val effective = systemLanguage(context) ?: stored
+        _language.value = effective
+        if (effective != stored) {
+            prefs.edit().putString(KEY_LANGUAGE, effective.tag).apply()
+        }
+    }
+
+    /** 系统设置里给本应用选的语言；没选（跟随系统）返回 null。 */
+    private fun systemLanguage(context: Context): AppLanguage? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return null
+        val locales = context.getSystemService(LocaleManager::class.java).applicationLocales
+        if (locales.isEmpty) return null
+        val tag = locales[0].language
+        return AppLanguage.entries.firstOrNull { it.tag == tag }
     }
 
     fun setFontScale(scale: Float) {
@@ -56,11 +75,19 @@ object SettingsStore {
         }
     }
 
-    fun setLanguage(language: AppLanguage) {
+    fun setLanguage(context: Context, language: AppLanguage) {
         _language.value = language
         if (this::prefs.isInitialized) {
             // putString(key, null) 等价于 remove，SYSTEM 不落盘覆盖值
             prefs.edit().putString(KEY_LANGUAGE, language.tag).apply()
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // 同步给系统，让「设置 → 应用 → 语言」和 App 内选择保持一致；
+            // 系统会自行重建 Activity，不需要再手动 recreate。
+            val requested = language.tag
+                ?.let { LocaleList.forLanguageTags(it) }
+                ?: LocaleList.getEmptyLocaleList()
+            context.getSystemService(LocaleManager::class.java).applicationLocales = requested
         }
     }
 

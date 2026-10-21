@@ -3,6 +3,7 @@ package com.foolproof.ui.settings
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -70,8 +71,11 @@ fun SettingsDialog(onDismiss: () -> Unit) {
                             selected = language == option,
                             onClick = {
                                 if (language != option) {
-                                    SettingsStore.setLanguage(option)
-                                    context.findActivity()?.recreate()
+                                    SettingsStore.setLanguage(context, option)
+                                    // 33+ 由系统按 LocaleManager 重建；低版本自己重建才能重载资源
+                                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                                        context.findActivity()?.recreate()
+                                    }
                                 }
                             },
                             label = { Text(stringResource(option.labelRes())) },
