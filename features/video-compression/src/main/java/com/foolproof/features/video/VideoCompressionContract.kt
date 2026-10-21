@@ -1,4 +1,4 @@
-package com.foolproof.features.video
+﻿package com.foolproof.features.video
 
 import com.foolproof.base.mvi.UiAction
 import com.foolproof.base.mvi.UiEffect
@@ -71,6 +71,7 @@ sealed interface VideoAction : UiAction {
     data class BitrateChanged(val tier: BitrateTier) : VideoAction
 
     data object Start : VideoAction
+    data object Reset : VideoAction
 
     data object Cancel : VideoAction
 
@@ -81,7 +82,6 @@ sealed interface VideoAction : UiAction {
     data object SaveToGallery : VideoAction
 
     /** 重新开始（清掉上一次结果）。 */
-    data object Reset : VideoAction
 }
 
 sealed interface VideoEffect : UiEffect {

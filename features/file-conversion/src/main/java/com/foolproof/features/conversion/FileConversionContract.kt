@@ -50,6 +50,7 @@ sealed interface ConversionAction : UiAction {
     data class PerPageChanged(val perPage: Int) : ConversionAction
     data class TextPicked(val uri: String, val displayName: String, val bytes: Long) : ConversionAction
     data object Start : ConversionAction
+    data object Reset : ConversionAction
     data object Cancel : ConversionAction
     data object Share : ConversionAction
     data object Open : ConversionAction

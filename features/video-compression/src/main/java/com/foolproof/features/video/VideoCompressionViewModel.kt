@@ -80,6 +80,8 @@ class VideoCompressionViewModel(
 
             VideoAction.Cancel -> cancelCompression()
 
+            VideoAction.Reset -> reset()
+
             VideoAction.Share -> {
                 val path = currentState.output?.path
                 if (path == null) {
@@ -273,6 +275,21 @@ class VideoCompressionViewModel(
                     }
                 }
             }
+        }
+    }
+
+    /** 重置：取消进行中的任务并回到初始状态；已生成的产物保留（重置是界面动作，不删数据）。 */
+    private fun reset() {
+        val wasCompressing = currentState.isCompressing
+        val path = currentOutputPath
+        compressJob?.cancel()
+        compressJob = null
+        launch {
+            if (wasCompressing) {
+                compressor.cancel()
+                path?.let { compressor.cleanupPartialFile(it) }
+            }
+            updateState { VideoUiState(saveSupported = it.saveSupported) }
         }
     }
 

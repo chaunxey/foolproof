@@ -110,7 +110,14 @@ fun FileConversionSection(
     }
 
     Column(modifier = modifier.fillMaxWidth().padding(16.dp)) {
-        Text("文件转 PDF", style = MaterialTheme.typography.titleMedium)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("文件转 PDF", style = MaterialTheme.typography.titleMedium)
+            TextButton(onClick = { viewModel.dispatch(ConversionAction.Reset) }) { Text("重置") }
+        }
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),

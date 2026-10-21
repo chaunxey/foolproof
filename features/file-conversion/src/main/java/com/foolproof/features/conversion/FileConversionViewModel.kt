@@ -58,6 +58,8 @@ class FileConversionViewModel(
 
             is ConversionAction.TextPicked -> onTextPicked(action)
 
+            ConversionAction.Reset -> reset()
+
             ConversionAction.Start -> startConversion()
 
             ConversionAction.Cancel -> cancelConversion()
@@ -156,6 +158,21 @@ class FileConversionViewModel(
                     }
                 }
             }
+        }
+    }
+
+    /** 重置：取消进行中的任务并回到初始状态；已生成的产物保留。 */
+    private fun reset() {
+        val wasConverting = currentState.isConverting
+        val path = currentOutputPath
+        convertJob?.cancel()
+        convertJob = null
+        launch {
+            if (wasConverting) {
+                converter.cancel()
+                path?.let { converter.cleanupPartialFile(it) }
+            }
+            updateState { FileConversionUiState(canSaveToDownloads = it.canSaveToDownloads) }
         }
     }
 
