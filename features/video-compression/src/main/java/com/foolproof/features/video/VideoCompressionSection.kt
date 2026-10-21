@@ -195,8 +195,10 @@ fun VideoCompressionSection(
                 estimatedBytes = state.estimatedBytes,
                 trimDurationMs = state.trimDurationMs,
                 frameRate = minOf(video.frameRate, CompressionPreset.MAX_FRAME_RATE),
+                targetSizeMb = state.targetSizeMb,
                 onResolutionChange = { viewModel.dispatch(VideoAction.ResolutionChanged(it)) },
                 onBitrateChange = { viewModel.dispatch(VideoAction.BitrateChanged(it)) },
+                onTargetSizeChange = { viewModel.dispatch(VideoAction.TargetSizeChanged(it)) },
                 enabled = !state.isCompressing,
                 modifier = Modifier.padding(top = 8.dp),
             )

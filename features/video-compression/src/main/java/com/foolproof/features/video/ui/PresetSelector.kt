@@ -2,6 +2,8 @@ package com.foolproof.features.video.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,14 +26,17 @@ import java.util.Locale
  *
  * 纯展示组件（参数由外部传入），便于以后复用与预览。
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun PresetSelector(
     preset: CompressionPreset,
     estimatedBytes: Long,
     trimDurationMs: Long,
     frameRate: Int,
+    targetSizeMb: Int?,
     onResolutionChange: (ResolutionTier) -> Unit,
     onBitrateChange: (BitrateTier) -> Unit,
+    onTargetSizeChange: (Int?) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
@@ -49,18 +54,49 @@ internal fun PresetSelector(
         }
 
         Text(
-            stringResource(R.string.video_bitrate),
+            stringResource(R.string.video_target_size),
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(top = 8.dp),
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            BitrateTier.entries.forEach { tier ->
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(
+                selected = targetSizeMb == null,
+                onClick = { onTargetSizeChange(null) },
+                enabled = enabled,
+                label = { Text(stringResource(R.string.video_target_auto)) },
+            )
+            listOf(10, 16, 25, 50).forEach { mb ->
                 FilterChip(
-                    selected = preset.bitrate == tier,
-                    onClick = { onBitrateChange(tier) },
+                    selected = targetSizeMb == mb,
+                    onClick = { onTargetSizeChange(mb) },
                     enabled = enabled,
-                    label = { Text(stringResource(tier.labelRes())) },
+                    label = { Text(stringResource(R.string.video_target_chip, mb)) },
                 )
+            }
+        }
+
+        if (targetSizeMb != null) {
+            Text(
+                text = stringResource(R.string.video_target_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+        } else {
+            Text(
+                stringResource(R.string.video_bitrate),
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                BitrateTier.entries.forEach { tier ->
+                    FilterChip(
+                        selected = preset.bitrate == tier,
+                        onClick = { onBitrateChange(tier) },
+                        enabled = enabled,
+                        label = { Text(stringResource(tier.labelRes())) },
+                    )
+                }
             }
         }
 
@@ -71,14 +107,24 @@ internal fun PresetSelector(
             bitrateLabel,
             preset.bitrateMbpsText(),
         )
-        Text(
-            text = stringResource(
+        val detail = if (targetSizeMb != null) {
+            stringResource(
+                R.string.video_target_summary,
+                targetSizeMb,
+                frameRate,
+                formatDuration(trimDurationMs),
+            )
+        } else {
+            stringResource(
                 R.string.video_preset_detail,
                 summary,
                 frameRate,
                 formatDuration(trimDurationMs),
                 ByteFormat.formatBytes(estimatedBytes),
-            ),
+            )
+        }
+        Text(
+            text = detail,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 8.dp),

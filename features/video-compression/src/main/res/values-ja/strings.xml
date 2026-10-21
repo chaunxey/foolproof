@@ -68,4 +68,9 @@
     <string name="video_merge_drag">ドラッグで並べ替え</string>
     <string name="video_msg_already_added">すでに追加されています</string>
     <string name="video_msg_duplicates_skipped">重複した動画はスキップされました</string>
+    <string name="video_target_auto">自動</string>
+    <string name="video_target_note">目標サイズからビットレートを自動計算します</string>
+    <string name="video_target_summary">目標 %1$d MB · %2$d fps · %3$s</string>
+    <string name="video_target_size">目標サイズ</string>
+    <string name="video_target_chip">%1$d MB</string>
 </resources>

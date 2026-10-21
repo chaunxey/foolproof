@@ -82,4 +82,9 @@
     <string name="video_merge_drag">拖动排序</string>
     <string name="video_msg_already_added">该视频已在列表中</string>
     <string name="video_msg_duplicates_skipped">已自动跳过重复视频</string>
+    <string name="video_target_auto">自动</string>
+    <string name="video_target_note">已按目标体积自动计算码率</string>
+    <string name="video_target_summary">目标 %1$d MB · %2$d fps · 时长 %3$s</string>
+    <string name="video_target_size">目标体积</string>
+    <string name="video_target_chip">%1$d MB</string>
 </resources>

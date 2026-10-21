@@ -27,6 +27,28 @@ class CompressionPresetTest {
     )
 
     @Test
+    fun `target bitrate keeps estimated size under the target`() {
+        val target = 16L * 1024 * 1024
+        val kbps = CompressionPreset.targetVideoBitrateKbps(
+            targetBytes = target,
+            durationMs = 60_000,
+            hasAudio = true,
+        )
+
+        val estimated = (kbps + CompressionPreset.AUDIO_KBPS) * 1000L / 8 * 60
+        assertTrue("估算必须不超过目标", estimated <= target)
+        assertTrue("估算不能离目标太远", estimated > target * 80 / 100)
+    }
+
+    @Test
+    fun `target bitrate clamps for tiny targets`() {
+        assertEquals(
+            CompressionPreset.MIN_TARGET_KBPS,
+            CompressionPreset.targetVideoBitrateKbps(1, 60_000, false),
+        )
+    }
+
+    @Test
     fun `bitrate table matches spec`() {
         assertEquals(8_000, CompressionPreset(ResolutionTier.P1080, BitrateTier.HIGH).videoBitrateKbps())
         assertEquals(5_000, CompressionPreset(ResolutionTier.P1080, BitrateTier.MEDIUM).videoBitrateKbps())

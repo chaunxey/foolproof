@@ -84,5 +84,24 @@ data class CompressionPreset(
 
         /** 帧率上限：源更高时压到 30，源更低则保持源。 */
         const val MAX_FRAME_RATE = 30
+
+        private const val TARGET_HEADROOM = 0.90
+        const val MIN_TARGET_KBPS = 200
+        private const val MAX_TARGET_KBPS = 8_000
+
+        /**
+         * 按目标体积反推的视频码率（kbps）。
+         * 留 10% 余量给 mux/码率波动；超出时 ViewModel 会再次降码率重试。
+         */
+        fun targetVideoBitrateKbps(
+            targetBytes: Long,
+            durationMs: Long,
+            hasAudio: Boolean,
+        ): Int {
+            if (targetBytes <= 0 || durationMs <= 0) return MIN_TARGET_KBPS
+            val totalKbps = targetBytes.toDouble() * 8 * TARGET_HEADROOM / durationMs
+            val audio = if (hasAudio) AUDIO_KBPS else 0
+            return (totalKbps - audio).toInt().coerceIn(MIN_TARGET_KBPS, MAX_TARGET_KBPS)
+        }
     }
 }

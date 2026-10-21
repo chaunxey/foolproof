@@ -32,6 +32,8 @@ data class VideoUiState(
     val video: SourceVideo? = null,
     val trim: TrimRange = TrimRange(0L, 0L),
     val preset: CompressionPreset = CompressionPreset(),
+    /** 目标体积（MB）；null 表示按码率档位压缩。 */
+    val targetSizeMb: Int? = null,
     val phase: VideoPhase = VideoPhase.Idle,
     val output: CompressedVideo? = null,
     /** 编码器相关提示，null 表示无需提示。 */
@@ -48,7 +50,9 @@ data class VideoUiState(
 
     /** 预估体积（按裁剪后的时长与源是否有音轨计算）。 */
     val estimatedBytes: Long
-        get() = video?.let { preset.estimatedBytes(trim.durationMs, it.hasAudio) } ?: 0L
+        get() = targetSizeMb?.let { it * 1024L * 1024L }
+            ?: video?.let { preset.estimatedBytes(trim.durationMs, it.hasAudio) }
+            ?: 0L
 
     val canCompress: Boolean
         get() {
@@ -74,6 +78,8 @@ sealed interface VideoAction : UiAction {
     data class ResolutionChanged(val tier: ResolutionTier) : VideoAction
 
     data class BitrateChanged(val tier: BitrateTier) : VideoAction
+
+    data class TargetSizeChanged(val mb: Int?) : VideoAction
 
     data object Start : VideoAction
     data object Reset : VideoAction

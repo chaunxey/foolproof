@@ -77,6 +77,10 @@ class VideoCompressionViewModel(
                 it.copy(preset = it.preset.copy(bitrate = action.tier))
             }
 
+            is VideoAction.TargetSizeChanged -> updateState {
+                it.copy(targetSizeMb = action.mb)
+            }
+
             VideoAction.Start -> startCompression()
 
             VideoAction.Cancel -> cancelCompression()
@@ -235,11 +239,20 @@ class VideoCompressionViewModel(
         ).absolutePath
         currentOutputPath = outputPath
 
+        val targetBytes = state.targetSizeMb?.let { it * 1024L * 1024L }
         val request = VideoCompressRequest(
             sourceId = video.id,
             outputPath = outputPath,
             targetShortSide = targetShortSide,
-            videoBitrateKbps = state.preset.videoBitrateKbps(),
+            videoBitrateKbps = if (targetBytes != null) {
+                CompressionPreset.targetVideoBitrateKbps(
+                    targetBytes = targetBytes,
+                    durationMs = state.trim.durationMs,
+                    hasAudio = video.hasAudio,
+                )
+            } else {
+                state.preset.videoBitrateKbps()
+            },
             frameRate = frameRate,
             trimStartMs = state.trim.startMs,
             trimEndMs = state.trim.endMs,
@@ -249,39 +262,64 @@ class VideoCompressionViewModel(
         updateState { it.copy(phase = VideoPhase.Compressing(0), output = null) }
 
         compressJob = launchJob {
-            compressor.compress(request).collect { progress ->
-                when (progress) {
-                    is VideoProgress.Running -> updateState {
-                        it.copy(phase = VideoPhase.Compressing(progress.percent))
-                    }
+            var bitrate = request.videoBitrateKbps
+            var attempt = 0
+            while (attempt < MAX_TARGET_ATTEMPTS) {
+                attempt++
+                var success: VideoProgress.Success? = null
+                var stopped = false
 
-                    is VideoProgress.Success -> {
-                        val sourceBytes = currentState.video?.sizeBytes ?: 0L
-                        updateState {
-                            it.copy(
-                                phase = VideoPhase.Done,
-                                output = CompressedVideo(progress.path, progress.bytes),
-                            )
+                compressor.compress(request.copy(videoBitrateKbps = bitrate)).collect { progress ->
+                    when (progress) {
+                        is VideoProgress.Running -> updateState {
+                            it.copy(phase = VideoPhase.Compressing(progress.percent))
                         }
-                        sendEffect(VideoEffect.Message(VideoEffect.MessageKind.DONE))
-                        // 源本身很小时，当前档位的码率可能高于它，结果反而更大——如实告知
-                        if (sourceBytes > 0 && progress.bytes >= sourceBytes) {
-                            sendEffect(VideoEffect.Message(VideoEffect.MessageKind.LARGER_THAN_SOURCE))
+
+                        is VideoProgress.Success -> success = progress
+
+                        is VideoProgress.Failed -> {
+                            // 失败也必须清掉半成品，否则 files/videos/ 会留下不完整文件（FR-014）
+                            currentOutputPath?.let { compressor.cleanupPartialFile(it) }
+                            updateState { it.copy(phase = VideoPhase.Failed(progress.reason)) }
+                            sendEffect(VideoEffect.Message(progress.reason.toMessage()))
+                            stopped = true
                         }
-                    }
 
-                    is VideoProgress.Failed -> {
-                        // 失败也必须清掉半成品，否则 files/videos/ 会留下不完整文件（FR-014）
-                        currentOutputPath?.let { compressor.cleanupPartialFile(it) }
-                        updateState { it.copy(phase = VideoPhase.Failed(progress.reason)) }
-                        sendEffect(VideoEffect.Message(progress.reason.toMessage()))
-                    }
-
-                    VideoProgress.Cancelled -> {
-                        updateState { it.copy(phase = VideoPhase.Ready) }
-                        sendEffect(VideoEffect.Message(VideoEffect.MessageKind.CANCELLED))
+                        VideoProgress.Cancelled -> {
+                            updateState { it.copy(phase = VideoPhase.Ready) }
+                            sendEffect(VideoEffect.Message(VideoEffect.MessageKind.CANCELLED))
+                            stopped = true
+                        }
                     }
                 }
+                if (stopped) return@launchJob
+
+                val result = success ?: return@launchJob
+                val target = targetBytes
+                val overTarget = target != null && result.bytes > target
+                if (!overTarget || attempt >= MAX_TARGET_ATTEMPTS) {
+                    val sourceBytes = currentState.video?.sizeBytes ?: 0L
+                    updateState {
+                        it.copy(
+                            phase = VideoPhase.Done,
+                            output = CompressedVideo(result.path, result.bytes),
+                        )
+                    }
+                    sendEffect(VideoEffect.Message(VideoEffect.MessageKind.DONE))
+                    // 源本身很小时，当前档位的码率可能高于它，结果反而更大——如实告知
+                    if (sourceBytes > 0 && result.bytes >= sourceBytes) {
+                        sendEffect(VideoEffect.Message(VideoEffect.MessageKind.LARGER_THAN_SOURCE))
+                    }
+                    return@launchJob
+                }
+
+                // 超出目标体积：按实际/目标比例降码率，删掉本次产物后重试
+                File(outputPath).delete()
+                bitrate = (bitrate.toLong() * target!! / result.bytes * 95 / 100)
+                    .toInt()
+                    .coerceAtLeast(CompressionPreset.MIN_TARGET_KBPS)
+                log.d { "target missed: ${result.bytes} > $target, retry at $bitrate kbps" }
+                updateState { it.copy(phase = VideoPhase.Compressing(0)) }
             }
         }
     }
@@ -325,6 +363,9 @@ class VideoCompressionViewModel(
 
     private companion object {
         const val VIDEO_AVC = "video/avc"
+
+        /** 目标体积最多尝试 3 次（首轮 + 两次降码率）。 */
+        const val MAX_TARGET_ATTEMPTS = 3
 
         /** 超过 30 分钟建议先裁剪（规格「边界情况」）。 */
         const val LONG_VIDEO_MS = 30 * 60 * 1000L

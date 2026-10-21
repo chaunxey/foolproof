@@ -68,4 +68,9 @@
     <string name="video_merge_drag">អូសដើម្បីរៀបចំ</string>
     <string name="video_msg_already_added">មាននៅក្នុងបញ្ជីរួចហើយ</string>
     <string name="video_msg_duplicates_skipped">វីដេអូស្ទួនត្រូវបានរំលង</string>
+    <string name="video_target_auto">ស្វ័យប្រវត្តិ</string>
+    <string name="video_target_note">គណនាអត្រាប៊ីតតាមទំហំគោលដៅ</string>
+    <string name="video_target_summary">គោលដៅ %1$d MB · %2$d fps · %3$s</string>
+    <string name="video_target_size">ទំហំគោលដៅ</string>
+    <string name="video_target_chip">%1$d MB</string>
 </resources>
