@@ -1,4 +1,4 @@
-package com.foolproof.features.video.ui
+﻿package com.foolproof.features.video.ui
 
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -11,7 +11,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.foolproof.features.video.R
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -69,6 +72,18 @@ internal fun TrimTimeline(
     var videoView by remember { mutableStateOf<VideoView?>(null) }
     // 选中视频后不自动播放：由用户点【播放】才开始（避免一进页面就出声）
     var isPlaying by remember(videoId) { mutableStateOf(false) }
+    var positionMs by remember(videoId) { mutableStateOf(startMs) }
+
+    // 播放时轮询位置（VideoView 没有位置回调）；暂停时保留当前位置，进度条不回跳
+    LaunchedEffect(isPlaying, startMs, endMs) {
+        if (!isPlaying) return@LaunchedEffect
+        while (true) {
+            videoView?.let { positionMs = it.currentPosition.toLong() }
+            delay(100)
+        }
+    }
+
+    val fraction = playbackFraction(positionMs, startMs, endMs)
 
     Column(modifier = modifier.fillMaxWidth()) {
         // 让画面尽可能大，同时保证竖屏视频不把页面撑爆：
@@ -96,7 +111,10 @@ internal fun TrimTimeline(
                                 view.pause()
                                 isPlaying = false
                             } else {
-                                view.seekTo(startMs.toInt())
+                                // 位置已跑到区间外才回起点；否则从当前位置接着播
+                                if (view.currentPosition !in startMs.toInt() until endMs.toInt()) {
+                                    view.seekTo(startMs.toInt())
+                                }
                                 view.start()
                                 isPlaying = true
                             }
@@ -136,6 +154,24 @@ internal fun TrimTimeline(
                         modifier = Modifier.size(26.dp),
                     )
                 }
+            }
+
+            // 底部播放进度条：以「裁剪区间」为 0..1，播放从起点开始，所以拖到后面再看进度也直观
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(3.dp)
+                    .background(Color.White.copy(alpha = 0.25f))
+                    // 读屏用户也能知道播到哪了
+                    .semantics { contentDescription = "播放进度 ${(fraction * 100).toInt()}%" },
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(fraction)
+                        .height(3.dp)
+                        .background(Color.White),
+                )
             }
             }   // 关闭预览 Box
         }       // 关闭 BoxWithConstraints
@@ -236,3 +272,12 @@ private fun rememberVideoFrames(videoId: String, frameCount: Int): List<ImageBit
 
 /** 预览区最大高度：分辨率再高也不超过它，避免竖屏视频把页面撑爆。 */
 private val PREVIEW_MAX_HEIGHT = 400.dp
+/**
+ * 播放进度（0..1），以裁剪区间为基准：起点为 0、终点为 1。
+ *
+ * 抽成纯函数便于单测——界面里只负责把 [positionMs] 喂进来。
+ */
+internal fun playbackFraction(positionMs: Long, startMs: Long, endMs: Long): Float {
+    val span = (endMs - startMs).coerceAtLeast(1L)
+    return ((positionMs - startMs).toFloat() / span).coerceIn(0f, 1f)
+}
