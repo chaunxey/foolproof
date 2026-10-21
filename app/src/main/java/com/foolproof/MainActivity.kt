@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.Density
 import androidx.core.view.WindowCompat
 import com.foolproof.ads.SplashAdOverlay
 import com.foolproof.ads.SplashScheduler
+import com.foolproof.base.share.SharedContentStore
 import com.foolproof.ui.FoolproofScreen
 import com.foolproof.ui.settings.SettingsStore
 import com.foolproof.ui.settings.ThemeMode
@@ -40,6 +41,12 @@ class MainActivity : ComponentActivity() {
         SettingsStore.init(newBase)
         // Activity 自身 resources 也跟随语言：Dialog 等新窗口不会掉回系统/旧语言
         super.attachBaseContext(SettingsStore.wrapBaseContext(newBase))
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        SharedContentStore.publishFrom(intent)
     }
 
     override fun onStart() {
@@ -60,6 +67,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        SharedContentStore.publishFrom(intent)
         enableEdgeToEdge()
         setContent {
             val scale by SettingsStore.fontScale.collectAsState()

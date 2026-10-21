@@ -68,6 +68,20 @@ fun PdfToolsSection(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val shared by com.foolproof.base.share.SharedContentStore.content.collectAsState()
+    LaunchedEffect(shared) {
+        val payload = shared
+        if (payload?.kind == com.foolproof.base.share.SharedContentStore.Kind.PDF) {
+            viewModel.dispatch(
+                PdfToolsAction.PdfsPicked(
+                    payload.uris.map {
+                        PdfPick(it, context.pdfDisplayName(Uri.parse(it)))
+                    },
+                ),
+            )
+            com.foolproof.base.share.SharedContentStore.consume()
+        }
+    }
     var message by remember { mutableStateOf<Int?>(null) }
     var messageError by remember { mutableStateOf(false) }
     val working = state.phase == PdfToolPhase.WORKING

@@ -20,8 +20,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.foolproof.R
 import com.foolproof.ads.SectionBannerAd
+import com.foolproof.base.share.SharedContentStore
 import com.foolproof.features.conversion.ui.FileConversionSection
 import com.foolproof.features.conversion.ui.PdfToolsSection
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 
 private enum class ConversionTabMode { GENERATE, TOOLS }
 
@@ -29,6 +32,12 @@ private enum class ConversionTabMode { GENERATE, TOOLS }
 @Composable
 fun ConversionTabScreen(modifier: Modifier = Modifier) {
     var mode by rememberSaveable { mutableStateOf(ConversionTabMode.GENERATE) }
+    val shared by SharedContentStore.content.collectAsState()
+    LaunchedEffect(shared) {
+        if (shared?.kind == SharedContentStore.Kind.PDF) {
+            mode = ConversionTabMode.TOOLS
+        }
+    }
 
     Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(

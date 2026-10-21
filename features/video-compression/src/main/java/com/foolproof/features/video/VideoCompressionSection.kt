@@ -42,6 +42,7 @@ import com.foolproof.base.util.ByteFormat
 import com.foolproof.common.ui.FoolproofButton
 import com.foolproof.common.ui.FoolproofSecondaryButton
 import com.foolproof.base.util.findActivity
+import com.foolproof.base.share.SharedContentStore
 import com.foolproof.features.video.domain.CompressionPreset
 import com.foolproof.features.video.ui.PresetSelector
 import com.foolproof.features.video.ui.ResultPreviewDialog
@@ -63,6 +64,14 @@ fun VideoCompressionSection(
     viewModel: VideoCompressionViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    val shared by SharedContentStore.content.collectAsState()
+    LaunchedEffect(shared) {
+        val payload = shared
+        if (payload?.kind == SharedContentStore.Kind.VIDEO && !state.isCompressing) {
+            payload.uris.firstOrNull()?.let { viewModel.dispatch(VideoAction.VideoPicked(it)) }
+            SharedContentStore.consume()
+        }
+    }
     val context = LocalContext.current
     val activity = context.findActivity()
 

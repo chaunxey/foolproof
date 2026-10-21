@@ -11,9 +11,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.foolproof.R
+import com.foolproof.base.share.SharedContentStore
 import com.foolproof.ui.settings.SettingsDialog
 import com.foolproof.common.navigation.FoolproofDestination
 import com.foolproof.common.navigation.FoolproofTabHost
@@ -52,9 +55,18 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
     var showSettings by remember { mutableStateOf(false) }
     if (showSettings) SettingsDialog(onDismiss = { showSettings = false })
 
+    val shared by SharedContentStore.content.collectAsState()
+    val requestedDestination = when (shared?.kind) {
+        SharedContentStore.Kind.IMAGE -> FoolproofDestination.Images
+        SharedContentStore.Kind.VIDEO -> FoolproofDestination.Videos
+        SharedContentStore.Kind.PDF -> FoolproofDestination.Converter
+        null -> null
+    }
+
     FoolproofTabHost(
         modifier = modifier.fillMaxSize(),
         onSettingsClick = { showSettings = true },
+        requestedDestination = requestedDestination,
     ) { destination ->
         when (destination) {
             FoolproofDestination.Images -> CompressionTabScreen()

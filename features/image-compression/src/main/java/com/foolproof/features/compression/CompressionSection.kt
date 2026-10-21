@@ -19,6 +19,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +41,7 @@ import com.foolproof.base.util.ByteFormat
 import com.foolproof.common.ui.FoolproofButton
 import com.foolproof.common.ui.FoolproofSecondaryButton
 import com.foolproof.base.util.findActivity
+import com.foolproof.base.share.SharedContentStore
 import com.foolproof.features.compression.domain.CompressionOutcome
 import com.foolproof.features.compression.domain.FailureReason
 import com.foolproof.features.compression.domain.OutcomeStatus
@@ -62,6 +64,14 @@ fun CompressionSection(
     viewModel: CompressionViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    val shared by SharedContentStore.content.collectAsState()
+    LaunchedEffect(shared) {
+        val payload = shared
+        if (payload?.kind == SharedContentStore.Kind.IMAGE && !state.isRunning) {
+            viewModel.dispatch(CompressionAction.ImagesPicked(payload.uris))
+            SharedContentStore.consume()
+        }
+    }
     val context = LocalContext.current
     val activity = context.findActivity()
     val picker = rememberLauncherForActivityResult(
