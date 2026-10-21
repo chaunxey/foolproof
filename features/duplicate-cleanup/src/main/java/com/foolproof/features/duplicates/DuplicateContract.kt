@@ -82,8 +82,14 @@ sealed interface DuplicateAction : UiAction {
     /** 用户在确认框点了确认。 */
     data object ConfirmDelete : DuplicateAction
 
-    /** 系统删除对话框返回后，用实际查询结果收尾。 */
-    data class DeleteSettled(val requested: List<String>) : DuplicateAction
+    /** 系统删除对话框返回后收尾：systemConfirmed 表示系统回收站已确认成功。 */
+    data class DeleteSettled(
+        val requested: List<String>,
+        val systemConfirmed: Boolean = false,
+    ) : DuplicateAction
+
+    /** 用户在系统删除对话框点了取消。 */
+    data object DeleteCancelled : DuplicateAction
 
     data class SafTreeChosen(val treeUri: String?) : DuplicateAction
 

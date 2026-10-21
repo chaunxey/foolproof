@@ -50,7 +50,15 @@ class DuplicateViewModel(
 
             DuplicateAction.ConfirmDelete -> performDelete(currentState.selected)
 
-            is DuplicateAction.DeleteSettled -> settleDelete(action.requested)
+            is DuplicateAction.DeleteSettled -> {
+                if (action.systemConfirmed) {
+                    settleSystemDelete(action.requested)
+                } else {
+                    settleDelete(action.requested)
+                }
+            }
+
+            DuplicateAction.DeleteCancelled -> updateState { it.copy(deleting = false) }
 
             is DuplicateAction.SafTreeChosen -> {
                 deleter.setSafTree(action.treeUri)
@@ -212,6 +220,40 @@ class DuplicateViewModel(
         }
     }
 
+    private fun applyDeleted(removed: Set<String>, report: DeleteReport) {
+        updateState { state ->
+            val groups = state.groups.mapNotNull { group ->
+                val remaining = group.items.filterNot { it.id in removed }
+                // 只剩一张（或零张）的组没有清理价值，直接移除
+                if (remaining.size > 1) group.copy(items = remaining) else null
+            }
+            state.copy(
+                groups = groups,
+                selected = state.selected - removed,
+                deleting = false,
+                report = report,
+            )
+        }
+    }
+
+    /**
+     * 系统回收站已确认成功时直接按成功收尾。
+     *
+     * 注意：刚移入回收站的文件在短时间内仍可能被 openAssetFileDescriptor 打开，
+     * 再用“文件还在不在”判断会把成功误报为部分失败。
+     */
+    private fun settleSystemDelete(requested: List<String>) {
+        val report = DeleteReport(
+            requested = requested.size,
+            deleted = requested.size,
+            failed = 0,
+        )
+        applyDeleted(requested.toSet(), report)
+        sendEffect(
+            DuplicateEffect.Message(DuplicateEffect.MessageKind.DELETED),
+        )
+    }
+
     /** 以「还在不在」为准收尾，而不是相信删除请求的返回码。 */
     private fun settleDelete(requested: List<String>) {
         launch {
@@ -224,20 +266,7 @@ class DuplicateViewModel(
             )
 
             val removed = requested.filterNot { it in existing }.toSet()
-
-            updateState { state ->
-                val groups = state.groups.mapNotNull { group ->
-                    val remaining = group.items.filterNot { it.id in removed }
-                    // 只剩一张（或零张）的组没有清理价值，直接移除
-                    if (remaining.size > 1) group.copy(items = remaining) else null
-                }
-                state.copy(
-                    groups = groups,
-                    selected = state.selected - removed,
-                    deleting = false,
-                    report = report,
-                )
-            }
+            applyDeleted(removed, report)
 
             sendEffect(
                 DuplicateEffect.Message(

@@ -107,9 +107,15 @@ fun DuplicateHeader(
 
     val systemDeleteLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult(),
-    ) { _ ->
-        // 系统回调码不代表每张都删成功 → 回到 ViewModel 用查询结果核实
-        viewModel.dispatch(DuplicateAction.DeleteSettled(pendingDelete))
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            // 系统回收站已确认成功；刚移入回收站的文件仍可能可读，不能再做“文件是否还在”的判断
+            viewModel.dispatch(
+                DuplicateAction.DeleteSettled(pendingDelete, systemConfirmed = true),
+            )
+        } else {
+            viewModel.dispatch(DuplicateAction.DeleteCancelled)
+        }
     }
 
     LaunchedEffect(Unit) {

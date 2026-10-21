@@ -283,6 +283,51 @@ class DuplicateViewModelTest {
     }
 
     @Test
+    fun `system confirmed delete trusts the result even if trashed files are still readable`() =
+        runTest(dispatcher) {
+            // 刚移入回收站的文件短时间内仍可能被打开，不能因此报“部分失败”
+            val deleter = FakeDeleter(
+                mode = FakeDeleter.Mode.NeedsConfirmation,
+                survivorIds = setOf("small", "extra"),
+            )
+            val vm = viewModel(
+                FakeScanner(
+                    listOf(
+                        item("big", 0L, 900L),
+                        item("small", 0L, 100L),
+                        item("extra", 0L, 200L),
+                    ),
+                ),
+                deleter,
+            )
+            val effects = mutableListOf<DuplicateEffect>()
+            val job = launch { vm.effect.collect { effects += it } }
+            advanceUntilIdle()
+
+            vm.dispatch(DuplicateAction.RequestScan)
+            advanceUntilIdle()
+            vm.dispatch(DuplicateAction.RequestDelete)
+            advanceUntilIdle()
+            vm.dispatch(DuplicateAction.ConfirmDelete)
+            advanceUntilIdle()
+
+            val requested = deleter.requestedIds
+            vm.dispatch(DuplicateAction.DeleteSettled(requested, systemConfirmed = true))
+            advanceUntilIdle()
+
+            val state = vm.uiState.value
+            assertEquals(requested.size, state.report?.deleted)
+            assertEquals(0, state.report?.failed)
+            assertFalse(
+                effects.any {
+                    it is DuplicateEffect.Message &&
+                        it.kind == DuplicateEffect.MessageKind.DELETE_FAILED
+                },
+            )
+            job.cancel()
+        }
+
+    @Test
     fun `system delete goes through confirmation then verification`() = runTest(dispatcher) {
         val deleter = FakeDeleter(mode = FakeDeleter.Mode.NeedsConfirmation)
         val vm = viewModel(
