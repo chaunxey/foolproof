@@ -50,24 +50,24 @@
 
 ## Phase 3: US1 — 压缩主链路 (P1)
 
-- [ ] T014 [US1] 创建 `.../domain/VideoCompressor.kt`：接口 + `VideoProgress`
+- [x] T014 [US1] 创建 `.../domain/VideoCompressor.kt`：接口 + `VideoProgress`
   （Running/Success/Failed/Cancelled）+ `VideoFailure` 分类
-- [ ] T015 [US1] 创建 `.../domain/EncoderCatalog.kt`：接口 + `EncoderCapability`
+- [x] T015 [US1] 创建 `.../domain/EncoderCatalog.kt`：接口 + `EncoderCapability`
   （mime / isHardware / maxWidth / maxHeight / maxBitrate）
-- [ ] T016 [US1] 创建 `.../data/MediaCodecEncoderCatalog.kt`：`MediaCodecList(ALL_CODECS)` 查询，
+- [x] T016 [US1] 创建 `.../data/MediaCodecEncoderCatalog.kt`：`MediaCodecList(ALL_CODECS)` 查询，
   `VideoCapabilities` 取分辨率与码率上限
-- [ ] T017 [US1] 创建 `.../data/ContentResolverVideoReader.kt`：`MediaMetadataRetriever` 读时长/宽高/
+- [x] T017 [US1] 创建 `.../data/ContentResolverVideoReader.kt`：`MediaMetadataRetriever` 读时长/宽高/
   帧率/有无音轨；**读完立即 release**（避免与转码抢解码器）
-- [ ] T018 [US1] 创建 `.../data/Media3VideoCompressor.kt`：`Transformer` + `Presentation`（缩放）+
+- [x] T018 [US1] 创建 `.../data/Media3VideoCompressor.kt`：`Transformer` + `Presentation`（缩放）+
   `ClippingConfiguration`（裁剪）+ `VideoEncoderSettings.setBitrate`；
   `compress()` 返回 `Flow<VideoProgress>`；`cancel()` 等 `onCancelled` 后再删临时文件
-- [ ] T019 [US1] 创建 `.../VideoCompressionContract.kt`：UiState/Action/Effect + `Phase`
+- [x] T019 [US1] 创建 `.../VideoCompressionContract.kt`：UiState/Action/Effect + `Phase`
   （Idle/Ready/Compressing/Done/Failed）
-- [ ] T020 [US1] 创建 `.../VideoCompressionViewModel.kt`：继承 `BaseViewModel`；选视频→读元信息→
+- [x] T020 [US1] 创建 `.../VideoCompressionViewModel.kt`：继承 `BaseViewModel`；选视频→读元信息→
   编码器门槛检查→压缩→进度→完成/失败；取消走协程 + 压缩器 cancel
-- [ ] T021 [US1] 创建 `src/test/.../VideoCompressionViewModelTest.kt`：状态流转、进度更新、
+- [x] T021 [US1] 创建 `src/test/.../VideoCompressionViewModelTest.kt`：状态流转、进度更新、
   取消、失败分类、重复点击防护
-- [ ] T022 [US1] 运行测试 + `assembleDebug` 通过
+- [x] T022 [US1] 运行测试 + `assembleDebug` 通过
 
 ---
 

@@ -120,6 +120,14 @@ EditedMediaItem.Builder#setFrameRate(int) / setEffects(Effects) / setRemoveAudio
 **注意**：`TransformationRequest.Builder#setResolution(int)` 是**包内可见**，不能直接用；
 缩放必须走 `Presentation` 这个 `Effect`。这一条如果搞错，会在编译期或运行期踩空。
 
+**实现时又确认了两个与预期不同的事实（已按实际 API 写实现）**：
+
+1. **`Transformer.Listener` 没有 `onProgress`** —— Media3 1.11 的进度只能轮询
+   `Transformer#getProgress(ProgressHolder)`，`ProgressHolder.progress` 是 **Int**（0–100）。
+   实现里每 400ms 轮询一次。
+2. **`ExportResult` 不含输出路径** —— 它只有 `fileSizeBytes`/`durationMs` 等，
+   输出路径以调用方传入的 `outputPath` 为准（`onCompleted` 回调里用它判断文件是否真的生成）。
+
 ### R2. 编码器能力只能运行时查（已实测，2026-10-21）
 
 - `dumpsys media.codec` 在 API 34 上拿不到编码器列表；`/vendor/etc/media_codecs.xml` 的
