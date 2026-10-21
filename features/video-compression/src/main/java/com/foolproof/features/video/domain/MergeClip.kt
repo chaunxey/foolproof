@@ -5,6 +5,8 @@ data class MergeClip(
     val source: SourceVideo,
     val startMs: Long = 0L,
     val endMs: Long = source.durationMs,
+    /** 加入顺序的稳定序号，用于分配不重复的行底色（拖拽后不变）。 */
+    val colorSeed: Int = 0,
 ) {
     val durationMs: Long
         get() = (endMs - startMs).coerceAtLeast(0L)

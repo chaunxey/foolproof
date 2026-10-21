@@ -186,7 +186,7 @@ fun VideoMergeSection(
                             shape = RoundedCornerShape(12.dp),
                         )
                         .background(
-                            color = rowColorFor(clip.source.id),
+                            color = rowColorFor(clip.colorSeed),
                             shape = RoundedCornerShape(12.dp),
                         )
                         .padding(horizontal = 8.dp, vertical = 6.dp)
@@ -434,9 +434,9 @@ private fun VideoMergeEffect.MessageKind.labelRes(): Int = when (this) {
     VideoMergeEffect.MessageKind.SAVE_UNSUPPORTED -> R.string.video_msg_save_unsupported
 }
 
-/** 按视频 id 派生一个稳定的浅色底，拖拽时更容易分辨每一段。 */
+/** 按加入序号取色：前 10 段不会撞色，拖拽后颜色保持不变。 */
 @Composable
-private fun rowColorFor(id: String): Color {
+private fun rowColorFor(seed: Int): Color {
     val palette = listOf(
         Color(0xFF5C6BC0),
         Color(0xFF26A69A),
@@ -445,8 +445,11 @@ private fun rowColorFor(id: String): Color {
         Color(0xFF42A5F5),
         Color(0xFF66BB6A),
         Color(0xFFEC407A),
+        Color(0xFFFFB300),
+        Color(0xFF00ACC1),
+        Color(0xFF8D6E63),
     )
-    val base = palette[abs(id.hashCode()) % palette.size]
+    val base = palette[abs(seed) % palette.size]
     return base.copy(alpha = if (isSystemInDarkTheme()) 0.30f else 0.16f)
 }
 

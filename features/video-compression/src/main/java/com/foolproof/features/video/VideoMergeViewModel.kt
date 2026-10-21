@@ -61,7 +61,10 @@ class VideoMergeViewModel(
             val existing = currentState.clips.map { it.source.id }.toSet()
             // 同一视频重复添加会让 id 冲突（拖拽/删除按 id 定位），这里按 id 去重
             val fresh = loaded.filter { it.id !in existing }.distinctBy { it.id }
-            val accepted = fresh.take(room).map { MergeClip(source = it) }
+            val seedBase = (currentState.clips.maxOfOrNull { it.colorSeed } ?: -1) + 1
+            val accepted = fresh.take(room).mapIndexed { index, source ->
+                MergeClip(source = source, colorSeed = seedBase + index)
+            }
             if (accepted.isNotEmpty()) {
                 updateState { it.copy(clips = it.clips + accepted) }
             }
