@@ -1,4 +1,4 @@
-package com.foolproof.features.video.ui
+﻿package com.foolproof.features.video.ui
 
 import android.net.Uri
 import android.widget.VideoView
@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -81,6 +82,11 @@ internal fun VideoPreview(
             }
             delay(100)
         }
+    }
+
+    // 被移除（关闭弹窗 / 切 tab）时停止播放，避免控件已消失但声音还在
+    DisposableEffect(Unit) {
+        onDispose { videoView?.stopPlayback() }
     }
 
     val fraction = playbackFraction(positionMs, startMs, endMs)
