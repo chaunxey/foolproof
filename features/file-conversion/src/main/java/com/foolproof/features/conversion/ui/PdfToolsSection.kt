@@ -1,15 +1,21 @@
 package com.foolproof.features.conversion.ui
 
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
+import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -280,14 +286,42 @@ fun PdfToolsSection(
             )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .horizontalScroll(rememberScrollState()),
+            ) {
+                state.images.forEach { image ->
+                    ImageThumb(path = image.path)
+                }
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(top = 8.dp),
             ) {
-                FoolproofButton(
+                FoolproofSecondaryButton(
                     text = stringResource(R.string.pdf_tools_share_images),
                     onClick = {
-                        context.shareImages(state.images.map { it.path })
+                        if (!context.shareImages(state.images.map { it.path })) {
+                            message = R.string.pdf_tools_share_failed
+                            messageError = true
+                        }
                     },
                 )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    FoolproofSecondaryButton(
+                        text = stringResource(R.string.conversion_save_to_downloads),
+                        onClick = {
+                            val ok = context.saveImagesToDownloads(state.images.map { it.path })
+                            message = if (ok) {
+                                R.string.conversion_msg_saved
+                            } else {
+                                R.string.conversion_msg_save_failed
+                            }
+                            messageError = !ok
+                        },
+                    )
+                }
             }
         }
 
@@ -369,9 +403,9 @@ private fun PdfToolsEffect.MessageKind.isError(): Boolean = when (this) {
     -> false
 }
 
-private fun Context.shareImages(paths: List<String>) {
-    if (paths.isEmpty()) return
-    runCatching {
+private fun Context.shareImages(paths: List<String>): Boolean {
+    if (paths.isEmpty()) return false
+    return runCatching {
         val uris = paths.map {
             FileProvider.getUriForFile(this, "$packageName.files", File(it))
         }
@@ -382,6 +416,54 @@ private fun Context.shareImages(paths: List<String>) {
         }
         startActivity(
             Intent.createChooser(intent, null).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) },
+        )
+    }.isSuccess
+}
+
+/** 保存到「下载/Foolproof」；仅 API 29+ 可用（与 PDF 保存一致）。 */
+private fun Context.saveImagesToDownloads(paths: List<String>): Boolean {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return false
+    var saved = false
+    paths.forEach { path ->
+        val file = File(path)
+        val values = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, file.name)
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            put(MediaStore.MediaColumns.RELATIVE_PATH, "Download/Foolproof")
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
+        }
+        val uri = runCatching {
+            contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+        }.getOrNull() ?: return@forEach
+        val ok = runCatching {
+            contentResolver.openOutputStream(uri)?.use { out ->
+                file.inputStream().use { input -> input.copyTo(out) }
+            } ?: error("no output stream")
+        }.isSuccess
+        if (ok) {
+            values.clear()
+            values.put(MediaStore.MediaColumns.IS_PENDING, 0)
+            contentResolver.update(uri, values, null, null)
+            saved = true
+        } else {
+            contentResolver.delete(uri, null, null)
+        }
+    }
+    return saved
+}
+
+@Composable
+private fun ImageThumb(path: String) {
+    val bitmap = remember(path) {
+        val options = BitmapFactory.Options().apply { inSampleSize = 4 }
+        runCatching { BitmapFactory.decodeFile(path, options) }.getOrNull()
+    }
+    bitmap?.let {
+        Image(
+            bitmap = it.asImageBitmap(),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.size(96.dp).clip(RoundedCornerShape(8.dp)),
         )
     }
 }

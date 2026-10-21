@@ -71,4 +71,5 @@
     <string name="pdf_tools_share_images">ចែករំលែករូបភាព</string>
     <string name="pdf_tools_mode_images">ទៅជារូបភាព</string>
     <string name="pdf_tools_images_done">បានបង្កើតរូបភាព %1$d</string>
+    <string name="pdf_tools_share_failed">ការចែករំលែកបរាជ័យ សូមព្យាយាមម្តងទៀត</string>
 </resources>

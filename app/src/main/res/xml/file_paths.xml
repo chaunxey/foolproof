@@ -13,4 +13,6 @@
     <files-path name="video_output" path="videos/" />
     <!-- 文件转 PDF 的输出：filesDir/pdf/ -->
     <files-path name="pdf_output" path="pdf/" />
+    <!-- PDF 转图片的输出：filesDir/pdf_images/ -->
+    <files-path name="pdf_images" path="pdf_images/" />
 </paths>

@@ -71,4 +71,5 @@
     <string name="pdf_tools_share_images">画像を共有</string>
     <string name="pdf_tools_mode_images">画像に変換</string>
     <string name="pdf_tools_images_done">%1$d 枚の画像を生成しました</string>
+    <string name="pdf_tools_share_failed">共有に失敗しました。もう一度お試しください</string>
 </resources>

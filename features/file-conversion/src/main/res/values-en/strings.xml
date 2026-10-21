@@ -71,4 +71,5 @@
     <string name="pdf_tools_share_images">Share images</string>
     <string name="pdf_tools_mode_images">To images</string>
     <string name="pdf_tools_images_done">%1$d images created</string>
+    <string name="pdf_tools_share_failed">Share failed, please try again</string>
 </resources>
