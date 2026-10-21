@@ -1,4 +1,4 @@
-# 项目宪法（Project Constitution）
+﻿# 项目宪法（Project Constitution）
 
 > 本文档是本项目的最高约束。任何代码、评审、重构都不得违反；如需修改，必须显式更新本文档并说明理由。
 技术栈一旦锁定，禁止替换；新增依赖必须在第 2 节登记。
@@ -38,7 +38,7 @@
 | 架构 | MVI（StateFlow + Channel） | 状态集中，副作用走 Channel |
 | 网络 | **Ktor Client** | 不用 Retrofit；统一封装在 base |
 | 序列化 | kotlinx.serialization | Ktor 官方配套 |
-| 导航 | **Jetpack Navigation 3** | 封装在 common，禁止业务模块自己写 NavHost |
+| 导航 | **轻量 tab host**（`:common` 封装；多页/深链导航出现时再引 Jetpack Navigation 3） | 禁止业务模块自己写导航；v1.17 修订，见下 |
 | 图片压缩 | **自研**（`BitmapFactory` + `Bitmap.compress`） | 不引第三方压缩库；`androidx.exifinterface` 仅用于纠正方向 |
 | 视频压缩 | **Media3 Transformer** 1.11.1（+ `media3-effect`） | 官方 AndroidX，Apache-2.0；只做转码/缩放/裁剪，不引 FFmpeg |
 | 图片加载 | **Coil 3** | 业务模块禁止直接 new ImageLoader |
@@ -339,7 +339,7 @@ AudioRecord(PCM 16k/24k)
 | --- | --- | --- | --- |
 | LogUtil | base/log | 统一日志（Koin 单例，class 非 object） | 初始 |
 | HttpClient | base/network | Ktor 封装（工厂：`createHttpClient`） | 初始 |
-| NavHost 封装 | common/navigation | 导航 | 初始 |
+| TabHost 封装 | common/navigation | 底部 tab 导航（v1.17：原计划 NavHost） | 2026-10-21（005-file-conversion） |
 | EncryptedSP 封装 | common/util | API Key 存储 | 初始 |
 | BaseViewModel\<S, E\> | base/mvi | MVI 基类（StateFlow + Channel） | 2026-10-20（001-base-module） |
 | MviContract（UiState / UiEffect / UiAction） | base/mvi | MVI 标记接口 | 2026-10-20（001-base-module） |
@@ -452,6 +452,16 @@ AudioRecord(PCM 16k/24k)
     而 `verticalScroll` 内嵌懒加载容器会因高度无界崩溃，所以规则必须落在「谁是唯一滚动者」上。
     缩略图裁剪则会让用户看不清内容却要决定删除，风险不对等。
 
+- v1.17（2026-10-21）：
+
+  - **§2 导航**：由「Jetpack Navigation 3，封装在 common」改为
+    「轻量 tab host（`:common` 封装；多页/深链导航出现时再引 Navigation 3）」。
+    动机：本应用是 3 个平级 tab，没有嵌套页面、深链与返回栈——"导航"实际只是"当前选中哪个 tab"。
+    Navigation 3 仍为 alpha，API 在版本间反复变动（`NavDisplay` 入参、back stack key 类型均改过）；
+    为 3 个静态 tab 引入它，风险大于收益。宪法 §3 要求的「防重复入栈」「回首页重置」
+    由状态机天然满足（重复点同一 tab 不产生新实例；切回第一个 tab 即重置）。
+    若将来出现详情页、深链或返回栈需求，再按本条引入 Navigation 3。
+  - **§11 登记表**：`NavHost 封装` 更正为 `TabHost 封装`（v1.17）。
 - v1.16（2026-10-21）：
 
   - **§3.3**：Word（DOCX）/ Excel（XLSX）→ PDF 的状态由「✅ v1 实现」改为「⏳ 后续」。
