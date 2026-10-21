@@ -225,3 +225,14 @@ Phase 1 (T001–T007)  ← T007 是信息门槛：先知道设备能编什么
 - [x] T056 启动时清理孤儿半成品（真机已验证）：`VideoOutputCleaner` 注册为 Koin 单例，`FoolproofApp.onCreate` 在后台线程调用 `cleanAll()`；实测未进入视频页即清空残留。进程被杀时 `files/videos/` 会留下不完整 `.mp4`，
   失败/取消路径虽已清理但进程死亡无从执行；应在 VM 初始化时删除目录内无对应结果的残留文件
   （只删本次进程启动前就存在的、且不是最近成功产物的文件，避免误删）per FR-014 (partial)
+---
+
+## Phase 11: Convergence
+
+> 由第三次 `/speckit-converge`（2026-10-21）追加：Phase 10 的 3 项已全部核实并在真机验证；
+> 本轮发现 1 处「多次压缩后旧产物不可达却仍在磁盘上」的残留问题。
+
+- [ ] T057 开始新压缩前清理上一次的产物：`VideoCompressionViewModel.startCompression` 每次生成新的
+  `compressed_<ts>.mp4`，但从不删除旧文件；`UiState.output` 只保留一个，导致旧产物在会话内不可达
+  却占着磁盘（真机实测压两次后留两个 12.5MB 文件）。应在开始新压缩时删除输出目录里的既有文件
+  ——它们已不可能再被分享或保存 per FR-014 (partial)
