@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.video
+package com.foolproof.features.video
 
 import android.content.Context
 import android.content.Intent
@@ -132,6 +132,7 @@ fun VideoCompressionSection(
                 preset = state.preset,
                 estimatedBytes = state.estimatedBytes,
                 trimDurationMs = state.trimDurationMs,
+                frameRate = minOf(video.frameRate, com.foolproof.features.video.domain.CompressionPreset.MAX_FRAME_RATE),
                 onResolutionChange = { viewModel.dispatch(VideoAction.ResolutionChanged(it)) },
                 onBitrateChange = { viewModel.dispatch(VideoAction.BitrateChanged(it)) },
                 enabled = !state.isCompressing,
@@ -164,7 +165,7 @@ fun VideoCompressionSection(
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                 )
                 Text(
-                    text = "压缩中 ${phase.percent}%",
+                    text = "压缩中 ${phase.percent}% · 离开页面会取消",
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 4.dp),
                 )

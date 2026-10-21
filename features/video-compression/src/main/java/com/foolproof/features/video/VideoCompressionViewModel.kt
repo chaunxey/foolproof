@@ -34,9 +34,27 @@ class VideoCompressionViewModel(
     private var compressJob: Job? = null
     private var currentOutputPath: String? = null
 
+    /** 本实例创建时间：早于它的输出文件都是上一个进程留下的孤儿。 */
+    private val createdAtMs = System.currentTimeMillis()
+
     init {
         // API ≥ 29 才允许无权限写相册（FR-013）：低版本直接不暴露该入口
         updateState { it.copy(saveSupported = exporter.canSaveToGallery()) }
+        // 进程被杀时取消/失败清理都来不及执行，启动时扫一遍上一进程的残留（FR-014）
+        cleanupOrphanOutputs()
+    }
+
+    private fun cleanupOrphanOutputs() {
+        launch {
+            runCatching {
+                outputDir.listFiles()?.forEach { file ->
+                    if (file.isFile && file.lastModified() < createdAtMs) {
+                        log.d { "cleanup orphan output: ${file.name}" }
+                        file.delete()
+                    }
+                }
+            }
+        }
     }
 
     override fun onAction(action: UiAction) {

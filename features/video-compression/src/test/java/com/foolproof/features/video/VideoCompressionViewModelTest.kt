@@ -394,6 +394,25 @@ class VideoCompressionViewModelTest {
     }
 
     @Test
+    fun `orphan outputs from a previous process are cleaned on start`() = runTest(dispatcher) {
+        val dir = tempFolder.newFolder("videos-orphan")
+        val stale = File(dir, "stale.mp4").apply {
+            writeText("partial")
+            setLastModified(System.currentTimeMillis() - 60_000)
+        }
+
+        // VM 构造后、清理协程执行前，模拟"本进程产生的文件"
+        val vm = viewModel(outputDir = dir)
+        val current = File(dir, "current.mp4").apply { writeText("fresh") }
+
+        advanceUntilIdle()
+
+        assertFalse("上一进程的残留应被清理（FR-014）", stale.exists())
+        assertTrue("本进程内的文件不应被误删", current.exists())
+        assertNotNull(vm)
+    }
+
+    @Test
     fun `share emits the output path`() = runTest(dispatcher) {
         val vm = viewModel()
         val effects = mutableListOf<VideoEffect>()

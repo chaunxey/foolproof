@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.video.ui
+package com.foolproof.features.video.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,6 +27,7 @@ internal fun PresetSelector(
     preset: CompressionPreset,
     estimatedBytes: Long,
     trimDurationMs: Long,
+    frameRate: Int,
     onResolutionChange: (ResolutionTier) -> Unit,
     onBitrateChange: (BitrateTier) -> Unit,
     modifier: Modifier = Modifier,
@@ -64,6 +65,7 @@ internal fun PresetSelector(
         Text(
             text = buildString {
                 append(preset.summary())
+                append(" · 帧率 ${frameRate}fps")
                 append(" · 时长 ")
                 append(formatDuration(trimDurationMs))
                 append(" · 预估 ")
