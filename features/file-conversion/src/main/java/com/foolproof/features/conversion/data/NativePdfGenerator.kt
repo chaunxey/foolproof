@@ -117,29 +117,14 @@ class NativePdfGenerator(
         val width = PdfPageSpec.WIDTH_PT - left * 2
         val height = PdfPageSpec.HEIGHT_PT - top * 2
         val gap = 6f
-        return when (perPage) {
-            1 -> listOf(RectF(left, top, left + width, top + height))
-            2 -> {
-                val cellHeight = (height - gap) / 2
-                (0..1).map { i ->
-                    val y = top + i * (cellHeight + gap)
-                    RectF(left, y, left + width, y + cellHeight)
-                }
-            }
-            else -> {
-                val cellWidth = (width - gap) / 2
-                val cellHeight = (height - gap) / 2
-                (0..3).map { i ->
-                    val col = i % 2
-                    val row = i / 2
-                    val x = left + col * (cellWidth + gap)
-                    val y = top + row * (cellHeight + gap)
-                    RectF(x, y, x + cellWidth, y + cellHeight)
-                }
-            }
+        // 只做上下排列：竖排更符合"阅读顺序"，左右并排会让人不知道先看哪张
+        val rows = perPage.coerceIn(1, 4)
+        val cellHeight = (height - gap * (rows - 1)) / rows
+        return (0 until rows).map { i ->
+            val y = top + i * (cellHeight + gap)
+            RectF(left, y, left + width, y + cellHeight)
         }
     }
-
     private fun drawImageInCell(canvas: Canvas, bitmap: android.graphics.Bitmap, cell: RectF) {
         val scale = minOf(cell.width() / bitmap.width, cell.height() / bitmap.height)
         val drawWidth = bitmap.width * scale
