@@ -131,7 +131,7 @@ fun SplashAdOverlay(onFinished: () -> Unit) {
         val skipRemaining = (3 - elapsed).coerceAtLeast(0)
         if (skipRemaining > 0) {
             Text(
-                text = "${skipRemaining}s",
+                text = "$skipRemaining",
                 color = Color.White.copy(alpha = 0.7f),
                 style = MaterialTheme.typography.labelLarge,
                 modifier = Modifier

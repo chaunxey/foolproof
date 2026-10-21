@@ -25,5 +25,4 @@
     <string name="back_press_again">ចុចត្រឡប់ម្តងទៀតដើម្បីចាកចេញ</string>
     <string name="video_mode_compress">បង្ហាប់</string>
     <string name="video_mode_merge">ភ្ជាប់</string>    <string name="ads_skip">រំលង</string>
-    <string name="ads_skip_countdown">រំលង %1$d</string>
 </resources>

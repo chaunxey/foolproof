@@ -25,5 +25,4 @@
     <string name="back_press_again">Zum Beenden erneut Zurück drücken</string>
     <string name="video_mode_compress">Komprimieren</string>
     <string name="video_mode_merge">Zusammenfügen</string>    <string name="ads_skip">Überspringen</string>
-    <string name="ads_skip_countdown">Überspringen %1$d</string>
 </resources>
