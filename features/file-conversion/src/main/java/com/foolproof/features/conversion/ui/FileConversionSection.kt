@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 
 import com.foolproof.base.ads.AdGateProvider
 import com.foolproof.base.ads.FeatureId
+import com.foolproof.common.ui.FoolproofButton
 import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.ByteFormat
 import com.foolproof.base.util.findActivity
@@ -327,7 +328,8 @@ fun FileConversionSection(
             }
 
             else -> {
-                Button(
+                FoolproofButton(
+                    text = stringResource(R.string.conversion_start),
                     onClick = {
                         AdGateProvider.gate.gateOrRun(activity, FeatureId.FILE_CONVERSION) {
                             viewModel.dispatch(ConversionAction.Start)
@@ -335,9 +337,7 @@ fun FileConversionSection(
                     },
                     enabled = state.canConvert,
                     modifier = Modifier.padding(top = 12.dp),
-                ) {
-                    Text(stringResource(R.string.conversion_start))
-                }
+                )
             }
         }
 

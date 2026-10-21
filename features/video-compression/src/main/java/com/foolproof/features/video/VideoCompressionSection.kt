@@ -39,6 +39,8 @@ import com.foolproof.base.ads.AdGateProvider
 import com.foolproof.base.ads.FeatureId
 import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.ByteFormat
+import com.foolproof.common.ui.FoolproofButton
+import com.foolproof.common.ui.FoolproofSecondaryButton
 import com.foolproof.base.util.findActivity
 import com.foolproof.features.video.domain.CompressionPreset
 import com.foolproof.features.video.ui.PresetSelector
@@ -122,22 +124,19 @@ fun VideoCompressionSection(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
-            OutlinedButton(
+            FoolproofSecondaryButton(
+                text = if (state.video == null) {
+                    stringResource(R.string.video_pick)
+                } else {
+                    stringResource(R.string.video_repick)
+                },
                 onClick = {
                     picker.launch(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly),
                     )
                 },
                 enabled = !state.isCompressing,
-            ) {
-                Text(
-                    if (state.video == null) {
-                        stringResource(R.string.video_pick)
-                    } else {
-                        stringResource(R.string.video_repick)
-                    },
-                )
-            }
+            )
         }
 
         if (state.video == null) {
@@ -245,7 +244,10 @@ fun VideoCompressionSection(
             }
 
             else -> {
-                Button(
+                FoolproofButton(
+                    text = stringResource(
+                        if (state.output == null) R.string.video_start else R.string.video_restart,
+                    ),
                     onClick = {
                         AdGateProvider.gate.gateOrRun(activity, FeatureId.VIDEO_COMPRESSION) {
                             viewModel.dispatch(VideoAction.Start)
@@ -253,13 +255,7 @@ fun VideoCompressionSection(
                     },
                     enabled = state.canCompress,
                     modifier = Modifier.padding(top = 12.dp),
-                ) {
-                    Text(
-                        stringResource(
-                            if (state.output == null) R.string.video_start else R.string.video_restart,
-                        ),
-                    )
-                }
+                )
             }
         }
 

@@ -37,6 +37,8 @@ import com.foolproof.base.ads.AdGateProvider
 import com.foolproof.base.ads.FeatureId
 import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.ByteFormat
+import com.foolproof.common.ui.FoolproofButton
+import com.foolproof.common.ui.FoolproofSecondaryButton
 import com.foolproof.base.util.findActivity
 import com.foolproof.features.compression.domain.CompressionOutcome
 import com.foolproof.features.compression.domain.FailureReason
@@ -119,18 +121,15 @@ fun CompressionSection(
                     Text(stringResource(R.string.compression_reset))
                 }
             }
-            OutlinedButton(
+            FoolproofSecondaryButton(
+                text = if (state.images.isEmpty()) {
+                    stringResource(R.string.compression_pick_image)
+                } else {
+                    stringResource(R.string.compression_reselect)
+                },
                 onClick = { viewModel.dispatch(CompressionAction.SelectImages) },
                 enabled = !state.isRunning,
-            ) {
-                Text(
-                    if (state.images.isEmpty()) {
-                        stringResource(R.string.compression_pick_image)
-                    } else {
-                        stringResource(R.string.compression_reselect)
-                    },
-                )
-            }
+            )
         }
 
         if (state.images.isEmpty()) {
@@ -177,7 +176,8 @@ fun CompressionSection(
             val primary = stringResource(
                 if (state.isRunning) R.string.compression_cancel else R.string.compression_start,
             )
-            Button(
+            FoolproofButton(
+                text = primary,
                 onClick = {
                     if (state.isRunning) {
                         viewModel.dispatch(CompressionAction.Cancel)
@@ -189,9 +189,7 @@ fun CompressionSection(
                     }
                 },
                 enabled = state.isRunning || state.canStart,
-            ) {
-                Text(primary)
-            }
+            )
             if (state.images.isNotEmpty()) {
                 TextButton(
                     onClick = { viewModel.dispatch(CompressionAction.Clear) },

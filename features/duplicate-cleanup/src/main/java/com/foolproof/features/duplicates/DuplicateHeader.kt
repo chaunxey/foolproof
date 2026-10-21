@@ -42,6 +42,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.foolproof.base.ads.AdGateProvider
 import com.foolproof.base.ads.FeatureId
+import com.foolproof.common.ui.FoolproofButton
 import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.ByteFormat
 import com.foolproof.features.duplicates.ui.PhotoPreviewDialog
@@ -350,9 +351,15 @@ private fun ScanButton(
             Text(stringResource(R.string.duplicates_grant_and_scan))
         }
         state.hasResults || state.scan is ScanState.Done -> {
-            OutlinedButton(onClick = onScan) { Text(stringResource(R.string.duplicates_scan_again)) }
+            FoolproofButton(
+                text = stringResource(R.string.duplicates_scan_again),
+                onClick = onScan,
+            )
         }
-        else -> OutlinedButton(onClick = onScan) { Text(stringResource(R.string.duplicates_scan_start)) }
+        else -> FoolproofButton(
+            text = stringResource(R.string.duplicates_scan_start),
+            onClick = onScan,
+        )
     }
 }
 

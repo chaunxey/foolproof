@@ -61,6 +61,8 @@ import com.foolproof.base.ads.AdGateProvider
 import com.foolproof.base.ads.FeatureId
 import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.findActivity
+import com.foolproof.common.ui.FoolproofButton
+import com.foolproof.common.ui.FoolproofSecondaryButton
 import com.foolproof.features.video.domain.MergeClip
 import com.foolproof.features.video.ui.ResultPreviewDialog
 import com.foolproof.features.video.ui.formatDuration
@@ -123,16 +125,15 @@ fun VideoMergeSection(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
-            OutlinedButton(
+            FoolproofSecondaryButton(
+                text = stringResource(R.string.video_merge_add),
                 onClick = {
                     picker.launch(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly),
                     )
                 },
                 enabled = !state.isMerging,
-            ) {
-                Text(stringResource(R.string.video_merge_add))
-            }
+            )
         }
 
         if (state.clips.isEmpty()) {
@@ -305,7 +306,8 @@ fun VideoMergeSection(
                 Text(stringResource(R.string.video_cancel))
             }
         } else {
-            Button(
+            FoolproofButton(
+                text = stringResource(R.string.video_merge_start),
                 onClick = {
                     AdGateProvider.gate.gateOrRun(activity, FeatureId.VIDEO_MERGE) {
                         viewModel.dispatch(VideoMergeAction.Start)
@@ -313,9 +315,7 @@ fun VideoMergeSection(
                 },
                 enabled = state.canStart,
                 modifier = Modifier.padding(top = 12.dp),
-            ) {
-                Text(stringResource(R.string.video_merge_start))
-            }
+            )
         }
 
         messageRes?.let { res ->
