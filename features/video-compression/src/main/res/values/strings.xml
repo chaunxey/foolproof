@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        视频压缩（多语言：本模块所有用户可见文案都放在这里，代码统一用 stringResource 取，
+        不要在 Compose 里再写中文字面量）。带参数的文案一律用位置参数，方便翻译调整语序。
+    -->
+
+    <!-- 标题与操作 -->
+    <string name="video_title">视频压缩</string>
+    <string name="video_pick">选择视频</string>
+    <string name="video_repick">重新选择</string>
+    <string name="video_start">开始压缩</string>
+    <string name="video_restart">重新压缩</string>
+    <string name="video_cancel">取消</string>
+    <string name="video_preview_result">预览结果</string>
+    <string name="video_share">分享</string>
+    <string name="video_save_to_gallery">存相册</string>
+    <string name="video_compressing">压缩中 %1$d%% · 离开页面会取消</string>
+
+    <!-- 源视频信息（名称 · 体积 · 分辨率 · 帧率） -->
+    <string name="video_meta">%1$s · %2$s · %3$dx%4$d · %5$dfps</string>
+
+    <!-- 压缩结果摘要 -->
+    <string name="video_result_source">已完成：%1$s → %2$s · 时长 %3$s</string>
+    <string name="video_result_source_saved">已完成：%1$s → %2$s · 时长 %3$s（节省 %4$s）</string>
+    <string name="video_result_source_larger">已完成：%1$s → %2$s · 时长 %3$s（比原文件大 %4$s）</string>
+    <string name="video_result_only">已完成：%1$s · 时长 %2$s</string>
+
+    <!-- 档位选择 -->
+    <string name="video_resolution">分辨率</string>
+    <string name="video_bitrate">码率</string>
+    <string name="video_bitrate_high">高</string>
+    <string name="video_bitrate_medium">中</string>
+    <string name="video_bitrate_low">低</string>
+    <string name="video_preset_summary">%1$s · %2$s（%3$s Mbps）</string>
+    <string name="video_preset_detail">%1$s · 帧率 %2$dfps · 时长 %3$s · 预估 %4$s</string>
+
+    <!-- 裁剪 -->
+    <string name="video_trim_range">片段 %1$s / 总长 %2$s</string>
+
+    <!-- 播放器（读屏文案） -->
+    <string name="video_preview_play">播放</string>
+    <string name="video_preview_progress">播放进度 %1$d%%</string>
+
+    <!-- 结果预览弹窗 -->
+    <string name="video_result_title">压缩结果</string>
+    <string name="video_close">关闭</string>
+    <string name="video_size_duration">%1$s · 时长 %2$s</string>
+    <string name="video_size_duration_compare">%1$s → %2$s · 时长 %3$s</string>
+
+    <!-- 一次性提示 -->
+    <string name="video_msg_source_unreadable">无法读取该视频</string>
+    <string name="video_msg_no_encoder">当前设备没有可用的视频编码器</string>
+    <!-- 既是软编提示条，也是对应的一次性提示 -->
+    <string name="video_msg_software_encoder_only">当前设备无硬件编码器，压缩时长会比较长</string>
+    <string name="video_msg_out_of_space">存储空间不足</string>
+    <string name="video_msg_transcode_failed">压缩失败，请重试</string>
+    <string name="video_msg_cancelled">已取消</string>
+    <string name="video_msg_done">压缩完成</string>
+    <string name="video_msg_saved">已保存到相册（Movies/Foolproof）</string>
+    <string name="video_msg_save_failed">保存到相册失败</string>
+    <string name="video_msg_save_unsupported">当前系统版本不支持直接保存到相册</string>
+    <string name="video_msg_long_video">视频较长或较大，建议先裁剪片段再压缩</string>
+    <string name="video_msg_larger_than_source">压缩后比原文件大（原视频本身很小），可换更高的压缩档位</string>
+</resources>
