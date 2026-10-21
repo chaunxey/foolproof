@@ -1,15 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 图片压缩（多语言抽取：先建资源，下一步接线到代码） -->
+    <!--
+        图片压缩（多语言：本模块所有用户可见文案都放在这里，代码统一用 stringResource 取，
+        不要在 Compose 里再写中文字面量）。带参数的文案一律用位置参数，方便翻译调整语序。
+    -->
+
+    <!-- 标题与操作 -->
     <string name="compression_title">图片压缩</string>
     <string name="compression_pick_image">选择图片</string>
+    <string name="compression_reselect">重新选择</string>
     <string name="compression_start">开始压缩</string>
     <string name="compression_reset">重置</string>
     <string name="compression_cancel">取消</string>
-    <string name="compression_format">格式</string>
-    <string name="compression_quality">质量</string>
-    <string name="compression_estimate">预估体积</string>
-    <string name="compression_saving">节省</string>
+    <string name="compression_clear">清空</string>
+
+    <!-- 参数与预估 -->
+    <string name="compression_quality">质量 %1$d</string>
+    <string name="compression_estimate">预估 %1$s</string>
+    <!-- 预估结果接在「质量」后面：引号用于保留两侧空格（aapt 会裁掉未引用的首尾空白） -->
+    <string name="compression_estimate_separator">"  ·  %1$s"</string>
+    <string name="compression_estimating">预估中…</string>
+
+    <!-- 批量进度 -->
+    <string name="compression_progress">共 %1$d 张，已完成 %2$d 张</string>
+    <string name="compression_progress_saved">共 %1$d 张，已完成 %2$d 张，节省 %3$s</string>
+
+    <!-- 单张体积对比（原始体积 → 压缩后体积，数字由 ByteFormat 生成） -->
+    <string name="compression_size_compare">%1$s → %2$s</string>
+
+    <!-- 单张结果 -->
+    <string name="compression_retry">重试</string>
     <string name="compression_save_to_gallery">存相册</string>
     <string name="compression_share">分享</string>
+    <string name="compression_status_pending">等待中</string>
+    <string name="compression_status_running">压缩中…</string>
+    <string name="compression_status_success">完成，节省 %1$d%%</string>
+    <string name="compression_status_no_gain">无收益（未变小）</string>
+    <string name="compression_status_failed">失败：%1$s</string>
+    <string name="compression_status_unsupported">系统不支持该格式</string>
+
+    <!-- 失败原因 -->
+    <string name="compression_failure_decode">解码失败</string>
+    <string name="compression_failure_io">读写失败</string>
+    <string name="compression_failure_format">格式不支持</string>
+    <string name="compression_failure_unknown">未知错误</string>
+
+    <!-- 一次性提示 -->
+    <string name="compression_msg_nothing_selected">没有选择任何图片</string>
+    <string name="compression_msg_read_failed">所选图片无法读取（格式或权限问题）</string>
+    <string name="compression_msg_saved">已保存到相册（Pictures/Foolproof）</string>
+    <string name="compression_msg_share_failed">分享失败</string>
+    <string name="compression_msg_save_failed">保存到相册失败</string>
+    <string name="compression_msg_save_unsupported">当前系统版本不支持直接保存到相册</string>
 </resources>

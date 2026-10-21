@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.compression
+package com.foolproof.features.compression
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -25,11 +25,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.foolproof.base.util.ByteFormat
 import com.foolproof.features.compression.domain.CompressionOutcome
+import com.foolproof.features.compression.domain.FailureReason
 import com.foolproof.features.compression.domain.OutcomeStatus
 import com.foolproof.features.compression.domain.OutputFormat
 import com.foolproof.features.compression.domain.SourceImage
@@ -40,6 +42,9 @@ import org.koin.compose.viewmodel.koinViewModel
  * 图片压缩功能的对外入口。
  *
  * 宪法 §3.2：这里只提供页面的一个 Section，整页由 `:app` 组装；本组件不持有 NavController。
+ *
+ * 多语言：所有用户可见文案都来自 `res/values/strings.xml`，本文件不写中文字面量
+ * （格式名 JPEG / WebP 属于专有名词，保持原样）。
  */
 @Composable
 fun CompressionSection(
@@ -53,7 +58,8 @@ fun CompressionSection(
         viewModel.dispatch(CompressionAction.ImagesPicked(uris.map { it.toString() }))
     }
 
-    var message by remember { mutableStateOf<UiMessage?>(null) }
+    // 只记下事件类型，渲染时再取当前语言的文案（切换语言后不会残留旧语言文案）
+    var message by remember { mutableStateOf<CompressionEffect.MessageKind?>(null) }
 
     androidx.compose.runtime.LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -62,10 +68,7 @@ fun CompressionSection(
                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
                 )
 
-                is CompressionEffect.Message -> message = UiMessage(
-                    text = effect.kind.label(),
-                    isError = effect.kind.isError(),
-                )
+                is CompressionEffect.Message -> message = effect.kind
 
                 is CompressionEffect.Share -> Unit
             }
@@ -86,13 +89,21 @@ fun CompressionSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("图片压缩", style = MaterialTheme.typography.titleLarge)
-            TextButton(onClick = { viewModel.dispatch(CompressionAction.Reset) }) { Text("重置") }
+            Text(stringResource(R.string.compression_title), style = MaterialTheme.typography.titleLarge)
+            TextButton(onClick = { viewModel.dispatch(CompressionAction.Reset) }) {
+                Text(stringResource(R.string.compression_reset))
+            }
             OutlinedButton(
                 onClick = { viewModel.dispatch(CompressionAction.SelectImages) },
                 enabled = !state.isRunning,
             ) {
-                Text(if (state.images.isEmpty()) "选择图片" else "重新选择")
+                Text(
+                    if (state.images.isEmpty()) {
+                        stringResource(R.string.compression_pick_image)
+                    } else {
+                        stringResource(R.string.compression_reselect)
+                    },
+                )
             }
         }
 
@@ -101,8 +112,11 @@ fun CompressionSection(
             quality = state.option.quality,
             enabled = !state.isRunning,
             estimate = when {
-                state.estimateLoading -> "预估中…"
-                state.estimateBytes != null -> "预估 ${ByteFormat.formatBytes(state.estimateBytes!!)}"
+                state.estimateLoading -> stringResource(R.string.compression_estimating)
+                state.estimateBytes != null -> stringResource(
+                    R.string.compression_estimate,
+                    ByteFormat.formatBytes(state.estimateBytes!!),
+                )
                 else -> null
             },
             onFormatChange = { viewModel.dispatch(CompressionAction.ChangeFormat(it)) },
@@ -113,7 +127,9 @@ fun CompressionSection(
             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            val primary = if (state.isRunning) "取消" else "开始压缩"
+            val primary = stringResource(
+                if (state.isRunning) R.string.compression_cancel else R.string.compression_start,
+            )
             Button(
                 onClick = {
                     viewModel.dispatch(
@@ -125,24 +141,40 @@ fun CompressionSection(
                 Text(primary)
             }
             if (state.images.isNotEmpty()) {
-                TextButton(onClick = { viewModel.dispatch(CompressionAction.Clear) }, enabled = !state.isRunning) {
-                    Text("清空")
+                TextButton(
+                    onClick = { viewModel.dispatch(CompressionAction.Clear) },
+                    enabled = !state.isRunning,
+                ) {
+                    Text(stringResource(R.string.compression_clear))
                 }
             }
         }
 
         if (state.images.isNotEmpty()) {
+            val savedBytes = state.totalSavedBytes
             Text(
-                text = "共 ${state.images.size} 张，已完成 ${state.completedCount} 张" +
-                    if (state.totalSavedBytes > 0) "，节省 ${ByteFormat.formatBytes(state.totalSavedBytes)}" else "",
+                text = if (savedBytes > 0) {
+                    stringResource(
+                        R.string.compression_progress_saved,
+                        state.images.size,
+                        state.completedCount,
+                        ByteFormat.formatBytes(savedBytes),
+                    )
+                } else {
+                    stringResource(
+                        R.string.compression_progress,
+                        state.images.size,
+                        state.completedCount,
+                    )
+                },
                 style = MaterialTheme.typography.bodySmall,
             )
         }
 
-        message?.let { uiMessage ->
+        message?.let { kind ->
             Text(
-                text = uiMessage.text,
-                color = if (uiMessage.isError) {
+                text = stringResource(kind.labelRes()),
+                color = if (kind.isError()) {
                     MaterialTheme.colorScheme.error
                 } else {
                     MaterialTheme.colorScheme.primary
@@ -194,10 +226,13 @@ private fun OptionRow(
             )
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("质量 $quality", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = stringResource(R.string.compression_quality, quality),
+                style = MaterialTheme.typography.bodyMedium,
+            )
             estimate?.let {
                 Text(
-                    text = "  ·  $it",
+                    text = stringResource(R.string.compression_estimate_separator, it),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.outline,
                 )
@@ -243,17 +278,23 @@ private fun ImageRow(
                     style = MaterialTheme.typography.bodySmall,
                 )
                 Text(
-                    text = outcome.status.label(outcome),
+                    text = statusText(outcome),
                     style = MaterialTheme.typography.bodySmall,
                     color = statusColor(outcome),
                 )
             }
             when {
-                outcome.canRetry -> TextButton(onClick = onRetry) { Text("重试") }
+                outcome.canRetry -> TextButton(onClick = onRetry) {
+                    Text(stringResource(R.string.compression_retry))
+                }
                 outcome.outputPath != null -> Column {
-                    TextButton(onClick = onShare) { Text("分享") }
+                    TextButton(onClick = onShare) {
+                        Text(stringResource(R.string.compression_share))
+                    }
                     if (saveSupported) {
-                        TextButton(onClick = onSave) { Text("存相册") }
+                        TextButton(onClick = onSave) {
+                            Text(stringResource(R.string.compression_save_to_gallery))
+                        }
                     }
                 }
             }
@@ -261,26 +302,37 @@ private fun ImageRow(
     }
 }
 
+/** 体积对比（原始 → 压缩后）：箭头与顺序也可能随语言变化，所以整体走格式串。 */
+@Composable
 private fun sizeSummary(image: SourceImage, outcome: CompressionOutcome): String {
     val before = ByteFormat.formatBytes(image.sizeBytes)
     val after = outcome.compressedBytes ?: return before
-    return "$before → ${ByteFormat.formatBytes(after)}"
+    return stringResource(R.string.compression_size_compare, before, ByteFormat.formatBytes(after))
 }
 
-private fun OutcomeStatus.label(outcome: CompressionOutcome): String = when (this) {
-    OutcomeStatus.PENDING -> "等待中"
-    OutcomeStatus.RUNNING -> "压缩中…"
-    OutcomeStatus.SUCCESS -> "完成，节省 ${outcome.savedPercent ?: 0}%"
-    OutcomeStatus.NO_GAIN -> "无收益（未变小）"
-    OutcomeStatus.FAILED -> "失败：${outcome.failure?.label() ?: "未知"}"
-    OutcomeStatus.UNSUPPORTED -> "系统不支持该格式"
+/** 单张结果的状态文案；失败时再拼上可翻译的原因。 */
+@Composable
+private fun statusText(outcome: CompressionOutcome): String = when (outcome.status) {
+    OutcomeStatus.PENDING -> stringResource(R.string.compression_status_pending)
+    OutcomeStatus.RUNNING -> stringResource(R.string.compression_status_running)
+    OutcomeStatus.SUCCESS -> stringResource(
+        R.string.compression_status_success,
+        outcome.savedPercent ?: 0,
+    )
+    OutcomeStatus.NO_GAIN -> stringResource(R.string.compression_status_no_gain)
+    OutcomeStatus.FAILED -> stringResource(
+        R.string.compression_status_failed,
+        stringResource((outcome.failure ?: FailureReason.UNKNOWN).labelRes()),
+    )
+    OutcomeStatus.UNSUPPORTED -> stringResource(R.string.compression_status_unsupported)
 }
 
-private fun com.foolproof.features.compression.domain.FailureReason.label(): String = when (this) {
-    com.foolproof.features.compression.domain.FailureReason.DECODE -> "解码失败"
-    com.foolproof.features.compression.domain.FailureReason.IO -> "读写失败"
-    com.foolproof.features.compression.domain.FailureReason.UNSUPPORTED_FORMAT -> "格式不支持"
-    com.foolproof.features.compression.domain.FailureReason.UNKNOWN -> "未知错误"
+/** 失败原因 → 文案资源；领域层只给类别，文案留在 UI 层。 */
+private fun FailureReason.labelRes(): Int = when (this) {
+    FailureReason.DECODE -> R.string.compression_failure_decode
+    FailureReason.IO -> R.string.compression_failure_io
+    FailureReason.UNSUPPORTED_FORMAT -> R.string.compression_failure_format
+    FailureReason.UNKNOWN -> R.string.compression_failure_unknown
 }
 
 @Composable
@@ -290,20 +342,18 @@ private fun statusColor(outcome: CompressionOutcome) = when (outcome.status) {
     else -> MaterialTheme.colorScheme.onSurfaceVariant
 }
 
-private fun CompressionEffect.MessageKind.label(): String = when (this) {
-    CompressionEffect.MessageKind.NOTHING_SELECTED -> "没有选择任何图片"
-    CompressionEffect.MessageKind.READ_FAILED -> "所选图片无法读取（格式或权限问题）"
-    CompressionEffect.MessageKind.SAVED -> "已保存到相册（Pictures/Foolproof）"
-    CompressionEffect.MessageKind.SHARE_FAILED -> "分享失败"
-    CompressionEffect.MessageKind.SAVE_FAILED -> "保存到相册失败"
-    CompressionEffect.MessageKind.SAVE_UNSUPPORTED -> "当前系统版本不支持直接保存到相册"
+/** 一次性提示 → 文案资源。 */
+private fun CompressionEffect.MessageKind.labelRes(): Int = when (this) {
+    CompressionEffect.MessageKind.NOTHING_SELECTED -> R.string.compression_msg_nothing_selected
+    CompressionEffect.MessageKind.READ_FAILED -> R.string.compression_msg_read_failed
+    CompressionEffect.MessageKind.SAVED -> R.string.compression_msg_saved
+    CompressionEffect.MessageKind.SHARE_FAILED -> R.string.compression_msg_share_failed
+    CompressionEffect.MessageKind.SAVE_FAILED -> R.string.compression_msg_save_failed
+    CompressionEffect.MessageKind.SAVE_UNSUPPORTED -> R.string.compression_msg_save_unsupported
 }
 
 /** 成功类提示用正常文字色，失败类用错误色。 */
 private fun CompressionEffect.MessageKind.isError(): Boolean =
     this != CompressionEffect.MessageKind.SAVED
-
-private data class UiMessage(val text: String, val isError: Boolean)
-
 
 private const val MAX_PICK_COUNT = 50
