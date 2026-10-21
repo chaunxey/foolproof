@@ -359,3 +359,17 @@ chore: 构建/依赖/配置调整
 - **新增语言**：在 `app` / `common` / `features/*` 各加一份 `values-xx/strings.xml`（key 与 `values/` 一致），
   在 `AppLanguage` 里加一项，并补 `settings_language_xx` 的母语显示名
 - 英文 / 高棉文 / 日文 / 法文 / 德文为草拟译文，建议母语者校对（尤其高棉文）；改 `values-*/` 即可，不用动代码
+
+## 广告（Meta Audience Network 6.22.0）
+
+- **配置**：`app/src/main/java/com/foolproof/ads/AdsConfig.kt` 的 banner / interstitial placement ID；
+  为空时横幅显示占位块、次数门控直接放行（便于开发）。
+- **功能分割处放横幅**：图片 tab（压缩 ↔ 去重）、视频 tab（压缩 ↔ 拼接）。
+  以后新增功能分段时，在分段处调用 `SectionBannerAd()` 即可，不要再手写 `BannerAd` 的边距。
+- **次数门控**：每个功能（`FeatureId`）独立计数，成功使用 5 次后，下一次使用前展示插屏；
+  广告加载失败一律放行，不能卡住功能。
+- **启动/唤醒**：冷启动必展示；后台超过 1 小时回来再展示 5 秒倒计时广告层。
+- **测试**：debug 包自动 `AdSettings.setDebugBuild(true)`，还需在 Meta 后台登记测试设备。
+- **合规**：广告 SDK 会联网并可能处理设备标识与广告交互数据；EEA/UK 需广告同意入口，
+  隐私政策与 Play Data Safety 必须同步说明（宪法 §8）。
+

@@ -68,6 +68,12 @@ fun BannerAd(modifier: Modifier = Modifier) {
     }
 }
 
+/** 功能分割处的横幅：左右留 16dp、上下 8dp。新增功能分段时直接复用。 */
+@Composable
+fun SectionBannerAd(modifier: Modifier = Modifier) {
+    BannerAd(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp))
+}
+
 /** 启动/唤醒时的 5 秒全屏广告层：上面是 banner，下面是倒计时。 */
 @Composable
 fun SplashAdOverlay(onFinished: () -> Unit) {
