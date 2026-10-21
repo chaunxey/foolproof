@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="conversion_title">Files to PDF</string>
+    <string name="conversion_reset">Reset</string>
+    <string name="conversion_mode_images">Images</string>
+    <string name="conversion_mode_text">Text / Markdown</string>
+    <string name="conversion_pick_images">Choose images</string>
+    <string name="conversion_add_images">Add more</string>
+    <string name="conversion_pick_text">Choose text / Markdown</string>
+    <string name="conversion_repick">Choose again</string>
+    <string name="conversion_cancel">Cancel</string>
+    <string name="conversion_start">Create PDF</string>
+    <string name="conversion_open">Open</string>
+    <string name="conversion_share">Share</string>
+    <string name="conversion_save_to_downloads">Save to Downloads</string>
+
+    <string name="conversion_per_page">%1$d per page</string>
+    <string name="conversion_images_summary">%1$d selected (max %2$d). Tap the top-right corner of a thumbnail to remove it.</string>
+    <string name="conversion_move_up">Move up</string>
+
+    <string name="conversion_text_meta">%1$s · %2$s</string>
+
+    <string name="conversion_generating">Generating %1$d/%2$d · leaving this page cancels</string>
+    <string name="conversion_result_meta">%1$s · %2$s · %3$d pages</string>
+    <string name="conversion_preview_page_desc">Page %1$d preview</string>
+    <string name="conversion_preview_page_label">Page %1$d of %2$d</string>
+
+    <string name="conversion_msg_done">PDF created</string>
+    <string name="conversion_msg_cancelled">Cancelled</string>
+    <string name="conversion_msg_no_content">Nothing to convert</string>
+    <string name="conversion_msg_unreadable">Could not read the selected content</string>
+    <string name="conversion_msg_unsupported_encoding">Unsupported text encoding. Save as UTF-8 and try again.</string>
+    <string name="conversion_msg_out_of_space">Not enough storage</string>
+    <string name="conversion_msg_heic_unsupported">HEIC is not supported on this system version and was skipped</string>
+    <string name="conversion_msg_generation_failed">Generation failed. Try again.</string>
+    <string name="conversion_msg_saved">Saved to Downloads/Foolproof</string>
+    <string name="conversion_msg_save_failed">Save failed</string>
+    <string name="conversion_msg_save_unsupported">This system version does not support saving to Downloads</string>
+    <string name="conversion_msg_too_many_images">Up to 50 images</string>
+    <string name="conversion_msg_text_too_large">Text file too large (2 MB limit)</string>
+    <string name="conversion_msg_no_share_app">No app available to share</string>
+    <string name="conversion_msg_no_pdf_app">No app available to open PDFs</string>
+</resources>

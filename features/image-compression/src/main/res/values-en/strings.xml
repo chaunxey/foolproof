@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="compression_title">Image compression</string>
+    <string name="compression_pick_image">Choose images</string>
+    <string name="compression_reselect">Choose again</string>
+    <string name="compression_start">Start compressing</string>
+    <string name="compression_reset">Reset</string>
+    <string name="compression_cancel">Cancel</string>
+    <string name="compression_clear">Clear</string>
+
+    <string name="compression_quality">Quality %1$d</string>
+    <string name="compression_estimate">Est. %1$s</string>
+    <string name="compression_estimate_separator">"  ·  %1$s"</string>
+    <string name="compression_estimating">Estimating…</string>
+
+    <string name="compression_progress">%1$d selected, %2$d done</string>
+    <string name="compression_progress_saved">%1$d selected, %2$d done, saved %3$s</string>
+
+    <string name="compression_size_compare">%1$s → %2$s</string>
+
+    <string name="compression_retry">Retry</string>
+    <string name="compression_save_to_gallery">Save to gallery</string>
+    <string name="compression_share">Share</string>
+    <string name="compression_status_pending">Waiting</string>
+    <string name="compression_status_running">Compressing…</string>
+    <string name="compression_status_success">Done, saved %1$d%%</string>
+    <string name="compression_status_no_gain">No gain (not smaller)</string>
+    <string name="compression_status_failed">Failed: %1$s</string>
+    <string name="compression_status_unsupported">Format not supported on this system</string>
+
+    <string name="compression_failure_decode">Decode failed</string>
+    <string name="compression_failure_io">Read/write failed</string>
+    <string name="compression_failure_format">Format not supported</string>
+    <string name="compression_failure_unknown">Unknown error</string>
+
+    <string name="compression_msg_nothing_selected">No images selected</string>
+    <string name="compression_msg_read_failed">Could not read the selected images (format or permission issue)</string>
+    <string name="compression_msg_saved">Saved to gallery (Pictures/Foolproof)</string>
+    <string name="compression_msg_share_failed">Sharing failed</string>
+    <string name="compression_msg_save_failed">Could not save to gallery</string>
+    <string name="compression_msg_save_unsupported">This system version does not support saving directly to the gallery</string>
+</resources>

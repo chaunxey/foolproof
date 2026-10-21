@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Foolproof</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_font_size">Font size: %1$d%%</string>
+    <string name="settings_font_preview">Preview text: this is a sample to check the size effect</string>
+    <string name="settings_restore_default">Reset to default</string>
+    <string name="settings_close">Close</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">Follow system</string>
+    <string name="settings_language_zh">中文</string>
+    <string name="settings_language_en">English</string>
+
+    <!-- Back press -->
+    <string name="back_press_again">Press back again to exit</string>
+</resources>

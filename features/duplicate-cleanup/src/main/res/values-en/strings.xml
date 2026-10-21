@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="duplicates_title">Duplicate photo cleanup</string>
+    <string name="duplicates_scan_start">Find duplicates</string>
+    <string name="duplicates_scan_again">Search again</string>
+    <string name="duplicates_cancel">Cancel</string>
+    <string name="duplicates_grant_and_scan">Grant access and search</string>
+    <string name="duplicates_open_settings">Open settings</string>
+    <string name="duplicates_clear_selection">Clear selection</string>
+    <string name="duplicates_delete">Delete</string>
+
+    <string name="duplicates_scanning">Scanning %1$d/%2$d</string>
+    <string name="duplicates_scan_done">Scanned %1$d photos, skipped %2$d</string>
+    <string name="duplicates_scan_cancelled">Cancelled</string>
+    <string name="duplicates_scan_failed">Scan failed</string>
+
+    <string name="duplicates_selected_summary">%1$d selected · %2$s</string>
+    <string name="duplicates_results_hint">Results are below. Tap a thumbnail to enlarge.</string>
+
+    <string name="duplicates_hint_no_duplicates">No duplicate photos found</string>
+    <string name="duplicates_hint_cancelled">Cancelled. You can search again.</string>
+    <string name="duplicates_hint_idle">Tap “%1$s” to scan your gallery for duplicate photos</string>
+
+    <string name="duplicates_delete_title">Delete confirmation</string>
+    <string name="duplicates_delete_message">About to delete %1$d photos, approx. %2$s</string>
+    <string name="duplicates_delete_irreversible">Deleted photos cannot be recovered on this system version</string>
+
+    <string name="duplicates_group_summary">%1$d photos · %2$s reclaimable</string>
+    <string name="duplicates_limit_hint">Many results — showing the first %1$d photos. Search again after deleting to continue.</string>
+
+    <string name="duplicates_preview_close_hint">Tap anywhere to close</string>
+
+    <string name="duplicates_msg_empty_gallery">No readable photos in your gallery</string>
+    <string name="duplicates_msg_no_duplicates">No duplicate photos found</string>
+    <string name="duplicates_msg_scan_failed">Scan failed. Try again.</string>
+    <string name="duplicates_msg_permission_denied">Photo access is required to scan</string>
+    <string name="duplicates_msg_permission_denied_forever">Permission permanently denied. Enable it in system settings.</string>
+    <string name="duplicates_msg_saf_required">Grant a folder before deleting on this system version</string>
+    <string name="duplicates_msg_deleted">Deleted</string>
+    <string name="duplicates_msg_delete_failed">Some photos could not be deleted</string>
+    <string name="duplicates_msg_system_delete_unavailable">System delete request unavailable</string>
+</resources>
