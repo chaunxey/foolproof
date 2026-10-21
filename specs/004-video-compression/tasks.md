@@ -203,7 +203,7 @@ Phase 1 (T001–T007)  ← T007 是信息门槛：先知道设备能编什么
   若保留现状，则必须修订 spec FR-004 而不是让代码与规格长期不一致 per FR-004 (contradicts)
 - [x] T049 失败时清理半成品：`VideoProgress.Failed` 分支未调用 `cleanupPartialFile`，
   只有取消分支调用了；失败后 `files/videos/` 会留下不完整文件 per FR-014 (missing)
-- [x] T050 离开页面即取消压缩：Section 缺 `DisposableEffect { onDispose { dispatch(Cancel) } }`，
+- [x] T050 离开页面即取消压缩（真机已验证：压缩中切 tab 后，半成品文件被删除）：Section 缺 `DisposableEffect { onDispose { dispatch(Cancel) } }`，
   当前切走 tab 后转码仍在后台继续，与「v1 只在前台压缩」的规格不符 per FR-015 (missing)
 - [x] T051 超长/超大视频提示：源超过 30 分钟或 2GB 时提示「建议先裁剪」，但仍允许继续
   （规格「边界情况」要求，当前无任何检查）per 边界情况 (missing)
@@ -218,9 +218,9 @@ Phase 1 (T001–T007)  ← T007 是信息门槛：先知道设备能编什么
 > 由第二次 `/speckit-converge`（2026-10-21）追加：Phase 9 的 7 项已全部在代码中核实通过；
 > 以下为复查中发现的 3 处低优先级差距（均为「规格写了、代码只做了一半」）。
 
-- [x] T054 界面注明帧率上限：源为 60fps 时会压到 30fps（`CompressionPreset.MAX_FRAME_RATE`），
+- [x] T054 界面注明帧率上限（真机已验证：参数行显示「帧率 30fps」）：源为 60fps 时会压到 30fps（`CompressionPreset.MAX_FRAME_RATE`），
   但界面没有说明，用户无从得知输出帧率被降低 per 边界情况 (partial)
-- [x] T055 压缩中提示「离开页面会取消」：规格要求该提示，当前只有代码注释；
+- [x] T055 压缩中提示「离开页面会取消」（真机已验证：压缩中显示「压缩中 45% · 离开页面会取消」）：规格要求该提示，当前只有代码注释；
   应在 `phase is Compressing` 时显示一行说明 per 边界情况 (partial)
 - [x] T056 启动时清理孤儿半成品（真机已验证）：`VideoOutputCleaner` 注册为 Koin 单例，`FoolproofApp.onCreate` 在后台线程调用 `cleanAll()`；实测未进入视频页即清空残留。进程被杀时 `files/videos/` 会留下不完整 `.mp4`，
   失败/取消路径虽已清理但进程死亡无从执行；应在 VM 初始化时删除目录内无对应结果的残留文件
