@@ -1,4 +1,4 @@
-# Tasks: 文件转 PDF（file-conversion）
+﻿# Tasks: 文件转 PDF（file-conversion）
 
 **Feature**: `specs/005-file-conversion/spec.md` · **Plan**: `specs/005-file-conversion/plan.md`
 **Constitution**: v1.17（导航已改为轻量 tab host）
@@ -7,59 +7,59 @@
 
 ## Phase 1: Setup（两个新模块）
 
-- [ ] T001 新建 `:common` 模块：`common/build.gradle.kts`（android library + compose + Koin）、
+- [x] T001 新建 `:common` 模块：`common/build.gradle.kts`（android library + compose + Koin）、
   `common/src/main/AndroidManifest.xml`、`settings.gradle.kts` 加 `include(":common")`
-- [ ] T002 新建 `:features:file-conversion` 模块：`features/file-conversion/build.gradle.kts`
+- [x] T002 新建 `:features:file-conversion` 模块：`features/file-conversion/build.gradle.kts`
   （依赖 `:base`、`:common`、compose、koin；**不新增第三方依赖**）、manifest、settings 注册
-- [ ] T003 `:app` 增加对 `:common` 与 `:features:file-conversion` 的依赖，并在
+- [x] T003 `:app` 增加对 `:common` 与 `:features:file-conversion` 的依赖，并在
   `FoolproofApp.kt` 注册 `fileConversionModule`（`app/build.gradle.kts`、`app/src/main/java/com/foolproof/FoolproofApp.kt`）
 
 ## Phase 2: Foundational（纯逻辑与骨架，先做完再写 UI）
 
-- [ ] T004 定义领域模型与接口：`PdfSource`（Image/Text）、`PdfPageSpec`、`PdfResult`、
+- [x] T004 定义领域模型与接口：`PdfSource`（Image/Text）、`PdfPageSpec`、`PdfResult`、
   `PdfConverter`、`PdfProgress`（`features/file-conversion/src/main/java/com/foolproof/features/conversion/domain/`）
-- [ ] T005 实现 `MarkdownParser`：标题/段落/列表/粗体/斜体/行内码/代码块/分隔线 → `List<Block>`，
+- [x] T005 实现 `MarkdownParser`：标题/段落/列表/粗体/斜体/行内码/代码块/分隔线 → `List<Block>`，
   纯 Kotlin 无 Android 依赖（`.../data/MarkdownParser.kt`）
-- [ ] T006 实现 `TextLayout`：`Paint.breakText` 折行、超长无空格串强制断行、跨页不切行、
+- [x] T006 实现 `TextLayout`：`Paint.breakText` 折行、超长无空格串强制断行、跨页不切行、
   代码块整体换页（`.../data/TextLayout.kt`）
-- [ ] T007 实现 `BitmapImageLoader`：`inJustDecodeBounds` 探测 + `inSampleSize`（长边 ≤ 2048）+
+- [x] T007 实现 `BitmapImageLoader`：`inJustDecodeBounds` 探测 + `inSampleSize`（长边 ≤ 2048）+
   EXIF 方向修正（`.../data/BitmapImageLoader.kt`）
-- [ ] T008 实现 `ContentUriTextLoader`：UTF-8 严格解码，失败回退 GBK，再失败返回分类错误（`.../data/ContentUriTextLoader.kt`）
-- [ ] T009 实现 `NativePdfGenerator`：A4 595×842pt、图片等比居中（边距 24pt）、文本逐行绘制（边距 48pt）、
+- [x] T008 实现 `ContentUriTextLoader`：UTF-8 严格解码，失败回退 GBK，再失败返回分类错误（`.../data/ContentUriTextLoader.kt`）
+- [x] T009 实现 `NativePdfGenerator`：A4 595×842pt、图片等比居中（边距 24pt）、文本逐行绘制（边距 48pt）、
   页数产出（`.../data/NativePdfGenerator.kt`）
-- [ ] T010 实现 `PdfOutputCleaner`（Koin 单例）：删除 `files/pdf/` 下全部残留；
+- [x] T010 实现 `PdfOutputCleaner`（Koin 单例）：删除 `files/pdf/` 下全部残留；
   `MediaStorePdfExporter`（API ≥ 29 存 `Downloads/Foolproof/`，`IS_PENDING`）（`.../data/`）
-- [ ] T011 ViewModel 骨架：`FileConversionContract`（State/Action/Effect）+ `FileConversionViewModel`
+- [x] T011 ViewModel 骨架：`FileConversionContract`（State/Action/Effect）+ `FileConversionViewModel`
   继承 `BaseViewModel`，状态机 Idle/Ready/Converting/Done/Failed，注入 `LogUtil`（`.../FileConversion*.kt`）
-- [ ] T012 Koin 模块 `FileConversionModule`：绑定 Converter / Loader / Exporter / Cleaner（`.../di/FileConversionModule.kt`）
+- [x] T012 Koin 模块 `FileConversionModule`：绑定 Converter / Loader / Exporter / Cleaner（`.../di/FileConversionModule.kt`）
 
 ## Phase 3: US1 — 多张图片合成 PDF (P1)
 
-- [ ] T013 图片选择：`PickMultipleVisualMedia`（上限 50），选中后读宽高并生成缩略图列表（`.../ui/FileConversionSection.kt`）
-- [ ] T014 列表交互：显示序号与缩略图、删除单张、上移/下移调整顺序（`.../ui/ImageSourceList.kt`）
-- [ ] T015 生成入口：未选图片时置灰；点击后逐张绘制并推进进度（`current/total`）（`.../ui/FileConversionSection.kt`、ViewModel）
-- [ ] T016 HEIC 门槛：API 24–27 遇到 HEIC 时提示并跳过该张，其余继续（`BitmapImageLoader` + ViewModel 错误映射）
-- [ ] T017 取消与清理：取消立即停止、删除半成品、回到 Ready（ViewModel + `NativePdfGenerator`）
+- [x] T013 图片选择：`PickMultipleVisualMedia`（上限 50），选中后读宽高并生成缩略图列表（`.../ui/FileConversionSection.kt`）
+- [x] T014 列表交互：显示序号与缩略图、删除单张、上移/下移调整顺序（`.../ui/ImageSourceList.kt`）
+- [x] T015 生成入口：未选图片时置灰；点击后逐张绘制并推进进度（`current/total`）（`.../ui/FileConversionSection.kt`、ViewModel）
+- [x] T016 HEIC 门槛：API 24–27 遇到 HEIC 时提示并跳过该张，其余继续（`BitmapImageLoader` + ViewModel 错误映射）
+- [x] T017 取消与清理：取消立即停止、删除半成品、回到 Ready（ViewModel + `NativePdfGenerator`）
 
 ## Phase 4: US2 — 文本 / Markdown 转 PDF (P1)
 
-- [ ] T018 文本选择：SAF `ACTION_OPEN_DOCUMENT`（`text/*` + `.md`），显示文件名与大小；> 2MB 拒绝（`.../ui/FileConversionSection.kt`）
-- [ ] T019 解析与排版接入：Markdown → Block → 折行 → 分页 → 绘制，串成一条链路（ViewModel + `NativePdfGenerator`）
-- [ ] T020 空内容/编码错误提示：空文件、全空白、GBK 回退失败分别给出分类提示（ViewModel 错误映射）
-- [ ] T021 模式切换：图片模式 / 文本模式切换时清理另一侧的中间状态（`.../ui/ModeSelector.kt`）
+- [x] T018 文本选择：SAF `ACTION_OPEN_DOCUMENT`（`text/*` + `.md`），显示文件名与大小；> 2MB 拒绝（`.../ui/FileConversionSection.kt`）
+- [x] T019 解析与排版接入：Markdown → Block → 折行 → 分页 → 绘制，串成一条链路（ViewModel + `NativePdfGenerator`）
+- [x] T020 空内容/编码错误提示：空文件、全空白、GBK 回退失败分别给出分类提示（ViewModel 错误映射）
+- [x] T021 模式切换：图片模式 / 文本模式切换时清理另一侧的中间状态（`.../ui/ModeSelector.kt`）
 
 ## Phase 5: US3 — 保存与应用内分享 (P2)
 
-- [ ] T022 结果区：显示文件名、大小、页数，并提供【打开】【分享】【存到下载】（`.../ui/FileConversionSection.kt`）
-- [ ] T023 分享：`FileProvider` + `ACTION_VIEW`/`ACTION_SEND`，`file_paths.xml` 增加 `pdf/` 目录（`app/src/main/res/xml/file_paths.xml`）
-- [ ] T024 存下载：API ≥ 29 经 `MediaStore.Downloads` 写入；API ≤ 28 不显示该按钮（`MediaStorePdfExporter` + UI 分支）
-- [ ] T025 启动清理接入：`FoolproofApp.onCreate` 后台线程调用 `PdfOutputCleaner`（与 `VideoOutputCleaner` 并列）
+- [x] T022 结果区：显示文件名、大小、页数，并提供【打开】【分享】【存到下载】（`.../ui/FileConversionSection.kt`）
+- [x] T023 分享：`FileProvider` + `ACTION_VIEW`/`ACTION_SEND`，`file_paths.xml` 增加 `pdf/` 目录（`app/src/main/res/xml/file_paths.xml`）
+- [x] T024 存下载：API ≥ 29 经 `MediaStore.Downloads` 写入；API ≤ 28 不显示该按钮（`MediaStorePdfExporter` + UI 分支）
+- [x] T025 启动清理接入：`FoolproofApp.onCreate` 后台线程调用 `PdfOutputCleaner`（与 `VideoOutputCleaner` 并列）
 
 ## Phase 6: 导航集成（`:common` + `:app`）
 
-- [ ] T026 `:common` 导航封装：`FoolproofDestination`（Images/Videos/Converter）、
+- [x] T026 `:common` 导航封装：`FoolproofDestination`（Images/Videos/Converter）、
   `FoolproofTabHost`（NavigationBar + 状态机，重复点同一 tab 不重建、切回首 tab 即重置）（`common/.../navigation/`）
-- [ ] T027 `:app` 改造：`FoolproofScreen` 用 `FoolproofTabHost` 组装三个 tab 的内容
+- [x] T027 `:app` 改造：`FoolproofScreen` 用 `FoolproofTabHost` 组装三个 tab 的内容
   （图片页沿用现有网格、视频页 `VideoCompressionSection`、转换页 `FileConversionSection`），
   删除 `:app` 内自写的导航状态机（`app/src/main/java/com/foolproof/ui/FoolproofScreen.kt`）
 

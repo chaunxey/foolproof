@@ -11,4 +11,6 @@
     <files-path name="image_compressed" path="compressed/" />
     <!-- 视频压缩的输出：filesDir/videos/ -->
     <files-path name="video_output" path="videos/" />
+    <!-- 文件转 PDF 的输出：filesDir/pdf/ -->
+    <files-path name="pdf_output" path="pdf/" />
 </paths>

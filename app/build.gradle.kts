@@ -1,4 +1,4 @@
-plugins {
+﻿plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
@@ -38,9 +38,11 @@ android {
 
 dependencies {
     implementation(project(":base"))
+    implementation(project(":common"))
     implementation(project(":features:image-compression"))
     implementation(project(":features:duplicate-cleanup"))
     implementation(project(":features:video-compression"))
+    implementation(project(":features:file-conversion"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

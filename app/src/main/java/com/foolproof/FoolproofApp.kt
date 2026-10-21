@@ -2,6 +2,8 @@ package com.foolproof
 
 import com.foolproof.base.BaseApplication
 import com.foolproof.features.compression.di.imageCompressionModule
+import com.foolproof.features.conversion.data.PdfOutputCleaner
+import com.foolproof.features.conversion.di.fileConversionModule
 import com.foolproof.features.duplicates.di.duplicateCleanupModule
 import com.foolproof.features.video.data.VideoOutputCleaner
 import com.foolproof.features.video.di.videoCompressionModule
@@ -15,14 +17,19 @@ import kotlin.concurrent.thread
 class FoolproofApp : BaseApplication() {
 
     override fun koinModules(): List<Module> =
-        super.koinModules() + imageCompressionModule + duplicateCleanupModule + videoCompressionModule
+        super.koinModules() +
+            imageCompressionModule +
+            duplicateCleanupModule +
+            videoCompressionModule +
+            fileConversionModule
 
     override fun onCreate() {
         super.onCreate()
-        // 启动清理上一进程可能残留的视频半成品（FR-014：不得留下孤立文件）。
+        // 启动清理上个进程可能残留的半成品（FR-014：不得留下孤立文件）。
         // 放后台线程：只删几个文件，但不能占用冷启动的关键路径。
-        thread(name = "video-output-cleanup", isDaemon = true) {
+        thread(name = "output-cleanup", isDaemon = true) {
             runCatching { GlobalContext.get().get<VideoOutputCleaner>().cleanAll() }
+            runCatching { GlobalContext.get().get<PdfOutputCleaner>().cleanAll() }
         }
     }
 }
