@@ -19,16 +19,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.foolproof.common.R
 
 /**
  * 底部导航的目的地（宪法 §3 / v1.17）。
  *
  * 顺序即 tab 顺序；语音聊天 tab 后续追加在这里，不改业务模块。
  */
-enum class FoolproofDestination(val label: String) {
-    Images("图片"),
-    Videos("视频"),
-    Converter("转换"),
+enum class FoolproofDestination(val labelRes: Int) {
+    Images(R.string.tab_images),
+    Videos(R.string.tab_videos),
+    Converter(R.string.tab_converter),
 }
 
 /**
@@ -70,7 +72,7 @@ fun FoolproofTabHost(
                     NavigationBarItem(
                         selected = destination == current,
                         onClick = { selected = destination.name },
-                        icon = { Text(destination.label) },
+                        icon = { Text(stringResource(destination.labelRes)) },
                     )
                 }
             }

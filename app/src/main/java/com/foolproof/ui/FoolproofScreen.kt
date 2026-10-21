@@ -1,4 +1,4 @@
-﻿package com.foolproof.ui
+package com.foolproof.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +12,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.foolproof.R
 import com.foolproof.ui.settings.SettingsDialog
 import com.foolproof.common.navigation.FoolproofDestination
 import com.foolproof.common.navigation.FoolproofTabHost
@@ -32,6 +34,7 @@ import com.foolproof.ui.compression.CompressionTabScreen
 fun FoolproofScreen(modifier: Modifier = Modifier) {
     // 防误触：返回键第一次只提示，2 秒内再按才退出
     val context = LocalContext.current
+    val backPressAgain = stringResource(R.string.back_press_again)
     var lastBackAt by remember { mutableStateOf(0L) }
     BackHandler {
         val now = android.os.SystemClock.elapsedRealtime()
@@ -39,7 +42,7 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
             (context as? android.app.Activity)?.finish()
         } else {
             lastBackAt = now
-            android.widget.Toast.makeText(context, "再按一次退出", android.widget.Toast.LENGTH_SHORT).show()
+            android.widget.Toast.makeText(context, backPressAgain, android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 

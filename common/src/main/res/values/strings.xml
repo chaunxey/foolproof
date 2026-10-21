@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 底部导航（多语言：tab 名统一放这里） -->
+    <string name="tab_images">图片</string>
+    <string name="tab_videos">视频</string>
+    <string name="tab_converter">转换</string>
+</resources>
