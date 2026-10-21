@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.compression
+package com.foolproof.features.compression
 
 import com.foolproof.base.mvi.UiAction
 import com.foolproof.base.mvi.UiEffect
@@ -57,6 +57,8 @@ sealed interface CompressionAction : UiAction {
     data class ChangeFormat(val format: OutputFormat) : CompressionAction
 
     data class ChangeQuality(val quality: Int) : CompressionAction
+
+    data class ChangeTargetBytes(val bytes: Long?) : CompressionAction
 
     data class Share(val id: String) : CompressionAction
 

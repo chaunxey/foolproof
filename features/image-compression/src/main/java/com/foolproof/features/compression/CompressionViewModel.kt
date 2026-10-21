@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.compression
+package com.foolproof.features.compression
 
 import com.foolproof.base.log.LogUtil
 import com.foolproof.base.mvi.BaseViewModel
@@ -55,6 +55,9 @@ class CompressionViewModel(
             is CompressionAction.ChangeFormat -> changeOption { it.withFormat(action.format) }
 
             is CompressionAction.ChangeQuality -> changeOption { it.withQuality(action.quality) }
+
+            is CompressionAction.ChangeTargetBytes ->
+                changeOption { it.withTargetBytes(action.bytes) }
 
             is CompressionAction.Share -> share(action.id)
 

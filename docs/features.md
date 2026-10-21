@@ -5,6 +5,7 @@
 - 自研 `BitmapFactory` 采样 + `Bitmap.compress`，输出 JPEG / WebP，质量 0–100；
 - 零权限：系统 Photo Picker 选图，写应用私有目录 + FileProvider；
 - 批量串行，单张失败隔离；参数改动 300ms 防抖出预估体积；
+- 支持**目标体积**：输入 KB 后自动降质量/缩尺寸，尽量不超过目标（签证/报名场景）；
 - HEIC 仅 API ≥ 28 可解码；保存到相册仅 API ≥ 29；
 - EXIF 方向纠正，重编码不保留定位。
 

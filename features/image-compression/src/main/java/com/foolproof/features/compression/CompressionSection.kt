@@ -153,6 +153,14 @@ fun CompressionSection(
             }
         }
 
+        TargetOptionRow(
+            targetBytes = state.option.targetBytes,
+            enabled = !state.isRunning,
+            onTargetChange = {
+                viewModel.dispatch(CompressionAction.ChangeTargetBytes(it))
+            },
+        )
+
         OptionRow(
             format = state.option.format,
             quality = state.option.quality,
@@ -250,6 +258,119 @@ fun CompressionSection(
         }
     }
 }
+
+@Composable
+private fun TargetOptionRow(
+    targetBytes: Long?,
+    enabled: Boolean,
+    onTargetChange: (Long?) -> Unit,
+) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+    ) {
+        FilterChip(
+            selected = targetBytes == null,
+            onClick = { onTargetChange(null) },
+            enabled = enabled,
+            label = { Text(stringResource(R.string.compression_target_auto)) },
+        )
+        FilterChip(
+            selected = targetBytes != null,
+            onClick = { showDialog = true },
+            enabled = enabled,
+            label = {
+                Text(
+                    if (targetBytes == null) {
+                        stringResource(R.string.compression_target_custom)
+                    } else {
+                        stringResource(
+                            R.string.compression_target_kb,
+                            (targetBytes / 1024L).toInt(),
+                        )
+                    },
+                )
+            },
+        )
+    }
+
+    if (targetBytes != null) {
+        Text(
+            text = stringResource(R.string.compression_target_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp),
+        )
+    }
+
+    if (showDialog) {
+        TargetKbDialog(
+            initialKb = ((targetBytes ?: DEFAULT_TARGET_KB.toLong()) / 1024L).toInt(),
+            onDismiss = { showDialog = false },
+            onConfirm = {
+                onTargetChange(it * 1024L)
+                showDialog = false
+            },
+        )
+    }
+}
+
+@Composable
+private fun TargetKbDialog(
+    initialKb: Int,
+    onDismiss: () -> Unit,
+    onConfirm: (Int) -> Unit,
+) {
+    var text by remember { mutableStateOf(initialKb.coerceIn(MIN_TARGET_KB, MAX_TARGET_KB).toString()) }
+    val parsed = text.toIntOrNull()
+    val valid = parsed != null && parsed in MIN_TARGET_KB..MAX_TARGET_KB
+
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.compression_target_dialog_title)) },
+        text = {
+            Column {
+                androidx.compose.material3.OutlinedTextField(
+                    value = text,
+                    onValueChange = { input ->
+                        if (input.length <= 5 && input.all { it.isDigit() }) text = input
+                    },
+                    label = { Text(stringResource(R.string.compression_target_input)) },
+                    suffix = { Text("KB") },
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Number,
+                    ),
+                )
+                Text(
+                    text = stringResource(R.string.compression_target_range),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(
+                onClick = { parsed?.let(onConfirm) },
+                enabled = valid,
+            ) {
+                Text(stringResource(R.string.compression_target_confirm))
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.compression_clear))
+            }
+        },
+    )
+}
+
+private const val DEFAULT_TARGET_KB = 200
+private const val MIN_TARGET_KB = 5
+private const val MAX_TARGET_KB = 10240
 
 @Composable
 private fun OptionRow(

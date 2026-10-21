@@ -53,4 +53,12 @@
     <string name="compression_msg_save_failed">保存到相册失败</string>
     <string name="compression_msg_save_unsupported">当前系统版本不支持直接保存到相册</string>
     <string name="compression_empty_hint">选择图片后可调整格式、质量，并实时查看预估体积</string>
+    <string name="compression_target_range">范围 5–10240 KB</string>
+    <string name="compression_target_dialog_title">设置目标体积</string>
+    <string name="compression_target_kb">%1$d KB</string>
+    <string name="compression_target_custom">自定义</string>
+    <string name="compression_target_auto">自动</string>
+    <string name="compression_target_note">将自动降低质量/尺寸以不超过目标</string>
+    <string name="compression_target_input">目标体积（KB）</string>
+    <string name="compression_target_confirm">确定</string>
 </resources>

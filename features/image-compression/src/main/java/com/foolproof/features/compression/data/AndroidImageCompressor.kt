@@ -153,13 +153,59 @@ class AndroidImageCompressor(
     // region 编码
 
     private fun write(bitmap: Bitmap, target: File, option: CompressionOption) {
-        val written = target.outputStream().use { out ->
-            bitmap.compress(option.toCompressFormat(), option.quality, out)
+        val targetBytes = option.targetBytes
+        if (targetBytes == null) {
+            val written = target.outputStream().use { out ->
+                bitmap.compress(option.toCompressFormat(), option.quality, out)
+            }
+            if (!written) {
+                target.delete()
+                throw CompressionFailure(FailureReason.DECODE)
+            }
+            return
         }
-        if (!written) {
-            target.delete()
-            throw CompressionFailure(FailureReason.DECODE)
+
+        // 目标体积：质量逐级下降，最低质量仍超限则等比缩小，取满足目标的最佳结果
+        var current = bitmap
+        var ownsCurrent = false
+        var quality = option.quality
+        var best: ByteArray? = null
+        try {
+            repeat(MAX_TARGET_ATTEMPTS) {
+                val bytes = encode(current, quality, option)
+                if (best == null || bytes.size < best!!.size) best = bytes
+                if (bytes.size <= targetBytes) {
+                    target.writeBytes(bytes)
+                    return
+                }
+                if (quality > MIN_SEARCH_QUALITY) {
+                    quality = (quality - QUALITY_STEP).coerceAtLeast(MIN_SEARCH_QUALITY)
+                } else {
+                    val next = Bitmap.createScaledBitmap(
+                        current,
+                        (current.width * SCALE_STEP).toInt().coerceAtLeast(1),
+                        (current.height * SCALE_STEP).toInt().coerceAtLeast(1),
+                        true,
+                    )
+                    if (ownsCurrent) current.recycle()
+                    current = next
+                    ownsCurrent = true
+                    quality = SCALE_RESTART_QUALITY
+                }
+            }
+            // 尽力而为：写入当前最小结果，UI 会显示实际体积
+            best?.let { target.writeBytes(it) }
+                ?: throw CompressionFailure(FailureReason.DECODE)
+        } finally {
+            if (ownsCurrent) current.recycle()
         }
+    }
+
+    private fun encode(bitmap: Bitmap, quality: Int, option: CompressionOption): ByteArray {
+        val stream = java.io.ByteArrayOutputStream()
+        val written = bitmap.compress(option.toCompressFormat(), quality, stream)
+        if (!written) throw CompressionFailure(FailureReason.DECODE)
+        return stream.toByteArray()
     }
 
     private fun CompressionOption.toCompressFormat(): Bitmap.CompressFormat = when (format) {
@@ -186,5 +232,10 @@ class AndroidImageCompressor(
 
     private companion object {
         const val OUTPUT_DIR = "compressed"
+        const val MAX_TARGET_ATTEMPTS = 12
+        const val MIN_SEARCH_QUALITY = 20
+        const val QUALITY_STEP = 15
+        const val SCALE_STEP = 0.85f
+        const val SCALE_RESTART_QUALITY = 70
     }
 }
