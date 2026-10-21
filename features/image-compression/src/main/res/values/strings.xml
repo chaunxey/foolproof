@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 图片压缩（多语言抽取：先建资源，下一步接线到代码） -->
+    <string name="compression_title">图片压缩</string>
+    <string name="compression_pick_image">选择图片</string>
+    <string name="compression_start">开始压缩</string>
+    <string name="compression_reset">重置</string>
+    <string name="compression_cancel">取消</string>
+    <string name="compression_format">格式</string>
+    <string name="compression_quality">质量</string>
+    <string name="compression_estimate">预估体积</string>
+    <string name="compression_saving">节省</string>
+    <string name="compression_save_to_gallery">存相册</string>
+    <string name="compression_share">分享</string>
+</resources>
