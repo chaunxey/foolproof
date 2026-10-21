@@ -98,7 +98,7 @@ fun SettingsDialog(onDismiss: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    OutlinedButton(onClick = { SettingsStore.setFontScale(1.0f) }) {
+                    OutlinedButton(onClick = { SettingsStore.resetFontScale() }) {
                         Text(stringResource(R.string.settings_restore_default))
                     }
                     TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_close)) }

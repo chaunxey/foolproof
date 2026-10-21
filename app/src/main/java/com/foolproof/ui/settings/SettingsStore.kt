@@ -49,9 +49,11 @@ object SettingsStore {
     private const val KEY_LANGUAGE = "language"
     private const val KEY_THEME = "theme"
     const val MIN_SCALE = 0.85f
-    const val MAX_SCALE = 1.3f
+    /** 上限对齐系统无障碍「超大字体」（约 200%），方便当老人模式用。 */
+    const val MAX_SCALE = 2.0f
 
     private lateinit var prefs: android.content.SharedPreferences
+    private lateinit var appContext: Context
 
     private val _fontScale = MutableStateFlow(1.0f)
     val fontScale: StateFlow<Float> = _fontScale
@@ -63,8 +65,11 @@ object SettingsStore {
     val themeMode: StateFlow<ThemeMode> = _themeMode
 
     fun init(context: Context) {
+        appContext = context.applicationContext
         prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        _fontScale.value = prefs.getFloat(KEY_SCALE, 1.0f).coerceIn(MIN_SCALE, MAX_SCALE)
+        // 默认跟随系统字号：系统开了「大字体 / 老人模式」时，首次进入不会比别的 App 小
+        val systemScale = appContext.resources.configuration.fontScale
+        _fontScale.value = prefs.getFloat(KEY_SCALE, systemScale).coerceIn(MIN_SCALE, MAX_SCALE)
         _language.value = prefs.getString(KEY_LANGUAGE, null)
             ?.let { tag -> AppLanguage.entries.firstOrNull { it.tag == tag } }
             ?: AppLanguage.SYSTEM
@@ -79,6 +84,12 @@ object SettingsStore {
         if (this::prefs.isInitialized) {
             prefs.edit().putFloat(KEY_SCALE, clamped).apply()
         }
+    }
+
+    /** 恢复默认 = 当前系统字号（不是写死 100%）。 */
+    fun resetFontScale() {
+        if (!this::appContext.isInitialized) return
+        setFontScale(appContext.resources.configuration.fontScale)
     }
 
     /** 只写偏好；界面由 CompositionLocal 立即重组，不重建 Activity。 */
