@@ -65,4 +65,5 @@
     <string name="video_merge_trim_title">កាត់វីដេអូ</string>
     <string name="video_merge_confirm">យល់ព្រម</string>
     <string name="video_merge_more">ផ្សេងទៀត</string>    <string name="video_empty_hint">ជ្រើសរើសវីដេអូ កាត់វីដេអូ និងជ្រើសកម្រិត ដើម្បីចាប់ផ្តើមបង្ហាប់</string>
+    <string name="video_merge_drag">អូសដើម្បីរៀបចំ</string>
 </resources>

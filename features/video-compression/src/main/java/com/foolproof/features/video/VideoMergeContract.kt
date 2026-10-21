@@ -29,6 +29,9 @@ sealed interface VideoMergeAction : UiAction {
     data class Remove(val id: String) : VideoMergeAction
     data class MoveUp(val id: String) : VideoMergeAction
 
+    /** 拖拽排序的落点：把 id 移动到 toIndex（最终位置）。 */
+    data class MoveTo(val id: String, val toIndex: Int) : VideoMergeAction
+
     /** 逐段裁剪：start/end 单位毫秒，由 ViewModel 再夹紧。 */
     data class TrimChanged(val id: String, val startMs: Long, val endMs: Long) : VideoMergeAction
 

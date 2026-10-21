@@ -65,4 +65,5 @@
     <string name="video_merge_trim_title">クリップをトリミング</string>
     <string name="video_merge_confirm">確定</string>
     <string name="video_merge_more">その他</string>    <string name="video_empty_hint">動画を選び、切り抜きと画質を設定して圧縮を開始します</string>
+    <string name="video_merge_drag">ドラッグで並べ替え</string>
 </resources>

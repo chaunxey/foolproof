@@ -37,6 +37,7 @@ class VideoMergeViewModel(
                 it.copy(clips = it.clips.filterNot { clip -> clip.source.id == action.id })
             }
             is VideoMergeAction.MoveUp -> moveUp(action.id)
+            is VideoMergeAction.MoveTo -> moveTo(action.id, action.toIndex)
             is VideoMergeAction.TrimChanged -> trim(action.id, action.startMs, action.endMs)
             VideoMergeAction.Start -> start()
             VideoMergeAction.Cancel -> cancel()
@@ -57,12 +58,28 @@ class VideoMergeViewModel(
                 return@launch
             }
             val room = (MAX_VIDEOS - currentState.clips.size).coerceAtLeast(0)
-            val accepted = loaded.take(room).map { MergeClip(source = it) }
+            val existing = currentState.clips.map { it.source.id }.toSet()
+            // 同一视频重复添加会让 id 冲突（拖拽/删除按 id 定位），这里按 id 去重
+            val fresh = loaded.filter { it.id !in existing }.distinctBy { it.id }
+            val accepted = fresh.take(room).map { MergeClip(source = it) }
             if (accepted.isNotEmpty()) {
                 updateState { it.copy(clips = it.clips + accepted) }
             }
-            if (accepted.size < loaded.size) {
+            if (accepted.size < fresh.size) {
                 sendEffect(VideoMergeEffect.Message(VideoMergeEffect.MessageKind.TOO_MANY))
+            }
+        }
+    }
+
+    private fun moveTo(id: String, toIndex: Int) {
+        updateState { state ->
+            val from = state.clips.indexOfFirst { it.source.id == id }
+            if (from < 0 || toIndex !in state.clips.indices || from == toIndex) {
+                state
+            } else {
+                val list = state.clips.toMutableList()
+                list.add(toIndex, list.removeAt(from))
+                state.copy(clips = list)
             }
         }
     }

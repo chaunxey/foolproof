@@ -79,4 +79,5 @@
     <string name="video_merge_trim_title">裁剪片段</string>
     <string name="video_merge_confirm">确定</string>
     <string name="video_merge_more">更多</string>    <string name="video_empty_hint">选择一个视频，裁剪片段并选择档位后开始压缩</string>
+    <string name="video_merge_drag">拖动排序</string>
 </resources>

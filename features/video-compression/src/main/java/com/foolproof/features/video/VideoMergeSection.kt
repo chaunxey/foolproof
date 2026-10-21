@@ -6,16 +6,20 @@ import java.io.File
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -34,10 +38,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.zIndex
+import kotlin.math.roundToInt
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.foolproof.base.ads.AdGateProvider
@@ -119,12 +130,24 @@ fun VideoMergeSection(
         }
 
         if (state.clips.isEmpty()) {
-            Text(
-                text = stringResource(R.string.video_merge_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 8.dp),
-            )
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_empty_video),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(40.dp),
+                )
+                Text(
+                    text = stringResource(R.string.video_merge_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
         } else {
             Text(
                 text = stringResource(
@@ -136,11 +159,64 @@ fun VideoMergeSection(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp),
             )
+            var draggingId by remember { mutableStateOf<String?>(null) }
+            var dragOffsetY by remember { mutableStateOf(0f) }
+            var rowHeightPx by remember { mutableStateOf(0f) }
+            val dragLabel = stringResource(R.string.video_merge_drag)
             state.clips.forEachIndexed { index, clip ->
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset {
+                            IntOffset(
+                                0,
+                                if (draggingId == clip.source.id) dragOffsetY.roundToInt() else 0,
+                            )
+                        }
+                        .zIndex(if (draggingId == clip.source.id) 1f else 0f)
+                        .onSizeChanged { if (it.height > 0) rowHeightPx = it.height.toFloat() },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    // 拖拽手柄：按住上下拖动，松手按位移换算目标位置
+                    Text(
+                        text = "≡",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .semantics { contentDescription = dragLabel }
+                            .pointerInput(clip.source.id, state.isMerging) {
+                                if (state.isMerging) return@pointerInput
+                                detectDragGestures(
+                                    onDragStart = {
+                                        draggingId = clip.source.id
+                                        dragOffsetY = 0f
+                                    },
+                                    onDragEnd = {
+                                        if (rowHeightPx > 0f) {
+                                            val shift = (dragOffsetY / rowHeightPx).roundToInt()
+                                            val target = (index + shift)
+                                                .coerceIn(0, state.clips.lastIndex)
+                                            if (target != index) {
+                                                viewModel.dispatch(
+                                                    VideoMergeAction.MoveTo(clip.source.id, target),
+                                                )
+                                            }
+                                        }
+                                        draggingId = null
+                                        dragOffsetY = 0f
+                                    },
+                                    onDragCancel = {
+                                        draggingId = null
+                                        dragOffsetY = 0f
+                                    },
+                                    onDrag = { change, amount ->
+                                        change.consume()
+                                        dragOffsetY += amount.y
+                                    },
+                                )
+                            },
+                    )
                     Text(
                         text = "${index + 1}. ${clip.source.displayName}",
                         style = MaterialTheme.typography.bodySmall,
