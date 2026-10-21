@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.video.ui
+package com.foolproof.features.video.ui
 
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -16,12 +16,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -59,6 +61,7 @@ internal fun TrimTimeline(
     onRangeChange: (Long, Long) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    videoAspect: Float = 16f / 9f,
 ) {
     if (durationMs <= 0) return
 
@@ -68,30 +71,39 @@ internal fun TrimTimeline(
     var isPlaying by remember(videoId) { mutableStateOf(false) }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                // 固定高度 + 黑底：VideoView 自身按视频比例缩放并居中（letterbox），
-                // 竖屏视频两侧留黑边，不会把整个页面撑高
-                .height(PREVIEW_HEIGHT)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color.Black)
-                // 点视频任意处切换播放/暂停（与常见播放器一致）
-                .clickable {
-                    val view = videoView
-                    if (view != null) {
-                        if (isPlaying) {
-                            view.pause()
-                            isPlaying = false
-                        } else {
-                            view.seekTo(startMs.toInt())
-                            view.start()
-                            isPlaying = true
-                        }
-                    }
-                },
+        // 让画面尽可能大，同时保证竖屏视频不把页面撑爆：
+        // 以「最大可用高度」和「可用宽度」两个约束里更紧的那个决定尺寸，保持视频原始比例。
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
+            val aspect = videoAspect.coerceIn(0.3f, 3f)
+            val widthByHeight = PREVIEW_MAX_HEIGHT * aspect
+            val previewWidth = minOf(widthByHeight, maxWidth)
+            val previewHeight = previewWidth / aspect
+
+            Box(
+                modifier = Modifier
+                    .width(previewWidth)
+                    .height(previewHeight)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.Black)
+                    // 点视频任意处切换播放/暂停（与常见播放器一致）
+                    .clickable {
+                        val view = videoView
+                        if (view != null) {
+                            if (isPlaying) {
+                                view.pause()
+                                isPlaying = false
+                            } else {
+                                view.seekTo(startMs.toInt())
+                                view.start()
+                                isPlaying = true
+                            }
+                        }
+                    },
+                contentAlignment = Alignment.Center,
+            ) {
             AndroidView(
                 factory = { context ->
                     VideoView(context).apply {
@@ -125,7 +137,8 @@ internal fun TrimTimeline(
                     )
                 }
             }
-        }
+            }   // 关闭预览 Box
+        }       // 关闭 BoxWithConstraints
 
         // 拖动滑块后回到起点并暂停，避免"播放位置与裁剪区间不一致"
         LaunchedEffect(startMs) {
@@ -221,5 +234,5 @@ private fun rememberVideoFrames(videoId: String, frameCount: Int): List<ImageBit
     return frames
 }
 
-/** 预览区固定高度：避免竖屏视频把页面撑得过高。 */
-private val PREVIEW_HEIGHT = 240.dp
+/** 预览区最大高度：分辨率再高也不超过它，避免竖屏视频把页面撑爆。 */
+private val PREVIEW_MAX_HEIGHT = 400.dp

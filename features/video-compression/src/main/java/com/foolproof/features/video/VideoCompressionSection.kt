@@ -126,6 +126,7 @@ fun VideoCompressionSection(
                     viewModel.dispatch(VideoAction.TrimChanged(start, end))
                 },
                 enabled = !state.isCompressing,
+                videoAspect = video.width.toFloat() / video.height.toFloat(),
                 modifier = Modifier.padding(top = 8.dp),
             )
 
