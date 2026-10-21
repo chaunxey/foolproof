@@ -78,4 +78,9 @@
     <string name="video_target_custom">Benutzerdefiniert</string>
     <string name="video_target_input_label">Zielgröße (MB)</string>
     <string name="video_target_confirm">OK</string>
+    <string name="video_trim_title">Video zuschneiden</string>
+    <string name="video_trim_start">Zuschneiden</string>
+    <string name="video_trim_result">Zugeschnitten · %1$s</string>
+    <string name="video_trim_restart">Erneut zuschneiden</string>
+    <string name="video_trim_keep">%1$s behalten / gesamt %2$s</string>
 </resources>

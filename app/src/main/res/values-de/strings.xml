@@ -27,4 +27,5 @@
     <string name="video_mode_merge">Zusammenfügen</string>    <string name="ads_skip">Überspringen</string>
     <string name="conversion_tab_tools">PDF-Werkzeuge</string>
     <string name="conversion_tab_generate">PDF erstellen</string>
+    <string name="video_mode_trim">Zuschneiden</string>
 </resources>

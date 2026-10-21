@@ -26,4 +26,5 @@
     <string name="video_mode_merge">拼接</string>    <string name="ads_skip">跳过</string>
     <string name="conversion_tab_tools">PDF 工具</string>
     <string name="conversion_tab_generate">生成 PDF</string>
+    <string name="video_mode_trim">裁剪</string>
 </resources>

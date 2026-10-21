@@ -92,4 +92,9 @@
     <string name="video_target_custom">自定义</string>
     <string name="video_target_input_label">目标体积（MB）</string>
     <string name="video_target_confirm">确定</string>
+    <string name="video_trim_title">视频裁剪</string>
+    <string name="video_trim_start">开始裁剪</string>
+    <string name="video_trim_result">裁剪完成 · %1$s</string>
+    <string name="video_trim_restart">重新裁剪</string>
+    <string name="video_trim_keep">保留 %1$s / 总长 %2$s</string>
 </resources>

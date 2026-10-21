@@ -27,4 +27,5 @@
     <string name="video_mode_merge">ភ្ជាប់</string>    <string name="ads_skip">រំលង</string>
     <string name="conversion_tab_tools">ឧបករណ៍ PDF</string>
     <string name="conversion_tab_generate">បង្កើត PDF</string>
+    <string name="video_mode_trim">កាត់</string>
 </resources>

@@ -10,6 +10,7 @@ Foolproof_{TYPE}_{ACTION}_{yyyyMMdd_HHmmss}[_{NN}].{ext}
 | --- | --- |
 | 图片压缩 | `Foolproof_IMG_COMP_20261021_161500.jpg` |
 | 视频压缩 | `Foolproof_VID_COMP_20261021_161500.mp4` |
+| 视频裁剪 | `Foolproof_VID_TRIM_20261021_161500.mp4` |
 | 视频拼接 | `Foolproof_VID_MERGE_20261021_161500.mp4` |
 | 生成 PDF | `Foolproof_PDF_CONV_20261021_161500.pdf` |
 | PDF 合并 | `Foolproof_PDF_MERGE_20261021_161500.pdf` |
@@ -20,7 +21,7 @@ Foolproof_{TYPE}_{ACTION}_{yyyyMMdd_HHmmss}[_{NN}].{ext}
 
 规则：
 
-- 类型 `IMG` / `VID` / `PDF`；动作 `COMP` / `MERGE` / `SPLIT` / `ROTATE` / `REORDER` / `CONV`；
+- 类型 `IMG` / `VID` / `PDF`；动作 `COMP` / `TRIM` / `MERGE` / `SPLIT` / `ROTATE` / `REORDER` / `CONV`；
 - 同目录重名追加 `_02`、`_03`；
 - 只用 ASCII，不携带原文件名；
 - 目录：`Pictures/Foolproof`、`Movies/Foolproof`、`Download/Foolproof`；

@@ -27,4 +27,5 @@
     <string name="video_mode_merge">結合</string>    <string name="ads_skip">スキップ</string>
     <string name="conversion_tab_tools">PDF ツール</string>
     <string name="conversion_tab_generate">PDF 作成</string>
+    <string name="video_mode_trim">トリミング</string>
 </resources>

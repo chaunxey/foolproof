@@ -31,8 +31,9 @@ import com.foolproof.R
 import com.foolproof.ads.SectionBannerAd
 import com.foolproof.features.video.VideoCompressionSection
 import com.foolproof.features.video.VideoMergeSection
+import com.foolproof.features.video.VideoTrimSection
 
-private enum class VideoTabMode { COMPRESS, MERGE }
+private enum class VideoTabMode { COMPRESS, MERGE, TRIM }
 
 /**
  * 视频 tab：压缩 / 拼接二选一，避免两个完整表单纵向堆叠。
@@ -49,6 +50,7 @@ fun VideoTabScreen(modifier: Modifier = Modifier) {
         when (mode) {
             VideoTabMode.COMPRESS -> VideoCompressionSection()
             VideoTabMode.MERGE -> VideoMergeSection()
+            VideoTabMode.TRIM -> VideoTrimSection()
         }
     }
 }
@@ -75,6 +77,12 @@ private fun ModeSwitch(mode: VideoTabMode, onModeChange: (VideoTabMode) -> Unit)
             text = stringResource(R.string.video_mode_merge),
             selected = mode == VideoTabMode.MERGE,
             onClick = { onModeChange(VideoTabMode.MERGE) },
+            modifier = Modifier.weight(1f),
+        )
+        ModeSegment(
+            text = stringResource(R.string.video_mode_trim),
+            selected = mode == VideoTabMode.TRIM,
+            onClick = { onModeChange(VideoTabMode.TRIM) },
             modifier = Modifier.weight(1f),
         )
     }

@@ -78,4 +78,9 @@
     <string name="video_target_custom">カスタム</string>
     <string name="video_target_input_label">目標サイズ（MB）</string>
     <string name="video_target_confirm">決定</string>
+    <string name="video_trim_title">動画トリミング</string>
+    <string name="video_trim_start">トリミング開始</string>
+    <string name="video_trim_result">完了 · %1$s</string>
+    <string name="video_trim_restart">もう一度トリミング</string>
+    <string name="video_trim_keep">%1$s を保持 / 全体 %2$s</string>
 </resources>

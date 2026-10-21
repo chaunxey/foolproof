@@ -78,4 +78,9 @@
     <string name="video_target_custom">ផ្ទាល់ខ្លួន</string>
     <string name="video_target_input_label">ទំហំគោលដៅ (MB)</string>
     <string name="video_target_confirm">យល់ព្រម</string>
+    <string name="video_trim_title">កាត់វីដេអូ</string>
+    <string name="video_trim_start">ចាប់ផ្តើមកាត់</string>
+    <string name="video_trim_result">បានកាត់ · %1$s</string>
+    <string name="video_trim_restart">កាត់ម្តងទៀត</string>
+    <string name="video_trim_keep">រក្សា %1$s / សរុប %2$s</string>
 </resources>

@@ -27,4 +27,5 @@
     <string name="video_mode_merge">Merge</string>    <string name="ads_skip">Skip</string>
     <string name="conversion_tab_tools">PDF tools</string>
     <string name="conversion_tab_generate">Generate PDF</string>
+    <string name="video_mode_trim">Trim</string>
 </resources>

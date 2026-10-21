@@ -3,9 +3,11 @@ package com.foolproof.features.video.di
 import android.content.Context
 import com.foolproof.features.video.VideoCompressionViewModel
 import com.foolproof.features.video.VideoMergeViewModel
+import com.foolproof.features.video.VideoTrimViewModel
 import com.foolproof.features.video.data.ContentResolverVideoReader
 import com.foolproof.features.video.data.Media3VideoCompressor
 import com.foolproof.features.video.data.Media3VideoMerger
+import com.foolproof.features.video.data.Media3VideoTrimmer
 import com.foolproof.features.video.data.MediaCodecEncoderCatalog
 import com.foolproof.features.video.data.MediaStoreVideoExporter
 import com.foolproof.features.video.data.VideoOutputCleaner
@@ -14,6 +16,7 @@ import com.foolproof.features.video.domain.VideoCompressor
 import com.foolproof.features.video.domain.VideoExporter
 import com.foolproof.features.video.domain.VideoMerger
 import com.foolproof.features.video.domain.VideoReader
+import com.foolproof.features.video.domain.VideoTrimmer
 import java.io.File
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -32,6 +35,8 @@ val videoCompressionModule = module {
     single<VideoCompressor> { Media3VideoCompressor(get(), get()) }
 
     single<VideoMerger> { Media3VideoMerger(get(), get()) }
+
+    single<VideoTrimmer> { Media3VideoTrimmer(get(), get()) }
 
     single<VideoExporter> { MediaStoreVideoExporter(get(), get()) }
 
@@ -53,6 +58,16 @@ val videoCompressionModule = module {
             exporter = get(),
             outputDir = File(get<Context>().filesDir, "videos"),
             logger = get(),
+        )
+    }
+
+    viewModel {
+        VideoTrimViewModel(
+            reader = get(),
+            trimmer = get(),
+            exporter = get(),
+            outputDir = File(get<Context>().filesDir, "videos"),
+            log = get(),
         )
     }
 }

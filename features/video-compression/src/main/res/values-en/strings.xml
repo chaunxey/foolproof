@@ -78,4 +78,9 @@
     <string name="video_target_custom">Custom</string>
     <string name="video_target_input_label">Target size (MB)</string>
     <string name="video_target_confirm">OK</string>
+    <string name="video_trim_title">Trim video</string>
+    <string name="video_trim_start">Trim</string>
+    <string name="video_trim_result">Trimmed · %1$s</string>
+    <string name="video_trim_restart">Trim again</string>
+    <string name="video_trim_keep">Keep %1$s / total %2$s</string>
 </resources>

@@ -23,6 +23,7 @@ object OutputNaming {
 
     enum class Action(val token: String) {
         COMPRESS("COMP"),
+        TRIM("TRIM"),
         MERGE("MERGE"),
         SPLIT("SPLIT"),
         ROTATE("ROTATE"),
