@@ -1,4 +1,4 @@
-package com.foolproof.features.video
+﻿package com.foolproof.features.video
 
 import com.foolproof.base.log.LogUtil
 import com.foolproof.base.mvi.BaseViewModel
@@ -138,7 +138,7 @@ class VideoCompressionViewModel(
                     trim = TrimRange.full(video.durationMs),
                     preset = cappedPreset,
                     phase = VideoPhase.Ready,
-                    encoderNote = if (avc.isHardware) null else "当前设备无硬件编码器，压缩会很慢",
+                    encoderNote = if (avc.isHardware) null else "当前设备无硬件编码器，压缩时长会比较长",
                 )
             }
 

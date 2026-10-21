@@ -1,4 +1,4 @@
-package com.foolproof.features.video
+﻿package com.foolproof.features.video
 
 import android.content.Context
 import android.content.Intent
@@ -225,7 +225,7 @@ private data class UiMessage(val text: String, val isError: Boolean)
 private fun VideoEffect.MessageKind.label(): String = when (this) {
     VideoEffect.MessageKind.SOURCE_UNREADABLE -> "无法读取该视频"
     VideoEffect.MessageKind.NO_ENCODER -> "当前设备没有可用的视频编码器"
-    VideoEffect.MessageKind.SOFTWARE_ENCODER_ONLY -> "当前设备无硬件编码器，压缩会很慢"
+    VideoEffect.MessageKind.SOFTWARE_ENCODER_ONLY -> "当前设备无硬件编码器，压缩时长会比较长"
     VideoEffect.MessageKind.OUT_OF_SPACE -> "存储空间不足"
     VideoEffect.MessageKind.TRANSCODE_FAILED -> "压缩失败，请重试"
     VideoEffect.MessageKind.CANCELLED -> "已取消"

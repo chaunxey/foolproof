@@ -3,6 +3,8 @@
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.widget.VideoView
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.TextButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -54,29 +56,64 @@ internal fun TrimTimeline(
     if (durationMs <= 0) return
 
     val frames = rememberVideoFrames(videoId, frameCount = 8)
+    var videoView by remember { mutableStateOf<VideoView?>(null) }
+    // 选中视频后不自动播放：由用户点【播放】才开始（避免一进页面就出声）
+    var isPlaying by remember(videoId) { mutableStateOf(false) }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        AndroidView(
-            factory = { context ->
-                VideoView(context).apply {
-                    setVideoURI(Uri.parse(videoId))
-                    setOnPreparedListener { player ->
-                        player.isLooping = true
-                        seekTo(startMs.toInt())
-                        start()
-                    }
-                }
-            },
-            update = { view ->
-                val position = view.currentPosition
-                if (position < startMs || position > endMs) view.seekTo(startMs.toInt())
-            },
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f)
                 .clip(RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant),
-        )
+            contentAlignment = Alignment.Center,
+        ) {
+            AndroidView(
+                factory = { context ->
+                    VideoView(context).apply {
+                        setVideoURI(Uri.parse(videoId))
+                        setOnPreparedListener { player ->
+                            player.isLooping = false
+                            seekTo(startMs.toInt())
+                        }
+                        setOnCompletionListener { isPlaying = false }
+                        videoView = this
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
+
+            if (isPlaying) {
+                TextButton(onClick = {
+                    videoView?.pause()
+                    isPlaying = false
+                }) {
+                    Text("暂停")
+                }
+            } else {
+                FilledTonalButton(onClick = {
+                    val view = videoView ?: return@FilledTonalButton
+                    // 从裁剪起点开始播；播到终点前由用户自己暂停
+                    view.seekTo(startMs.toInt())
+                    view.start()
+                    isPlaying = true
+                }) {
+                    Text("播放")
+                }
+            }
+        }
+
+        // 拖动滑块后回到起点并暂停，避免"播放位置与裁剪区间不一致"
+        LaunchedEffect(startMs) {
+            videoView?.let { view ->
+                if (isPlaying) {
+                    view.pause()
+                    isPlaying = false
+                }
+                view.seekTo(startMs.toInt())
+            }
+        }
 
         if (frames.isNotEmpty()) {
             Row(

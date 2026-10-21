@@ -219,7 +219,7 @@ base → 无业务依赖
 - **预估**：`(视频码率 + 音频码率) × 裁剪后时长 ÷ 8`，压缩前即可看到大概体积
 - **进度与取消**：Media3 无进度回调，每 400ms 轮询 `getProgress`；取消是异步的，
   实现里会重试删除半成品（见 `Media3VideoCompressor.cleanupPartialFile`）
-- **必须硬编**：只有软件编码器时**如实提示**"压缩会很慢"，不静默降级；
+- **必须硬编**：只有软件编码器时**如实提示**"压缩时长会比较长"，不静默降级；
   真机实测 `c2.mtk.avc.encoder`（硬编，最大 7680×7680），模拟器只有软编
 - **输出**：应用私有 `files/videos/` → 分享走 FileProvider（authority `<包名>.files`，
   由 `:app` 统一声明）；存相册仅 API ≥ 29，经 MediaStore（`IS_PENDING`），**不申请写权限**

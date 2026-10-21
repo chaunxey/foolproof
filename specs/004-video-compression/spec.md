@@ -1,4 +1,4 @@
-# Feature Specification: 视频压缩（video-compression）
+﻿# Feature Specification: 视频压缩（video-compression）
 
 **Feature Branch**: `feature_foundation1`（目录：`specs/004-video-compression`）
 
@@ -104,7 +104,7 @@
   MUST NOT 引入 FFmpeg 或调用系统 `ffmpeg` 二进制（宪法 §2 v1.13）。
 - **FR-004**: 压缩 SHOULD 走设备硬件编码器。
   **完全没有**可用编码器时 MUST 明确报错并禁止压缩；
-  只有软件编码器时 MUST 在界面明示「压缩会很慢」并允许用户继续，MUST NOT 静默使用软编。
+  只有软件编码器时 MUST 在界面明示「压缩时长会比较长」并允许用户继续，MUST NOT 静默使用软编。
   <!-- 2026-10-21 修订：原条文为「必须硬编，否则报错」。但模拟器与部分低端设备只有软编，
        强制拒绝会让功能在这些设备上完全不可用，也掩盖了「慢但可用」这一真实选项。
        改为分层要求：无编码器 = 报错；仅软编 = 明示后允许。 -->
