@@ -22,6 +22,16 @@
 | 广告 | Meta Audience Network，横幅/插屏/开屏，可跳过 | 骨架完成，placement ID 待配 |
 | AI 聊天 | 语音/文本对话 | 未开始 |
 
+## 截图
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/01-compress.png" width="240" alt="图片压缩"><br><sub>图片压缩 · 目标 KB · EXIF/位置</sub></td>
+    <td align="center"><img src="docs/screenshots/02-video.png" width="240" alt="视频压缩/拼接/裁剪"><br><sub>视频 · 压缩 / 拼接 / 裁剪</sub></td>
+    <td align="center"><img src="docs/screenshots/03-pdf-images.png" width="240" alt="PDF 转图片"><br><sub>PDF 工具 · 转图片</sub></td>
+  </tr>
+</table>
+
 ## 为什么是 Foolproof
 
 - **全本地**：图片、视频、PDF 都不离开设备；
@@ -39,7 +49,7 @@
 # debug
 ./gradlew :app:assembleDebug
 
-# release（未签名）
+# release（已签名）
 ./gradlew :app:assembleRelease
 
 # 单元测试
