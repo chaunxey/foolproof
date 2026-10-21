@@ -1,4 +1,4 @@
-package com.foolproof.features.conversion.di
+﻿package com.foolproof.features.conversion.di
 
 import android.content.Context
 import com.foolproof.features.conversion.FileConversionViewModel
@@ -21,7 +21,7 @@ val fileConversionModule: Module = module {
     single<PdfTextLoader> { ContentUriTextLoader(get(), get()) }
     single<PdfConverter> { NativePdfGenerator(get(), get(), get()) }
 
-    single { MediaStorePdfExporter(get(), get()) }
+    single<com.foolproof.features.conversion.domain.PdfExporter> { MediaStorePdfExporter(get(), get()) }
     single { PdfOutputCleaner(File(get<Context>().filesDir, "pdf"), get()) }
 
     viewModel {
