@@ -30,10 +30,10 @@ import com.foolproof.common.R
  *
  * 顺序即 tab 顺序；语音聊天 tab 后续追加在这里，不改业务模块。
  */
-enum class FoolproofDestination(val labelRes: Int) {
-    Images(R.string.tab_images),
-    Videos(R.string.tab_videos),
-    Converter(R.string.tab_converter),
+enum class FoolproofDestination(val labelRes: Int, val iconRes: Int) {
+    Images(R.string.tab_images, R.drawable.ic_tab_images),
+    Videos(R.string.tab_videos, R.drawable.ic_tab_videos),
+    Converter(R.string.tab_converter, R.drawable.ic_tab_converter),
 }
 
 /**
@@ -81,7 +81,14 @@ fun FoolproofTabHost(
                     NavigationBarItem(
                         selected = destination == current,
                         onClick = { selected = destination.name },
-                        icon = { Text(stringResource(destination.labelRes)) },
+                        icon = {
+                            Icon(
+                                painter = painterResource(destination.iconRes),
+                                contentDescription = null,
+                                modifier = Modifier.size(24.dp),
+                            )
+                        },
+                        label = { Text(stringResource(destination.labelRes)) },
                     )
                 }
             }

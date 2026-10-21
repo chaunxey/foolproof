@@ -2,14 +2,17 @@ package com.foolproof.ads
 
 import android.content.Context
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -95,7 +98,7 @@ fun SectionBannerAd(modifier: Modifier = Modifier) {
     BannerAd(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp))
 }
 
-/** 启动/唤醒时的 5 秒全屏广告层：上面是 banner，下面是倒计时。 */
+/** 启动/唤醒时的 5 秒全屏广告层：3 秒后右上角可跳过。 */
 @Composable
 fun SplashAdOverlay(onFinished: () -> Unit) {
     var secondsLeft by remember { mutableStateOf(5) }
@@ -108,11 +111,12 @@ fun SplashAdOverlay(onFinished: () -> Unit) {
         onFinished()
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize().background(Color.Black),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             BannerAd(modifier = Modifier.padding(horizontal = 16.dp))
             Text(
                 text = "$secondsLeft",
@@ -120,6 +124,22 @@ fun SplashAdOverlay(onFinished: () -> Unit) {
                 style = MaterialTheme.typography.displayMedium,
                 modifier = Modifier.padding(top = 24.dp),
             )
+        }
+
+        // 前 3 秒不给跳过，之后右上角出现【跳过】
+        if (secondsLeft <= 2) {
+            TextButton(
+                onClick = onFinished,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(8.dp),
+            ) {
+                Text(
+                    text = androidx.compose.ui.res.stringResource(com.foolproof.R.string.ads_skip),
+                    color = Color.White,
+                )
+            }
         }
     }
 }
