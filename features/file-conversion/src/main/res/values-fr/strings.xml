@@ -46,4 +46,5 @@
     <string name="conversion_take_photo">Prendre une photo</string>
     <string name="camera_error">Échec de la capture, réessayez</string>
     <string name="camera_switch">Changer de caméra</string>
+    <string name="conversion_remove_image">Supprimer l image</string>
 </resources>

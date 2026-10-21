@@ -46,4 +46,5 @@
     <string name="conversion_take_photo">Take photo</string>
     <string name="camera_error">Capture failed, try again</string>
     <string name="camera_switch">Switch camera</string>
+    <string name="conversion_remove_image">Remove image</string>
 </resources>

@@ -56,4 +56,5 @@
     <string name="conversion_take_photo">拍照</string>
     <string name="camera_error">拍照失败，请重试</string>
     <string name="camera_switch">切换摄像头</string>
+    <string name="conversion_remove_image">删除这张图片</string>
 </resources>

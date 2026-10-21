@@ -13,6 +13,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
@@ -48,10 +51,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 
 import com.foolproof.base.ads.AdGateProvider
@@ -270,11 +276,27 @@ fun FileConversionSection(
                                             .size(88.dp)
                                             .clip(RoundedCornerShape(8.dp)),
                                     )
-                                    TextButton(
-                                        onClick = { viewModel.dispatch(ConversionAction.RemoveImage(index)) },
-                                        enabled = !state.isConverting,
+                                    val removeLabel = stringResource(R.string.conversion_remove_image)
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(4.dp)
+                                            .size(24.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.Black.copy(alpha = 0.55f))
+                                            .clickable(enabled = !state.isConverting) {
+                                                viewModel.dispatch(
+                                                    ConversionAction.RemoveImage(index),
+                                                )
+                                            }
+                                            .semantics { contentDescription = removeLabel },
+                                        contentAlignment = Alignment.Center,
                                     ) {
-                                        Text("×", color = MaterialTheme.colorScheme.error)
+                                        Text(
+                                            text = "×",
+                                            color = Color.White,
+                                            style = MaterialTheme.typography.labelMedium,
+                                        )
                                     }
                                 }
                                 Text(

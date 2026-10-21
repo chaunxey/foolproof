@@ -46,4 +46,5 @@
     <string name="conversion_take_photo">撮影</string>
     <string name="camera_error">撮影に失敗しました。もう一度お試しください</string>
     <string name="camera_switch">カメラを切り替え</string>
+    <string name="conversion_remove_image">この画像を削除</string>
 </resources>

@@ -46,4 +46,5 @@
     <string name="conversion_take_photo">ថតរូប</string>
     <string name="camera_error">ការថតបានបរាជ័យ សូមព្យាយាមម្តងទៀត</string>
     <string name="camera_switch">បញ្ច្រាសកាមេរ៉ា</string>
+    <string name="conversion_remove_image">លុបរូបភាពនេះ</string>
 </resources>
