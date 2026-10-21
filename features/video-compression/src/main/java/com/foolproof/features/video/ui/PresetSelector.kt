@@ -9,8 +9,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -58,6 +67,7 @@ internal fun PresetSelector(
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(top = 8.dp),
         )
+        var showTargetDialog by remember { mutableStateOf(false) }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(
                 selected = targetSizeMb == null,
@@ -65,14 +75,31 @@ internal fun PresetSelector(
                 enabled = enabled,
                 label = { Text(stringResource(R.string.video_target_auto)) },
             )
-            listOf(10, 16, 25, 50).forEach { mb ->
-                FilterChip(
-                    selected = targetSizeMb == mb,
-                    onClick = { onTargetSizeChange(mb) },
-                    enabled = enabled,
-                    label = { Text(stringResource(R.string.video_target_chip, mb)) },
-                )
-            }
+            FilterChip(
+                selected = targetSizeMb != null,
+                onClick = { showTargetDialog = true },
+                enabled = enabled,
+                label = {
+                    Text(
+                        if (targetSizeMb != null) {
+                            stringResource(R.string.video_target_chip, targetSizeMb)
+                        } else {
+                            stringResource(R.string.video_target_custom)
+                        },
+                    )
+                },
+            )
+        }
+
+        if (showTargetDialog) {
+            TargetSizeDialog(
+                initialMb = targetSizeMb ?: DEFAULT_TARGET_MB,
+                onDismiss = { showTargetDialog = false },
+                onConfirm = {
+                    onTargetSizeChange(it)
+                    showTargetDialog = false
+                },
+            )
         }
 
         if (targetSizeMb != null) {
@@ -133,6 +160,59 @@ internal fun PresetSelector(
 }
 
 /** 码率档 → 可翻译的显示名。 */
+private const val DEFAULT_TARGET_MB = 16
+private const val MIN_TARGET_MB = 5
+private const val MAX_TARGET_MB = 1024
+
+@Composable
+private fun TargetSizeDialog(
+    initialMb: Int,
+    onDismiss: () -> Unit,
+    onConfirm: (Int) -> Unit,
+) {
+    var text by remember { mutableStateOf(initialMb.toString()) }
+    val parsed = text.toIntOrNull()
+    val valid = parsed != null && parsed in MIN_TARGET_MB..MAX_TARGET_MB
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.video_target_dialog_title)) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { input ->
+                        if (input.length <= 4 && input.all { it.isDigit() }) text = input
+                    },
+                    label = { Text(stringResource(R.string.video_target_input_label)) },
+                    suffix = { Text("MB") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                )
+                Text(
+                    text = stringResource(R.string.video_target_range),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { parsed?.let(onConfirm) },
+                enabled = valid,
+            ) {
+                Text(stringResource(R.string.video_target_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.video_cancel))
+            }
+        },
+    )
+}
+
 private fun BitrateTier.labelRes(): Int = when (this) {
     BitrateTier.HIGH -> R.string.video_bitrate_high
     BitrateTier.MEDIUM -> R.string.video_bitrate_medium

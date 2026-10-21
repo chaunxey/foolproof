@@ -73,4 +73,9 @@
     <string name="video_target_summary">Cible %1$d Mo · %2$d fps · %3$s</string>
     <string name="video_target_size">Taille cible</string>
     <string name="video_target_chip">%1$d Mo</string>
+    <string name="video_target_dialog_title">Définir la taille cible</string>
+    <string name="video_target_range">Plage 5–1024 Mo</string>
+    <string name="video_target_custom">Personnalisé</string>
+    <string name="video_target_input_label">Taille cible (Mo)</string>
+    <string name="video_target_confirm">OK</string>
 </resources>
