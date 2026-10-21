@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.conversion.ui
+package com.foolproof.features.conversion.ui
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -116,7 +116,14 @@ fun FileConversionSection(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text("文件转 PDF", style = MaterialTheme.typography.titleMedium)
-            TextButton(onClick = { viewModel.dispatch(ConversionAction.Reset) }) { Text("重置") }
+            // 没有输入/结果时重置没有意义，隐藏按钮
+            if (
+                state.images.isNotEmpty() ||
+                state.text != null ||
+                state.phase != ConversionPhase.Idle
+            ) {
+                TextButton(onClick = { viewModel.dispatch(ConversionAction.Reset) }) { Text("重置") }
+            }
         }
 
         Row(

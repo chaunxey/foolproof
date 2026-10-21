@@ -1,4 +1,4 @@
-﻿package com.foolproof.common.navigation
+package com.foolproof.common.navigation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -54,7 +55,9 @@ fun FoolproofTabHost(
         topBar = {
             if (onSettingsClick != null) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                    // 应用是 edge-to-edge（MainActivity 调了 enableEdgeToEdge），
+                    // 顶栏必须自己避开状态栏，否则齿轮会压在状态栏图标上。
+                    modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.End,
                 ) {
                     IconButton(onClick = onSettingsClick) { Text("⚙") }
