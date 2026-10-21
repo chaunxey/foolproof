@@ -73,6 +73,10 @@ data class VideoUiState(
         get() = video?.sizeBytes?.let { bytes ->
             maxOf(1, (bytes / (1024L * 1024L)).toInt())
         } ?: 1024
+
+    /** 小于 1MB 的视频没有可按 MB 设置的目标空间，直接隐藏目标体积入口。 */
+    val canUseTargetSize: Boolean
+        get() = (video?.sizeBytes ?: 0L) >= 1024L * 1024L
 }
 
 sealed interface VideoAction : UiAction {

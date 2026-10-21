@@ -44,6 +44,7 @@ internal fun PresetSelector(
     frameRate: Int,
     targetSizeMb: Int?,
     maxTargetMb: Int,
+    showTargetSize: Boolean,
     onResolutionChange: (ResolutionTier) -> Unit,
     onBitrateChange: (BitrateTier) -> Unit,
     onTargetSizeChange: (Int?) -> Unit,
@@ -63,6 +64,7 @@ internal fun PresetSelector(
             }
         }
 
+        if (showTargetSize) {
         Text(
             stringResource(R.string.video_target_size),
             style = MaterialTheme.typography.labelMedium,
@@ -103,8 +105,9 @@ internal fun PresetSelector(
                 },
             )
         }
+        }
 
-        if (targetSizeMb != null) {
+        if (showTargetSize && targetSizeMb != null) {
             Text(
                 text = stringResource(R.string.video_target_note),
                 style = MaterialTheme.typography.bodySmall,
