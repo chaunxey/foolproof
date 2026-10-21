@@ -97,4 +97,7 @@
     <string name="video_trim_result">裁剪完成 · %1$s</string>
     <string name="video_trim_restart">重新裁剪</string>
     <string name="video_trim_keep">保留 %1$s / 总长 %2$s</string>
+    <string name="video_trim_hint">选择一个视频，拖动时间轴选择要保留的片段</string>
+    <string name="video_trim_result_title">裁剪结果</string>
+    <string name="video_trim_done">裁剪完成</string>
 </resources>

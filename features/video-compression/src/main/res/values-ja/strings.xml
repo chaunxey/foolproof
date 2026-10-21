@@ -83,4 +83,7 @@
     <string name="video_trim_result">完了 · %1$s</string>
     <string name="video_trim_restart">もう一度トリミング</string>
     <string name="video_trim_keep">%1$s を保持 / 全体 %2$s</string>
+    <string name="video_trim_hint">動画を選択し、タイムラインで残す範囲を選びます</string>
+    <string name="video_trim_result_title">トリミング結果</string>
+    <string name="video_trim_done">トリミング完了</string>
 </resources>

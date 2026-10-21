@@ -33,6 +33,7 @@ internal fun ResultPreviewDialog(
     originalBytes: Long,
     durationMs: Long,
     videoAspect: Float,
+    titleRes: Int = R.string.video_result_title,
     onDismiss: () -> Unit,
 ) {
     Dialog(
@@ -51,7 +52,7 @@ internal fun ResultPreviewDialog(
                 .fillMaxWidth(),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(stringResource(R.string.video_result_title), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(titleRes), style = MaterialTheme.typography.titleMedium)
 
                 Text(
                     text = if (originalBytes > 0) {

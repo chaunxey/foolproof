@@ -91,7 +91,7 @@ fun VideoTrimSection(
 
         if (state.video == null) {
             Text(
-                text = stringResource(R.string.video_empty_hint),
+                text = stringResource(R.string.video_trim_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp),
@@ -140,7 +140,9 @@ fun VideoTrimSection(
 
         if (state.isTrimming) {
             LinearProgressIndicator(
-                progress = { (state.phase as VideoPhase.Compressing).percent / 100f },
+                progress = {
+                    ((state.phase as? VideoPhase.Compressing)?.percent ?: 0) / 100f
+                },
                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
             )
             FoolproofSecondaryButton(
@@ -205,6 +207,7 @@ fun VideoTrimSection(
             originalBytes = video.sizeBytes,
             durationMs = state.trimDurationMs,
             videoAspect = video.width.toFloat() / video.height.toFloat(),
+            titleRes = R.string.video_trim_result_title,
             onDismiss = { showResultDialog = false },
         )
     }
@@ -231,7 +234,7 @@ private fun VideoEffect.MessageKind.labelRes(): Int = when (this) {
     VideoEffect.MessageKind.OUT_OF_SPACE -> R.string.video_msg_out_of_space
     VideoEffect.MessageKind.TRANSCODE_FAILED -> R.string.video_msg_transcode_failed
     VideoEffect.MessageKind.CANCELLED -> R.string.video_msg_cancelled
-    VideoEffect.MessageKind.DONE -> R.string.video_msg_done
+    VideoEffect.MessageKind.DONE -> R.string.video_trim_done
     VideoEffect.MessageKind.SAVED -> R.string.video_msg_saved
     VideoEffect.MessageKind.SAVE_FAILED -> R.string.video_msg_save_failed
     VideoEffect.MessageKind.SAVE_UNSUPPORTED -> R.string.video_msg_save_unsupported

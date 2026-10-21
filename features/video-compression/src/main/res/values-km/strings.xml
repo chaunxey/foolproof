@@ -83,4 +83,7 @@
     <string name="video_trim_result">បានកាត់ · %1$s</string>
     <string name="video_trim_restart">កាត់ម្តងទៀត</string>
     <string name="video_trim_keep">រក្សា %1$s / សរុប %2$s</string>
+    <string name="video_trim_hint">ជ្រើសរើសវីដេអូ រួចអូសតាមពេលវេលាដើម្បីរក្សាផ្នែកដែលចង់បាន</string>
+    <string name="video_trim_result_title">លទ្ធផលកាត់</string>
+    <string name="video_trim_done">កាត់រួចរាល់</string>
 </resources>

@@ -83,4 +83,7 @@
     <string name="video_trim_result">Zugeschnitten · %1$s</string>
     <string name="video_trim_restart">Erneut zuschneiden</string>
     <string name="video_trim_keep">%1$s behalten / gesamt %2$s</string>
+    <string name="video_trim_hint">Wähle ein Video und ziehe die Zeitleiste auf den gewünschten Bereich</string>
+    <string name="video_trim_result_title">Zuschneide-Ergebnis</string>
+    <string name="video_trim_done">Zuschneiden fertig</string>
 </resources>

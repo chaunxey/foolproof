@@ -83,4 +83,7 @@
     <string name="video_trim_result">Trimmed · %1$s</string>
     <string name="video_trim_restart">Trim again</string>
     <string name="video_trim_keep">Keep %1$s / total %2$s</string>
+    <string name="video_trim_hint">Pick a video, then drag the timeline to keep the part you want</string>
+    <string name="video_trim_result_title">Trim result</string>
+    <string name="video_trim_done">Trim complete</string>
 </resources>
