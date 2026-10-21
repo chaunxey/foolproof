@@ -70,7 +70,7 @@
 - [x] T029 仪器化测试：用 `PdfRenderer` 打开生成物，断言页数与页面尺寸（A4 点值）（`.../src/androidTest/...`）
 - [ ] T030 端到端自测：5 张混合比例图片 → PDF（页序、不变形）；中文 Markdown → PDF（无乱码）；
   取消后无残留；存下载落盘
-- [ ] T031 文档：README 增加「文件转 PDF」章节；`.specify/memory/constitution.md` 若实现中发现偏差则同步
+- [x] T031 文档：README 增加「文件转 PDF」章节；`.specify/memory/constitution.md` 若实现中发现偏差则同步
 
 ## 依赖关系
 

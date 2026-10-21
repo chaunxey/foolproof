@@ -1,4 +1,4 @@
-# Foolproof
+﻿# Foolproof
 
 > **状态：规格阶段** — 宪法已定稿（v1.2），工程仍是 Android Studio 新建的 Compose 模板，模块骨架尚未搭建。
 
@@ -336,3 +336,15 @@ chore: 构建/依赖/配置调整
 
 尚未指定。若需开源，请在此补充 License 并添加 `LICENSE` 文件。
 
+## 文件转 PDF（已实现，图片 / 文本·Markdown）
+
+底部第 3 个 tab，模块 `:features:file-conversion`；导航由 `:common` 的 `FoolproofTabHost` 封装
+（宪法 §2 v1.17：轻量 tab host，禁止业务模块自写导航）。
+
+- **图片 → PDF**：Photo Picker 多选（≤50 张），缩略图可删除/上移；A4 竖版逐页居中，保持比例不变形；
+  解码前采样（长边 ≤2048）+ EXIF 方向修正；HEIC 在 API 24–27 明确提示并跳过（宪法 §3.3）
+- **文本 / Markdown → PDF**：SAF 选取（≤2MB），自研极简 Markdown（标题 / 段落 / 列表 / 粗斜体 /
+  行内码 / 代码块 / 分隔线）；CJK 逐字 + 拉丁按词折行，超长串强制断行，分页不切断单行
+- **生成**：原生 `PdfDocument`（零第三方 PDF 库）；图片页位图、文本页矢量文字可选中复制
+- **导出**：`files/pdf/` + FileProvider（`<包名>.files`）；API ≥ 29 可存「下载/Foolproof」，零写权限
+- **清理**：新任务前删旧产物、失败/取消删半成品、启动清残留（与视频模块同一模式）
