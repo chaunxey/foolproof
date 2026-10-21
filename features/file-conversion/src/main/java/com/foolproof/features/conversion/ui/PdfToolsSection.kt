@@ -269,6 +269,15 @@ fun PdfToolsSection(
                 modifier = Modifier.padding(top = 8.dp),
             ) {
                 FoolproofSecondaryButton(
+                    text = stringResource(R.string.conversion_open),
+                    onClick = {
+                        if (!context.openPdfFile(output.path)) {
+                            message = R.string.conversion_msg_no_pdf_app
+                            messageError = true
+                        }
+                    },
+                )
+                FoolproofSecondaryButton(
                     text = stringResource(R.string.conversion_share),
                     onClick = { viewModel.dispatch(PdfToolsAction.Share) },
                 )
@@ -392,6 +401,20 @@ private fun renderPdfPage(context: Context, uri: String, index: Int): Bitmap? = 
         descriptor.close()
     }
 }.getOrNull()
+
+private fun Context.openPdfFile(path: String): Boolean {
+    val uri = runCatching {
+        FileProvider.getUriForFile(this, "$packageName.files", File(path))
+    }.getOrNull() ?: return false
+    val intent = Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, "application/pdf")
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    return runCatching {
+        startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        true
+    }.getOrDefault(false)
+}
 
 private fun Context.sharePdfFile(path: String): Boolean {
     val uri = runCatching {
