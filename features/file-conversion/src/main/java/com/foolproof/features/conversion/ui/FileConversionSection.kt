@@ -254,6 +254,7 @@ fun FileConversionSection(
         }
 
         (state.phase as? ConversionPhase.Done)?.let { done ->
+            PdfPreview(path = done.result.path, modifier = Modifier.padding(top = 8.dp))
             Text(
                 text = "${done.result.path.substringAfterLast('/')} · " +
                     "${ByteFormat.formatBytes(done.result.bytes)} · ${done.result.pageCount} 页",
