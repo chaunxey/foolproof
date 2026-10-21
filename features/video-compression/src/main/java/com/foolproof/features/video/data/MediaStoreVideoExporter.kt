@@ -1,4 +1,4 @@
-package com.foolproof.features.video.data
+﻿package com.foolproof.features.video.data
 
 import android.content.ContentValues
 import android.content.Context
@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 /**
  * 存相册（宪法 §8）：API ≥ 29 走 MediaStore + `IS_PENDING`，**不申请任何写权限**。
  *
- * API ≤ 28 需要 `WRITE_EXTERNAL_STORAGE` 才能写共享存储，与本项目红线冲突，
+ * API ≤ 28 需要"写外部存储"权限才能写共享存储，与本项目红线冲突，
  * 因此低版本直接不支持存相册（只保留分享）。
  */
 class MediaStoreVideoExporter(

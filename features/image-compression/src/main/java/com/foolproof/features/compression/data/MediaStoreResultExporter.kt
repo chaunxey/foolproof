@@ -18,7 +18,7 @@ import kotlinx.coroutines.withContext
  *
  * - 分享：`FileProvider` + `ACTION_SEND`，全版本可用（无需任何权限）。
  * - 保存相册：仅在 API ≥ 29 允许，使用 `MediaStore` 的 `IS_PENDING` 流程，
- *   全程**不申请** `WRITE_EXTERNAL_STORAGE`（宪法 §8）。
+ *   全程**不申请任何写存储权限**（宪法 §8）。
  */
 class MediaStoreResultExporter(
     private val context: Context,

@@ -128,7 +128,7 @@
   SC-003 仅验证机制（裁剪后 11.9MB → 2.4MB，输出 6309ms 与界面 00:06 一致）；**±0.2 秒的精确断言未做**，
   因为界面时间标签只显示到秒，无法作为毫秒级对照 → 见 T046
 - [x] T045 **模拟器验证**：软件编码器路径能跑通管线（不计性能），确认取消后无残留（SC-004）
-- [ ] T046 **仪器化测试：裁剪精度（SC-003）**：在 androidTest 里用 screenrecord 生成素材，调用 Media3VideoCompressor 以 start=5000/end=10000 压缩，再用 MediaMetadataRetriever 断言输出时长 5000ms ±200ms
+- [x] T046 **仪器化测试：裁剪精度（SC-003）**：在 androidTest 里用 screenrecord 生成素材，调用 Media3VideoCompressor 以 start=5000/end=10000 压缩，再用 MediaMetadataRetriever 断言输出时长 5000ms ±200ms
 
 ---
 

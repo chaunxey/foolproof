@@ -1,4 +1,4 @@
-# Foolproof
+﻿# Foolproof
 
 > **状态：规格阶段** — 宪法已定稿（v1.2），工程仍是 Android Studio 新建的 Compose 模板，模块骨架尚未搭建。
 
@@ -223,6 +223,8 @@ base → 无业务依赖
   真机实测 `c2.mtk.avc.encoder`（硬编，最大 7680×7680），模拟器只有软编
 - **输出**：应用私有 `files/videos/` → 分享走 FileProvider（authority `<包名>.files`，
   由 `:app` 统一声明）；存相册仅 API ≥ 29，经 MediaStore（`IS_PENDING`），**不申请写权限**
+- **权限面**：Media3 会带入 `ACCESS_NETWORK_STATE` 与 `WAKE_LOCK`，本项目用不到，
+  已在 `:app` 的 manifest 里用 `tools:node="remove"` 显式移除（宪法 §8 权限最小化）
 - **前台限制**：离开页面即取消，不引 WorkManager / 前台服务
 
 **已知偏差**：极短视频（几秒）的实际体积可能比预估高 20% 以上——容器开销与 I 帧占比在短片段里被放大。

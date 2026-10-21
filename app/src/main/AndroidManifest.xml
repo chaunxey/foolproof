@@ -2,6 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+      Media3（视频转码）的 manifest 会带入两个权限，本项目都用不到：
+      - ACCESS_NETWORK_STATE：宪法 §1.2 要求不联网，只处理本地文件
+      - WAKE_LOCK：只在前台转码，不需要保持唤醒
+      这里显式移除，避免权限面被依赖悄悄撑大（宪法 §8 权限最小化）。
+    -->
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.WAKE_LOCK"
+        tools:node="remove" />
+
     <application
         android:name=".FoolproofApp"
         android:allowBackup="true"
