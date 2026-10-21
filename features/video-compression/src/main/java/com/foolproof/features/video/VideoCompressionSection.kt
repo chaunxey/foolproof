@@ -221,7 +221,11 @@ fun VideoCompressionSection(
                     if (original > 0) append("${ByteFormat.formatBytes(original)} → ")
                     append(ByteFormat.formatBytes(output.bytes))
                     append(" · 时长 $duration")
-                    if (state.savedBytes > 0) append("（节省 ${ByteFormat.formatBytes(state.savedBytes)}）")
+                    if (state.savedBytes > 0) {
+                        append("（节省 ${ByteFormat.formatBytes(state.savedBytes)}）")
+                    } else if (original > 0 && output.bytes > original) {
+                        append("（比原文件大 ${ByteFormat.formatBytes(output.bytes - original)}）")
+                    }
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(top = 8.dp),
@@ -261,6 +265,7 @@ private fun VideoEffect.MessageKind.label(): String = when (this) {
     VideoEffect.MessageKind.SAVE_FAILED -> "保存到相册失败"
     VideoEffect.MessageKind.SAVE_UNSUPPORTED -> "当前系统版本不支持直接保存到相册"
     VideoEffect.MessageKind.LONG_VIDEO -> "视频较长或较大，建议先裁剪片段再压缩"
+    VideoEffect.MessageKind.LARGER_THAN_SOURCE -> "压缩后比原文件大（原视频本身很小），可换更高的压缩档位"
 }
 
 private fun VideoEffect.MessageKind.isError(): Boolean = when (this) {

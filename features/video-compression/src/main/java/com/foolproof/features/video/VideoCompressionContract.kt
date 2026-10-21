@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.video
+package com.foolproof.features.video
 
 import com.foolproof.base.mvi.UiAction
 import com.foolproof.base.mvi.UiEffect
@@ -105,5 +105,8 @@ sealed interface VideoEffect : UiEffect {
 
         /** 源视频过长/过大，建议先裁剪（仍允许继续）。 */
         LONG_VIDEO,
+
+        /** 压缩后反而比原文件大：源本身已很小，当前档位码率高于它。 */
+        LARGER_THAN_SOURCE,
     }
 }

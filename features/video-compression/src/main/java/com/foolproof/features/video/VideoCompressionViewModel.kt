@@ -246,6 +246,7 @@ class VideoCompressionViewModel(
                     }
 
                     is VideoProgress.Success -> {
+                        val sourceBytes = currentState.video?.sizeBytes ?: 0L
                         updateState {
                             it.copy(
                                 phase = VideoPhase.Done,
@@ -253,6 +254,10 @@ class VideoCompressionViewModel(
                             )
                         }
                         sendEffect(VideoEffect.Message(VideoEffect.MessageKind.DONE))
+                        // 源本身很小时，当前档位的码率可能高于它，结果反而更大——如实告知
+                        if (sourceBytes > 0 && progress.bytes >= sourceBytes) {
+                            sendEffect(VideoEffect.Message(VideoEffect.MessageKind.LARGER_THAN_SOURCE))
+                        }
                     }
 
                     is VideoProgress.Failed -> {

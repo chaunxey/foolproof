@@ -1,4 +1,4 @@
-package com.foolproof.features.video
+﻿package com.foolproof.features.video
 
 import com.foolproof.base.log.LogUtil
 import com.foolproof.features.video.domain.BitrateTier
@@ -78,6 +78,7 @@ class VideoCompressionViewModelTest {
     private class FakeCompressor(
         private val emitSuccess: Boolean = true,
         private val failure: VideoFailure? = null,
+        private val outputBytes: Long = 12_000_000,
     ) : VideoCompressor {
         var lastRequest: VideoCompressRequest? = null
         var cancelCalled = false
@@ -89,7 +90,7 @@ class VideoCompressionViewModelTest {
             emit(VideoProgress.Running(60))
             when {
                 failure != null -> emit(VideoProgress.Failed(failure))
-                emitSuccess -> emit(VideoProgress.Success(request.outputPath, bytes = 12_000_000))
+                emitSuccess -> emit(VideoProgress.Success(request.outputPath, bytes = outputBytes))
             }
         }
 
@@ -427,8 +428,49 @@ class VideoCompressionViewModelTest {
     }
 
     @Test
-    fun `share emits the output path`() = runTest(dispatcher) {
-        val vm = viewModel()
+    fun `larger output than source emits a hint`() = runTest(dispatcher) {
+        // 源 50MB，压缩结果 60MB（模拟源本身极小的极端情况）→ 必须提示
+        val compressor = FakeCompressor(outputBytes = 60_000_000)
+        val vm = viewModel(compressor = compressor)
+        val effects = mutableListOf<VideoEffect>()
+        val job = launch { vm.effect.collect { effects += it } }
+        advanceUntilIdle()
+
+        vm.dispatch(VideoAction.VideoPicked("content://video/1"))
+        advanceUntilIdle()
+        vm.dispatch(VideoAction.Start)
+        advanceUntilIdle()
+
+        assertTrue(
+            effects.any {
+                it is VideoEffect.Message && it.kind == VideoEffect.MessageKind.LARGER_THAN_SOURCE
+            },
+        )
+        job.cancel()
+    }
+
+    @Test
+    fun `smaller output does not emit the larger hint`() = runTest(dispatcher) {
+        val vm = viewModel(compressor = FakeCompressor(outputBytes = 12_000_000))
+        val effects = mutableListOf<VideoEffect>()
+        val job = launch { vm.effect.collect { effects += it } }
+        advanceUntilIdle()
+
+        vm.dispatch(VideoAction.VideoPicked("content://video/1"))
+        advanceUntilIdle()
+        vm.dispatch(VideoAction.Start)
+        advanceUntilIdle()
+
+        assertTrue(
+            effects.none {
+                it is VideoEffect.Message && it.kind == VideoEffect.MessageKind.LARGER_THAN_SOURCE
+            },
+        )
+        job.cancel()
+    }
+
+    @Test
+    fun `share emits the output path`() = runTest(dispatcher) {        val vm = viewModel()
         val effects = mutableListOf<VideoEffect>()
         val job = launch { vm.effect.collect { effects += it } }
         advanceUntilIdle()
