@@ -105,7 +105,11 @@ fun CompressionSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(stringResource(R.string.compression_title), style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = stringResource(R.string.compression_title),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f),
+            )
             // 没有选图时重置没有意义，隐藏按钮（重置会清空选图、结果与预估）
             if (state.images.isNotEmpty()) {
                 TextButton(onClick = { viewModel.dispatch(CompressionAction.Reset) }) {

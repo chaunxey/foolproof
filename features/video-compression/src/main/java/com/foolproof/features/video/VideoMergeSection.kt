@@ -101,7 +101,11 @@ fun VideoMergeSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(stringResource(R.string.video_merge_title), style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = stringResource(R.string.video_merge_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
             OutlinedButton(
                 onClick = {
                     picker.launch(

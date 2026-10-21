@@ -6,7 +6,7 @@
     <string name="settings_title">ការកំណត់</string>
     <string name="settings_font_size">ទំហំអក្សរ៖ %1$d%%</string>
     <string name="settings_font_preview">អត្ថបទមើលជាមុន៖ នេះជាគំរូសម្រាប់ពិនិត្យមើលទំហំ</string>
-    <string name="settings_restore_default">ត្រឡប់ទៅលំនាំដើមវិញ</string>
+    <string name="settings_restore_default">កំណត់ពុម្ពអក្សរឡើងវិញ</string>
     <string name="settings_close">បិទ</string>
     <string name="settings_language">ភាសា</string>
     <string name="settings_language_system">តាមប្រព័ន្ធ</string>

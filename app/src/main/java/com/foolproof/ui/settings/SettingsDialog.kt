@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,9 +29,9 @@ import com.foolproof.R
 import kotlin.math.roundToInt
 
 /**
- * 设置页：字体大小 + 语言。
+ * 设置页：字体大小 / 语言 / 主题，用分割线分组。
  *
- * 两者都即时生效：字体改 Density.fontScale；语言替换 CompositionLocal 里的
+ * 三者都即时生效：字体改 Density.fontScale；语言替换 CompositionLocal 里的
  * Context/Configuration，**不重建 Activity**。选完语言直接关闭弹窗回到首页。
  */
 @Composable
@@ -68,11 +68,18 @@ fun SettingsDialog(onDismiss: () -> Unit) {
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(top = 8.dp),
                 )
+                TextButton(
+                    onClick = { SettingsStore.resetFontScale() },
+                    modifier = Modifier.padding(top = 4.dp),
+                ) {
+                    Text(stringResource(R.string.settings_restore_default))
+                }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                 Text(
                     text = stringResource(R.string.settings_language),
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(top = 16.dp),
                 )
                 LanguageChips(
                     current = language,
@@ -83,10 +90,11 @@ fun SettingsDialog(onDismiss: () -> Unit) {
                     },
                 )
 
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
                 Text(
                     text = stringResource(R.string.settings_theme),
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(top = 16.dp),
                 )
                 ThemeChips(
                     current = themeMode,
@@ -95,12 +103,9 @@ fun SettingsDialog(onDismiss: () -> Unit) {
 
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    OutlinedButton(onClick = { SettingsStore.resetFontScale() }) {
-                        Text(stringResource(R.string.settings_restore_default))
-                    }
                     TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_close)) }
                 }
             }

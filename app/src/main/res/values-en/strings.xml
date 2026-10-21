@@ -6,7 +6,7 @@
     <string name="settings_title">Settings</string>
     <string name="settings_font_size">Font size: %1$d%%</string>
     <string name="settings_font_preview">Preview text: this is a sample to check the size effect</string>
-    <string name="settings_restore_default">Reset to default</string>
+    <string name="settings_restore_default">Reset font</string>
     <string name="settings_close">Close</string>
     <string name="settings_language">Language</string>
     <string name="settings_language_system">Follow system</string>

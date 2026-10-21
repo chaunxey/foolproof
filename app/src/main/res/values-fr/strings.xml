@@ -6,7 +6,7 @@
     <string name="settings_title">Paramètres</string>
     <string name="settings_font_size">Taille de police : %1$d%%</string>
     <string name="settings_font_preview">Aperçu : voici un exemple pour vérifier le rendu de la taille</string>
-    <string name="settings_restore_default">Réinitialiser</string>
+    <string name="settings_restore_default">Réinitialiser la police</string>
     <string name="settings_close">Fermer</string>
     <string name="settings_language">Langue</string>
     <string name="settings_language_system">Suivre le système</string>

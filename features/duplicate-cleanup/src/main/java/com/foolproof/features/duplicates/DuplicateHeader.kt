@@ -171,6 +171,7 @@ fun DuplicateHeader(
             Text(
                 text = stringResource(R.string.duplicates_title),
                 style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
             )
             ScanButton(
                 state = state,

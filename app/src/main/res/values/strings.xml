@@ -5,7 +5,7 @@
     <string name="settings_title">设置</string>
     <string name="settings_font_size">字体大小：%1$d%%</string>
     <string name="settings_font_preview">示例：这是一段用于预览大小效果的文字</string>
-    <string name="settings_restore_default">恢复默认</string>
+    <string name="settings_restore_default">恢复默认字体</string>
     <string name="settings_close">关闭</string>
     <string name="settings_language">语言</string>
     <string name="settings_language_system">跟随系统</string>

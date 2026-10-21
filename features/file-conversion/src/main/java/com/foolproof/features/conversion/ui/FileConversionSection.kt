@@ -132,7 +132,11 @@ fun FileConversionSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(stringResource(R.string.conversion_title), style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = stringResource(R.string.conversion_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
             // 没有输入/结果时重置没有意义，隐藏按钮
             if (
                 state.images.isNotEmpty() ||
