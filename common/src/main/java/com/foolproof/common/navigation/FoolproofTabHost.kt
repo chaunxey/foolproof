@@ -1,7 +1,12 @@
-package com.foolproof.common.navigation
+﻿package com.foolproof.common.navigation
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.IconButton
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -38,6 +43,7 @@ enum class FoolproofDestination(val label: String) {
 fun FoolproofTabHost(
     modifier: Modifier = Modifier,
     destinations: List<FoolproofDestination> = FoolproofDestination.entries,
+    onSettingsClick: (() -> Unit)? = null,
     content: @Composable (FoolproofDestination) -> Unit,
 ) {
     var selected by rememberSaveable { mutableStateOf(FoolproofDestination.Images.name) }
@@ -45,6 +51,16 @@ fun FoolproofTabHost(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        topBar = {
+            if (onSettingsClick != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    IconButton(onClick = onSettingsClick) { Text("⚙") }
+                }
+            }
+        },
         bottomBar = {
             NavigationBar {
                 destinations.forEach { destination ->

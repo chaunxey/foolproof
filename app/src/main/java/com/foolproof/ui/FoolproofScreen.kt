@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.foolproof.ui.settings.SettingsDialog
 import com.foolproof.common.navigation.FoolproofDestination
 import com.foolproof.common.navigation.FoolproofTabHost
 import com.foolproof.features.conversion.ui.FileConversionSection
@@ -42,7 +43,13 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    FoolproofTabHost(modifier = modifier.fillMaxSize()) { destination ->
+    var showSettings by remember { mutableStateOf(false) }
+    if (showSettings) SettingsDialog(onDismiss = { showSettings = false })
+
+    FoolproofTabHost(
+        modifier = modifier.fillMaxSize(),
+        onSettingsClick = { showSettings = true },
+    ) { destination ->
         when (destination) {
             FoolproofDestination.Images -> CompressionTabScreen()
             FoolproofDestination.Videos -> ScrollableTab { VideoCompressionSection() }
