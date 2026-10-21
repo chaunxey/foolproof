@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.foolproof.R
 import com.foolproof.base.share.SharedContentStore
+import com.foolproof.base.util.findActivity
 import com.foolproof.ui.settings.SettingsDialog
 import com.foolproof.common.navigation.FoolproofDestination
 import com.foolproof.common.navigation.FoolproofTabHost
@@ -45,7 +46,8 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
     BackHandler {
         val now = android.os.SystemClock.elapsedRealtime()
         if (now - lastBackAt <= 2_000L) {
-            (context as? android.app.Activity)?.finish()
+            // LocalContext 被语言设置包装成 ContextWrapper，不能直接 as Activity
+            context.findActivity()?.finish()
         } else {
             lastBackAt = now
             android.widget.Toast.makeText(context, backPressAgain, android.widget.Toast.LENGTH_SHORT).show()
