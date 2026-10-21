@@ -7,11 +7,11 @@ enum class ResolutionTier(val shortSide: Int, val label: String) {
     P1080(1080, "1080p"),
 }
 
-/** 码率档位。 */
-enum class BitrateTier(val label: String) {
-    HIGH("高"),
-    MEDIUM("中"),
-    LOW("低"),
+/** 码率档位。显示名由 UI 层翻译，领域层不持有文案。 */
+enum class BitrateTier {
+    HIGH,
+    MEDIUM,
+    LOW,
 }
 
 /**
@@ -49,10 +49,8 @@ data class CompressionPreset(
         return (totalKbps * 1000L / 8) * durationMs / 1000L
     }
 
-    /** 界面用的一行摘要，如「720p · 中（2.5 Mbps）」。 */
-    fun summary(): String = "${resolution.label} · ${bitrate.label}（${formatMbps()} Mbps）"
-
-    private fun formatMbps(): String {
+    /** 码率显示值（Mbps，整数或一位小数），摘要文案由 UI 拼接。 */
+    fun bitrateMbpsText(): String {
         val kbps = videoBitrateKbps()
         val mbps = kbps / 1000.0
         return if (mbps == mbps.toInt().toDouble()) {

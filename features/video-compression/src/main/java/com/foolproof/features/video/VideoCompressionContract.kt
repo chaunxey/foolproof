@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.video
+package com.foolproof.features.video
 
 import com.foolproof.base.mvi.UiAction
 import com.foolproof.base.mvi.UiEffect
@@ -23,14 +23,19 @@ sealed interface VideoPhase {
 /** 压缩产物。 */
 data class CompressedVideo(val path: String, val bytes: Long)
 
+/** 编码器相关提示；只表达“哪种情况”，具体文案由 UI 层按资源翻译。 */
+enum class EncoderNote {
+    SOFTWARE_ONLY,
+}
+
 data class VideoUiState(
     val video: SourceVideo? = null,
     val trim: TrimRange = TrimRange(0L, 0L),
     val preset: CompressionPreset = CompressionPreset(),
     val phase: VideoPhase = VideoPhase.Idle,
     val output: CompressedVideo? = null,
-    /** 编码器相关提示（如"无硬件编码器，压缩时长会比较长"），null 表示无需提示。 */
-    val encoderNote: String? = null,
+    /** 编码器相关提示，null 表示无需提示。 */
+    val encoderNote: EncoderNote? = null,
     /** API ≥ 29 才显示【存相册】（宪法 §8：低版本需要写权限，本应用不申请）。 */
     val saveSupported: Boolean = false,
 ) : UiState {

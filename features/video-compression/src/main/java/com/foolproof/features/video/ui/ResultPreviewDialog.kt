@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.video.ui
+package com.foolproof.features.video.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,10 +13,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.foolproof.base.util.ByteFormat
+import com.foolproof.features.video.R
 
 /**
  * 压缩结果预览弹窗。
@@ -49,17 +51,22 @@ internal fun ResultPreviewDialog(
                 .fillMaxWidth(),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("压缩结果", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.video_result_title), style = MaterialTheme.typography.titleMedium)
 
                 Text(
-                    text = buildString {
-                        if (originalBytes > 0) {
-                            append(ByteFormat.formatBytes(originalBytes))
-                            append(" → ")
-                        }
-                        append(ByteFormat.formatBytes(bytes))
-                        append(" · 时长 ")
-                        append(formatDuration(durationMs))
+                    text = if (originalBytes > 0) {
+                        stringResource(
+                            R.string.video_size_duration_compare,
+                            ByteFormat.formatBytes(originalBytes),
+                            ByteFormat.formatBytes(bytes),
+                            formatDuration(durationMs),
+                        )
+                    } else {
+                        stringResource(
+                            R.string.video_size_duration,
+                            ByteFormat.formatBytes(bytes),
+                            formatDuration(durationMs),
+                        )
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -79,7 +86,7 @@ internal fun ResultPreviewDialog(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    TextButton(onClick = onDismiss) { Text("关闭") }
+                    TextButton(onClick = onDismiss) { Text(stringResource(R.string.video_close)) }
                 }
             }
         }

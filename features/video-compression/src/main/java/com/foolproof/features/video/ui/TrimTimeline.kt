@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.video.ui
+package com.foolproof.features.video.ui
 
 import android.content.Context
 import android.net.Uri
@@ -25,7 +25,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.foolproof.features.video.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -94,7 +96,11 @@ internal fun TrimTimeline(
                 style = MaterialTheme.typography.labelSmall,
             )
             Text(
-                text = "片段 ${formatDuration(endMs - startMs)} / 总长 ${formatDuration(durationMs)}",
+                text = stringResource(
+                    R.string.video_trim_range,
+                    formatDuration(endMs - startMs),
+                    formatDuration(durationMs),
+                ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

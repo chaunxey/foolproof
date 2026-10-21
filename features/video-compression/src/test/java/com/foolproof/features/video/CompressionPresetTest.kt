@@ -110,11 +110,11 @@ class CompressionPresetTest {
     }
 
     @Test
-    fun `summary shows resolution and bitrate`() {
-        val text = CompressionPreset(ResolutionTier.P720, BitrateTier.MEDIUM).summary()
+    fun `preset exposes resolution label and bitrate text`() {
+        val preset = CompressionPreset(ResolutionTier.P720, BitrateTier.MEDIUM)
 
-        assertTrue(text.contains("720p"))
-        assertTrue(text.contains("2.5"))
+        assertTrue(preset.resolution.label.contains("720p"))
+        assertTrue(preset.bitrateMbpsText().contains("2.5"))
     }
 
     @Test

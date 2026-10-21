@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.video.ui
+package com.foolproof.features.video.ui
 
 import android.net.Uri
 import android.widget.VideoView
@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -90,6 +91,8 @@ internal fun VideoPreview(
     }
 
     val fraction = playbackFraction(positionMs, startMs, endMs)
+    val playLabel = stringResource(R.string.video_preview_play)
+    val progressLabel = stringResource(R.string.video_preview_progress, (fraction * 100).toInt())
 
     // 让画面尽可能大，同时保证竖屏视频不把页面撑爆：
     // 以「最大可用高度」和「可用宽度」两个约束里更紧的那个决定尺寸，保持视频原始比例。
@@ -157,7 +160,7 @@ internal fun VideoPreview(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_play),
-                        contentDescription = "播放",
+                        contentDescription = playLabel,
                         tint = Color.White,
                         modifier = Modifier.size(26.dp),
                     )
@@ -172,7 +175,7 @@ internal fun VideoPreview(
                     .height(3.dp)
                     .background(Color.White.copy(alpha = 0.25f))
                     // 读屏用户也能知道播到哪了
-                    .semantics { contentDescription = "播放进度 ${(fraction * 100).toInt()}%" },
+                    .semantics { contentDescription = progressLabel },
             ) {
                 Box(
                     modifier = Modifier

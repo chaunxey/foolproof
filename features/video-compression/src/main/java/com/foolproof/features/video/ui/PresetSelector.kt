@@ -10,8 +10,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.foolproof.base.util.ByteFormat
+import com.foolproof.features.video.R
 import com.foolproof.features.video.domain.BitrateTier
 import com.foolproof.features.video.domain.CompressionPreset
 import com.foolproof.features.video.domain.ResolutionTier
@@ -34,7 +36,7 @@ internal fun PresetSelector(
     enabled: Boolean = true,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Text("分辨率", style = MaterialTheme.typography.labelMedium)
+        Text(stringResource(R.string.video_resolution), style = MaterialTheme.typography.labelMedium)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ResolutionTier.entries.forEach { tier ->
                 FilterChip(
@@ -47,7 +49,7 @@ internal fun PresetSelector(
         }
 
         Text(
-            "码率",
+            stringResource(R.string.video_bitrate),
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(top = 8.dp),
         )
@@ -57,25 +59,38 @@ internal fun PresetSelector(
                     selected = preset.bitrate == tier,
                     onClick = { onBitrateChange(tier) },
                     enabled = enabled,
-                    label = { Text(tier.label) },
+                    label = { Text(stringResource(tier.labelRes())) },
                 )
             }
         }
 
+        val bitrateLabel = stringResource(preset.bitrate.labelRes())
+        val summary = stringResource(
+            R.string.video_preset_summary,
+            preset.resolution.label,
+            bitrateLabel,
+            preset.bitrateMbpsText(),
+        )
         Text(
-            text = buildString {
-                append(preset.summary())
-                append(" · 帧率 ${frameRate}fps")
-                append(" · 时长 ")
-                append(formatDuration(trimDurationMs))
-                append(" · 预估 ")
-                append(ByteFormat.formatBytes(estimatedBytes))
-            },
+            text = stringResource(
+                R.string.video_preset_detail,
+                summary,
+                frameRate,
+                formatDuration(trimDurationMs),
+                ByteFormat.formatBytes(estimatedBytes),
+            ),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 8.dp),
         )
     }
+}
+
+/** 码率档 → 可翻译的显示名。 */
+private fun BitrateTier.labelRes(): Int = when (this) {
+    BitrateTier.HIGH -> R.string.video_bitrate_high
+    BitrateTier.MEDIUM -> R.string.video_bitrate_medium
+    BitrateTier.LOW -> R.string.video_bitrate_low
 }
 
 /** mm:ss（超过 1 小时则 h:mm:ss）。 */

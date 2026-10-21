@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.video
+package com.foolproof.features.video
 
 import android.content.Context
 import android.content.Intent
@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.foolproof.base.util.ByteFormat
@@ -76,7 +77,7 @@ fun VideoCompressionSection(
         viewModel.effect.collect { effect ->
             when (effect) {
                 is VideoEffect.Message -> message = UiMessage(
-                    text = effect.kind.label(),
+                    textRes = effect.kind.labelRes(),
                     isError = effect.kind.isError(),
                 )
 
@@ -100,7 +101,7 @@ fun VideoCompressionSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("视频压缩", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.video_title), style = MaterialTheme.typography.titleMedium)
             OutlinedButton(
                 onClick = {
                     picker.launch(
@@ -109,14 +110,26 @@ fun VideoCompressionSection(
                 },
                 enabled = !state.isCompressing,
             ) {
-                Text(if (state.video == null) "选择视频" else "重新选择")
+                Text(
+                    if (state.video == null) {
+                        stringResource(R.string.video_pick)
+                    } else {
+                        stringResource(R.string.video_repick)
+                    },
+                )
             }
         }
 
         state.video?.let { video ->
             Text(
-                text = "${video.displayName} · ${ByteFormat.formatBytes(video.sizeBytes)} · " +
-                    "${video.width}x${video.height} · ${video.frameRate}fps",
+                text = stringResource(
+                    R.string.video_meta,
+                    video.displayName,
+                    ByteFormat.formatBytes(video.sizeBytes),
+                    video.width,
+                    video.height,
+                    video.frameRate,
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp),
@@ -151,17 +164,21 @@ fun VideoCompressionSection(
 
         state.encoderNote?.let { note ->
             Text(
-                text = note,
+                text = stringResource(note.labelRes()),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 8.dp),
             )
         }
 
-        message?.let {
+        message?.let { uiMessage ->
             Text(
-                text = it.text,
-                color = if (it.isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                text = stringResource(uiMessage.textRes),
+                color = if (uiMessage.isError) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 8.dp),
             )
@@ -174,7 +191,7 @@ fun VideoCompressionSection(
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                 )
                 Text(
-                    text = "压缩中 ${phase.percent}% · 离开页面会取消",
+                    text = stringResource(R.string.video_compressing, phase.percent),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 4.dp),
                 )
@@ -182,7 +199,7 @@ fun VideoCompressionSection(
                     onClick = { viewModel.dispatch(VideoAction.Cancel) },
                     modifier = Modifier.padding(top = 8.dp),
                 ) {
-                    Text("取消")
+                    Text(stringResource(R.string.video_cancel))
                 }
             }
 
@@ -192,7 +209,11 @@ fun VideoCompressionSection(
                     enabled = state.canCompress,
                     modifier = Modifier.padding(top = 12.dp),
                 ) {
-                    Text(if (state.output == null) "开始压缩" else "重新压缩")
+                    Text(
+                        stringResource(
+                            if (state.output == null) R.string.video_start else R.string.video_restart,
+                        ),
+                    )
                 }
             }
         }
@@ -200,16 +221,28 @@ fun VideoCompressionSection(
         state.output?.let { output ->
             val original = state.video?.sizeBytes ?: 0L
             val duration = formatDuration(state.trimDurationMs)
+            val after = ByteFormat.formatBytes(output.bytes)
             Text(
-                text = buildString {
-                    append("已完成：")
-                    if (original > 0) append("${ByteFormat.formatBytes(original)} → ")
-                    append(ByteFormat.formatBytes(output.bytes))
-                    append(" · 时长 $duration")
-                    if (state.savedBytes > 0) {
-                        append("（节省 ${ByteFormat.formatBytes(state.savedBytes)}）")
-                    } else if (original > 0 && output.bytes > original) {
-                        append("（比原文件大 ${ByteFormat.formatBytes(output.bytes - original)}）")
+                text = if (original <= 0) {
+                    stringResource(R.string.video_result_only, after, duration)
+                } else {
+                    val before = ByteFormat.formatBytes(original)
+                    when {
+                        state.savedBytes > 0 -> stringResource(
+                            R.string.video_result_source_saved,
+                            before,
+                            after,
+                            duration,
+                            ByteFormat.formatBytes(state.savedBytes),
+                        )
+                        output.bytes > original -> stringResource(
+                            R.string.video_result_source_larger,
+                            before,
+                            after,
+                            duration,
+                            ByteFormat.formatBytes(output.bytes - original),
+                        )
+                        else -> stringResource(R.string.video_result_source, before, after, duration)
                     }
                 },
                 style = MaterialTheme.typography.bodyMedium,
@@ -220,15 +253,15 @@ fun VideoCompressionSection(
                 modifier = Modifier.padding(top = 4.dp),
             ) {
                 OutlinedButton(onClick = { showResultDialog = true }) {
-                    Text("预览结果")
+                    Text(stringResource(R.string.video_preview_result))
                 }
                 OutlinedButton(onClick = { viewModel.dispatch(VideoAction.Share) }) {
-                    Text("分享")
+                    Text(stringResource(R.string.video_share))
                 }
                 // API ≤ 28 需要写权限才能存相册，本应用不申请 → 不显示该入口（FR-013）
                 if (state.saveSupported) {
                     OutlinedButton(onClick = { viewModel.dispatch(VideoAction.SaveToGallery) }) {
-                        Text("存相册")
+                        Text(stringResource(R.string.video_save_to_gallery))
                     }
                 }
             }
@@ -249,21 +282,28 @@ fun VideoCompressionSection(
     }
 }
 
-private data class UiMessage(val text: String, val isError: Boolean)
+/** 提示只存文案资源 id，渲染时再取当前语言文案。 */
+private data class UiMessage(val textRes: Int, val isError: Boolean)
 
-private fun VideoEffect.MessageKind.label(): String = when (this) {
-    VideoEffect.MessageKind.SOURCE_UNREADABLE -> "无法读取该视频"
-    VideoEffect.MessageKind.NO_ENCODER -> "当前设备没有可用的视频编码器"
-    VideoEffect.MessageKind.SOFTWARE_ENCODER_ONLY -> "当前设备无硬件编码器，压缩时长会比较长"
-    VideoEffect.MessageKind.OUT_OF_SPACE -> "存储空间不足"
-    VideoEffect.MessageKind.TRANSCODE_FAILED -> "压缩失败，请重试"
-    VideoEffect.MessageKind.CANCELLED -> "已取消"
-    VideoEffect.MessageKind.DONE -> "压缩完成"
-    VideoEffect.MessageKind.SAVED -> "已保存到相册（Movies/Foolproof）"
-    VideoEffect.MessageKind.SAVE_FAILED -> "保存到相册失败"
-    VideoEffect.MessageKind.SAVE_UNSUPPORTED -> "当前系统版本不支持直接保存到相册"
-    VideoEffect.MessageKind.LONG_VIDEO -> "视频较长或较大，建议先裁剪片段再压缩"
-    VideoEffect.MessageKind.LARGER_THAN_SOURCE -> "压缩后比原文件大（原视频本身很小），可换更高的压缩档位"
+/** 软编提示 → 文案资源。 */
+private fun EncoderNote.labelRes(): Int = when (this) {
+    EncoderNote.SOFTWARE_ONLY -> R.string.video_msg_software_encoder_only
+}
+
+/** 一次性提示 → 文案资源。 */
+private fun VideoEffect.MessageKind.labelRes(): Int = when (this) {
+    VideoEffect.MessageKind.SOURCE_UNREADABLE -> R.string.video_msg_source_unreadable
+    VideoEffect.MessageKind.NO_ENCODER -> R.string.video_msg_no_encoder
+    VideoEffect.MessageKind.SOFTWARE_ENCODER_ONLY -> R.string.video_msg_software_encoder_only
+    VideoEffect.MessageKind.OUT_OF_SPACE -> R.string.video_msg_out_of_space
+    VideoEffect.MessageKind.TRANSCODE_FAILED -> R.string.video_msg_transcode_failed
+    VideoEffect.MessageKind.CANCELLED -> R.string.video_msg_cancelled
+    VideoEffect.MessageKind.DONE -> R.string.video_msg_done
+    VideoEffect.MessageKind.SAVED -> R.string.video_msg_saved
+    VideoEffect.MessageKind.SAVE_FAILED -> R.string.video_msg_save_failed
+    VideoEffect.MessageKind.SAVE_UNSUPPORTED -> R.string.video_msg_save_unsupported
+    VideoEffect.MessageKind.LONG_VIDEO -> R.string.video_msg_long_video
+    VideoEffect.MessageKind.LARGER_THAN_SOURCE -> R.string.video_msg_larger_than_source
 }
 
 private fun VideoEffect.MessageKind.isError(): Boolean = when (this) {
