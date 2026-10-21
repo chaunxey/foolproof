@@ -23,4 +23,5 @@
 
     <!-- Back press -->
     <string name="back_press_again">Press back again to exit</string>
-</resources>
+    <string name="video_mode_compress">Compress</string>
+    <string name="video_mode_merge">Merge</string></resources>

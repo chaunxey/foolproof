@@ -22,4 +22,5 @@
 
     <!-- 返回键 -->
     <string name="back_press_again">再按一次退出</string>
-</resources>
+    <string name="video_mode_compress">压缩</string>
+    <string name="video_mode_merge">拼接</string></resources>

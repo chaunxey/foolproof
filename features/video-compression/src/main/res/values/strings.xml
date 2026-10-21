@@ -77,4 +77,5 @@
     <string name="video_merge_done">拼接完成</string>
     <string name="video_merge_trim">裁剪</string>
     <string name="video_merge_trim_title">裁剪片段</string>
-    <string name="video_merge_confirm">确定</string></resources>
+    <string name="video_merge_confirm">确定</string>
+    <string name="video_merge_more">更多</string></resources>

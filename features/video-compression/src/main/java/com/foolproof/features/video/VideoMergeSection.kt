@@ -7,12 +7,16 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -31,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -53,6 +59,7 @@ fun VideoMergeSection(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val activity = context.findActivity()
+    val moreLabel = stringResource(R.string.video_merge_more)
     var messageRes by remember { mutableStateOf<Int?>(null) }
     var trimTargetId by remember { mutableStateOf<String?>(null) }
     var showPreview by remember { mutableStateOf(false) }
@@ -146,16 +153,41 @@ fun VideoMergeSection(
                         onClick = { trimTargetId = clip.source.id },
                         enabled = !state.isMerging,
                     ) { Text(stringResource(R.string.video_merge_trim)) }
-                    if (index > 0) {
-                        TextButton(
-                            onClick = { viewModel.dispatch(VideoMergeAction.MoveUp(clip.source.id)) },
+                    // 上移/移除收进溢出菜单，避免一行四个按钮在 200% 字体下挤爆
+                    Box {
+                        var menuOpen by remember(clip.source.id) { mutableStateOf(false) }
+                        IconButton(
+                            onClick = { menuOpen = true },
                             enabled = !state.isMerging,
-                        ) { Text(stringResource(R.string.video_merge_move_up)) }
+                        ) {
+                            Text(
+                                text = "⋮",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.semantics { contentDescription = moreLabel },
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = menuOpen,
+                            onDismissRequest = { menuOpen = false },
+                        ) {
+                            if (index > 0) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.video_merge_move_up)) },
+                                    onClick = {
+                                        menuOpen = false
+                                        viewModel.dispatch(VideoMergeAction.MoveUp(clip.source.id))
+                                    },
+                                )
+                            }
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.video_merge_remove)) },
+                                onClick = {
+                                    menuOpen = false
+                                    viewModel.dispatch(VideoMergeAction.Remove(clip.source.id))
+                                },
+                            )
+                        }
                     }
-                    TextButton(
-                        onClick = { viewModel.dispatch(VideoMergeAction.Remove(clip.source.id)) },
-                        enabled = !state.isMerging,
-                    ) { Text(stringResource(R.string.video_merge_remove)) }
                 }
             }
         }

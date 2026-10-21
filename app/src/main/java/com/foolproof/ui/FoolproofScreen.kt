@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.foolproof.R
-import com.foolproof.ads.SectionBannerAd
 import com.foolproof.ui.settings.SettingsDialog
 import com.foolproof.common.navigation.FoolproofDestination
 import com.foolproof.common.navigation.FoolproofTabHost
@@ -22,6 +21,7 @@ import com.foolproof.features.conversion.ui.FileConversionSection
 import com.foolproof.features.video.VideoCompressionSection
 import com.foolproof.features.video.VideoMergeSection
 import com.foolproof.ui.compression.CompressionTabScreen
+import com.foolproof.ui.video.VideoTabScreen
 
 /**
  * 应用主界面：底部三个 tab（图片 / 视频 / 转换）。
@@ -57,12 +57,7 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
     ) { destination ->
         when (destination) {
             FoolproofDestination.Images -> CompressionTabScreen()
-            FoolproofDestination.Videos -> ScrollableTab {
-                VideoCompressionSection()
-                // 视频压缩 / 拼接之间的功能分割广告位
-                SectionBannerAd()
-                VideoMergeSection()
-            }
+            FoolproofDestination.Videos -> VideoTabScreen()
             FoolproofDestination.Converter -> ScrollableTab { FileConversionSection() }
         }
     }

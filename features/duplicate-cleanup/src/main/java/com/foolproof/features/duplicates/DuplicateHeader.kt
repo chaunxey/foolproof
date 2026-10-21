@@ -333,9 +333,9 @@ private fun ScanButton(
             Text(stringResource(R.string.duplicates_grant_and_scan))
         }
         state.hasResults || state.scan is ScanState.Done -> {
-            Button(onClick = onScan) { Text(stringResource(R.string.duplicates_scan_again)) }
+            OutlinedButton(onClick = onScan) { Text(stringResource(R.string.duplicates_scan_again)) }
         }
-        else -> Button(onClick = onScan) { Text(stringResource(R.string.duplicates_scan_start)) }
+        else -> OutlinedButton(onClick = onScan) { Text(stringResource(R.string.duplicates_scan_start)) }
     }
 }
 
