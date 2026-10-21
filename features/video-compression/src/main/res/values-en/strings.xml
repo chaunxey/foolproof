@@ -48,4 +48,17 @@
     <string name="video_msg_save_unsupported">This system version does not support saving directly to the gallery</string>
     <string name="video_msg_long_video">Long or large video — trim a clip first, then compress</string>
     <string name="video_msg_larger_than_source">Output is larger than the original (the source is already small). Try a higher compression preset.</string>
+    <!-- Video merge -->
+    <string name="video_merge_title">Video merge</string>
+    <string name="video_merge_add">Add videos</string>
+    <string name="video_merge_hint">Pick 2–10 videos to join in order</string>
+    <string name="video_merge_selected">%1$d selected · %2$s total</string>
+    <string name="video_merge_start">Join videos</string>
+    <string name="video_merge_merging">Joining %1$d%% · leaving cancels</string>
+    <string name="video_merge_move_up">Move up</string>
+    <string name="video_merge_remove">Remove</string>
+    <string name="video_merge_need_two">Select at least 2 videos</string>
+    <string name="video_merge_too_many">Up to 10 videos</string>
+    <string name="video_merge_failed">Join failed. Try again.</string>
+    <string name="video_merge_done">Join complete</string>
 </resources>

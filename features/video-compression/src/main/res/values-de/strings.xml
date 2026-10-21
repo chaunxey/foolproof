@@ -48,4 +48,17 @@
     <string name="video_msg_save_unsupported">Diese Systemversion unterstützt das direkte Speichern in der Galerie nicht</string>
     <string name="video_msg_long_video">Langes oder großes Video – schneide zuerst einen Ausschnitt zu und komprimiere dann</string>
     <string name="video_msg_larger_than_source">Die Ausgabe ist größer als das Original (die Quelle ist bereits klein). Wähle eine stärkere Komprimierungsvoreinstellung.</string>
+    <!-- Videos zusammenfügen -->
+    <string name="video_merge_title">Videos zusammenfügen</string>
+    <string name="video_merge_add">Videos hinzufügen</string>
+    <string name="video_merge_hint">Wähle 2–10 Videos zum Aneinanderhängen</string>
+    <string name="video_merge_selected">%1$d ausgewählt · %2$s gesamt</string>
+    <string name="video_merge_start">Zusammenfügen</string>
+    <string name="video_merge_merging">Zusammenfügen %1$d%% · Verlassen bricht ab</string>
+    <string name="video_merge_move_up">Nach oben</string>
+    <string name="video_merge_remove">Entfernen</string>
+    <string name="video_merge_need_two">Wähle mindestens 2 Videos</string>
+    <string name="video_merge_too_many">Maximal 10 Videos</string>
+    <string name="video_merge_failed">Zusammenfügen fehlgeschlagen. Versuche es erneut.</string>
+    <string name="video_merge_done">Zusammenfügen fertig</string>
 </resources>

@@ -48,4 +48,17 @@
     <string name="video_msg_save_unsupported">កំណែប្រព័ន្ធនេះមិនគាំទ្រការរក្សាទុកដោយផ្ទាល់ទៅវិចិត្រសាលទេ</string>
     <string name="video_msg_long_video">វីដេអូវែង ឬធំ — សូមកាត់ជាក្លិបខ្លីជាមុន រួចទើបបង្ហាប់</string>
     <string name="video_msg_larger_than_source">លទ្ធផលធំជាងឯកសារដើម (ប្រភពមានទំហំតូចរួចហើយ)។ សូមសាកល្បងកម្រិតបង្ហាប់ខ្ពស់ជាងនេះ។</string>
+    <!-- ភ្ជាប់វីដេអូ -->
+    <string name="video_merge_title">ភ្ជាប់វីដេអូ</string>
+    <string name="video_merge_add">បន្ថែមវីដេអូ</string>
+    <string name="video_merge_hint">ជ្រើសរើសវីដេអូ 2–10 ដើម្បីភ្ជាប់តាមលំដាប់</string>
+    <string name="video_merge_selected">បានជ្រើស %1$d · សរុប %2$s</string>
+    <string name="video_merge_start">ចាប់ផ្តើមភ្ជាប់</string>
+    <string name="video_merge_merging">កំពុងភ្ជាប់ %1$d%% · ចាកចេញនឹងបោះបង់</string>
+    <string name="video_merge_move_up">ផ្លាស់ឡើង</string>
+    <string name="video_merge_remove">ដកចេញ</string>
+    <string name="video_merge_need_two">ជ្រើសរើសយ៉ាងហោចណាស់ 2 វីដេអូ</string>
+    <string name="video_merge_too_many">អតិបរមា 10 វីដេអូ</string>
+    <string name="video_merge_failed">ការភ្ជាប់បរាជ័យ សូមព្យាយាមម្តងទៀត</string>
+    <string name="video_merge_done">ការភ្ជាប់បានបញ្ចប់</string>
 </resources>

@@ -48,4 +48,17 @@
     <string name="video_msg_save_unsupported">このシステムバージョンではギャラリーへの直接保存に対応していません</string>
     <string name="video_msg_long_video">長い、または大きな動画です。先にクリップを切り出してから圧縮してください</string>
     <string name="video_msg_larger_than_source">出力が元のファイルより大きくなりました（元動画がすでに小さいためです）。より高い圧縮プリセットをお試しください。</string>
+    <!-- 動画結合 -->
+    <string name="video_merge_title">動画結合</string>
+    <string name="video_merge_add">動画を追加</string>
+    <string name="video_merge_hint">2〜10 本の動画を選び、順番に結合します</string>
+    <string name="video_merge_selected">%1$d 本選択 · 合計 %2$s</string>
+    <string name="video_merge_start">結合を開始</string>
+    <string name="video_merge_merging">結合中 %1$d%% · 離れるとキャンセル</string>
+    <string name="video_merge_move_up">上へ</string>
+    <string name="video_merge_remove">削除</string>
+    <string name="video_merge_need_two">2 本以上の動画を選んでください</string>
+    <string name="video_merge_too_many">最大 10 本</string>
+    <string name="video_merge_failed">結合に失敗しました。もう一度お試しください</string>
+    <string name="video_merge_done">結合完了</string>
 </resources>

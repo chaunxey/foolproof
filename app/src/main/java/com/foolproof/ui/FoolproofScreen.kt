@@ -19,6 +19,7 @@ import com.foolproof.common.navigation.FoolproofDestination
 import com.foolproof.common.navigation.FoolproofTabHost
 import com.foolproof.features.conversion.ui.FileConversionSection
 import com.foolproof.features.video.VideoCompressionSection
+import com.foolproof.features.video.VideoMergeSection
 import com.foolproof.ui.compression.CompressionTabScreen
 
 /**
@@ -55,7 +56,10 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
     ) { destination ->
         when (destination) {
             FoolproofDestination.Images -> CompressionTabScreen()
-            FoolproofDestination.Videos -> ScrollableTab { VideoCompressionSection() }
+            FoolproofDestination.Videos -> ScrollableTab {
+                VideoCompressionSection()
+                VideoMergeSection()
+            }
             FoolproofDestination.Converter -> ScrollableTab { FileConversionSection() }
         }
     }

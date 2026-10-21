@@ -62,4 +62,17 @@
     <string name="video_msg_save_unsupported">当前系统版本不支持直接保存到相册</string>
     <string name="video_msg_long_video">视频较长或较大，建议先裁剪片段再压缩</string>
     <string name="video_msg_larger_than_source">压缩后比原文件大（原视频本身很小），可换更高的压缩档位</string>
+    <!-- 视频拼接 -->
+    <string name="video_merge_title">视频拼接</string>
+    <string name="video_merge_add">添加视频</string>
+    <string name="video_merge_hint">选择 2–10 段视频，按顺序首尾拼接</string>
+    <string name="video_merge_selected">已选 %1$d 段 · 总时长 %2$s</string>
+    <string name="video_merge_start">开始拼接</string>
+    <string name="video_merge_merging">拼接中 %1$d%% · 离开页面会取消</string>
+    <string name="video_merge_move_up">上移</string>
+    <string name="video_merge_remove">移除</string>
+    <string name="video_merge_need_two">至少选择 2 段视频</string>
+    <string name="video_merge_too_many">最多 10 段视频</string>
+    <string name="video_merge_failed">拼接失败，请重试</string>
+    <string name="video_merge_done">拼接完成</string>
 </resources>

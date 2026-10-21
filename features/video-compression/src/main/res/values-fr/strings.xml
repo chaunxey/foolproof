@@ -48,4 +48,17 @@
     <string name="video_msg_save_unsupported">Cette version du système ne permet pas la sauvegarde directe dans la galerie</string>
     <string name="video_msg_long_video">Vidéo longue ou volumineuse — commencez par découper un extrait, puis compressez</string>
     <string name="video_msg_larger_than_source">Le résultat est plus volumineux que la source (déjà légère). Essayez un préréglage avec une compression plus forte.</string>
+    <!-- Fusion vidéo -->
+    <string name="video_merge_title">Fusion vidéo</string>
+    <string name="video_merge_add">Ajouter des vidéos</string>
+    <string name="video_merge_hint">Sélectionnez 2 à 10 vidéos à assembler dans l\'ordre</string>
+    <string name="video_merge_selected">%1$d sélectionnées · %2$s au total</string>
+    <string name="video_merge_start">Assembler</string>
+    <string name="video_merge_merging">Assemblage %1$d%% · quitter annule</string>
+    <string name="video_merge_move_up">Monter</string>
+    <string name="video_merge_remove">Retirer</string>
+    <string name="video_merge_need_two">Sélectionnez au moins 2 vidéos</string>
+    <string name="video_merge_too_many">10 vidéos maximum</string>
+    <string name="video_merge_failed">Échec de l\'assemblage. Réessayez.</string>
+    <string name="video_merge_done">Assemblage terminé</string>
 </resources>

@@ -7,6 +7,7 @@ enum class FeatureId {
     IMAGE_COMPRESSION,
     DUPLICATE_CLEANUP,
     VIDEO_COMPRESSION,
+    VIDEO_MERGE,
     FILE_CONVERSION,
 }
 
