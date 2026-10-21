@@ -52,6 +52,7 @@ fun PdfToolsSection(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var message by remember { mutableStateOf<Int?>(null) }
+    var messageError by remember { mutableStateOf(false) }
     val working = state.phase == PdfToolPhase.WORKING
 
     val picker = rememberLauncherForActivityResult(
@@ -69,7 +70,10 @@ fun PdfToolsSection(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is PdfToolsEffect.Message -> message = effect.kind.labelRes()
+                is PdfToolsEffect.Message -> {
+                    message = effect.kind.labelRes()
+                    messageError = effect.kind.isError()
+                }
                 is PdfToolsEffect.Share -> {
                     if (!context.sharePdfFile(effect.path)) message = R.string.pdf_tools_failed
                 }
@@ -168,11 +172,15 @@ fun PdfToolsSection(
             modifier = Modifier.padding(top = 12.dp),
         )
 
-        message?.let {
+        message?.let { res ->
             Text(
-                text = stringResource(it),
+                text = stringResource(res),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
+                color = if (messageError) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
                 modifier = Modifier.padding(top = 8.dp),
             )
         }
@@ -220,12 +228,37 @@ private fun PdfToolsEffect.MessageKind.labelRes(): Int = when (this) {
     PdfToolsEffect.MessageKind.SAVE_FAILED -> R.string.conversion_msg_save_failed
 }
 
-private fun Context.pdfDisplayName(uri: Uri): String = runCatching {
-    contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-        val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-        if (index >= 0 && cursor.moveToFirst()) cursor.getString(index) else null
+private fun PdfToolsEffect.MessageKind.isError(): Boolean = when (this) {
+    PdfToolsEffect.MessageKind.NEED_ONE,
+    PdfToolsEffect.MessageKind.NEED_TWO,
+    PdfToolsEffect.MessageKind.INVALID_RANGE,
+    PdfToolsEffect.MessageKind.FAILED,
+    PdfToolsEffect.MessageKind.SAVE_FAILED,
+    -> true
+
+    PdfToolsEffect.MessageKind.DONE,
+    PdfToolsEffect.MessageKind.SAVED,
+    -> false
+}
+
+private fun Context.pdfDisplayName(uri: Uri): String {
+    val projection = arrayOf(OpenableColumns.DISPLAY_NAME)
+    val fromProvider = runCatching {
+        contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst() && cursor.columnCount > 0) cursor.getString(0) else null
+        }
+    }.getOrNull()
+    if (!fromProvider.isNullOrBlank()) return fromProvider
+
+    val documentId = runCatching {
+        android.provider.DocumentsContract.getDocumentId(uri)
+    }.getOrNull()
+    if (!documentId.isNullOrBlank()) {
+        val name = documentId.substringAfter(':', documentId).substringAfterLast('/')
+        if (name.isNotBlank()) return name
     }
-}.getOrNull() ?: uri.lastPathSegment ?: "document.pdf"
+    return uri.lastPathSegment?.substringAfterLast('/') ?: "document.pdf"
+}
 
 private fun Context.sharePdfFile(path: String): Boolean {
     val uri = runCatching {
