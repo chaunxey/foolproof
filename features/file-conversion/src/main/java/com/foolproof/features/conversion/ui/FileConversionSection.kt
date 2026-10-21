@@ -12,6 +12,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -67,6 +69,7 @@ import org.koin.compose.viewmodel.koinViewModel
  *
  * 本组件不自带滚动容器，滚动由 `:app` 提供。
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FileConversionSection(
     modifier: Modifier = Modifier,
@@ -149,7 +152,7 @@ fun FileConversionSection(
             }
         }
 
-        Row(
+        FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(top = 8.dp),
         ) {
