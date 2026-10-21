@@ -87,6 +87,7 @@ fun CompressionSection(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text("图片压缩", style = MaterialTheme.typography.titleLarge)
+            TextButton(onClick = { viewModel.dispatch(CompressionAction.Reset) }) { Text("重置") }
             OutlinedButton(
                 onClick = { viewModel.dispatch(CompressionAction.SelectImages) },
                 enabled = !state.isRunning,

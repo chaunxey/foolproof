@@ -1,4 +1,4 @@
-package com.foolproof.features.compression
+﻿package com.foolproof.features.compression
 
 import com.foolproof.base.log.LogUtil
 import com.foolproof.base.mvi.BaseViewModel
@@ -40,6 +40,11 @@ class CompressionViewModel(
             CompressionAction.SelectImages -> sendEffect(CompressionEffect.OpenPicker)
 
             is CompressionAction.ImagesPicked -> loadImages(action.ids)
+
+            CompressionAction.Reset -> {
+                if (currentState.isRunning) onAction(CompressionAction.Cancel)
+                updateState { CompressionUiState(saveSupported = it.saveSupported) }
+            }
 
             CompressionAction.Start -> startBatch(ids = null)
 

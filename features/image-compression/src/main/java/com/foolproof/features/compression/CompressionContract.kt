@@ -1,4 +1,4 @@
-package com.foolproof.features.compression
+﻿package com.foolproof.features.compression
 
 import com.foolproof.base.mvi.UiAction
 import com.foolproof.base.mvi.UiEffect
@@ -48,6 +48,7 @@ sealed interface CompressionAction : UiAction {
     data class ImagesPicked(val ids: List<String>) : CompressionAction
 
     data object Start : CompressionAction
+    data object Reset : CompressionAction
 
     data object Cancel : CompressionAction
 
