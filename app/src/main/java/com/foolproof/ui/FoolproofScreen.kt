@@ -1,9 +1,15 @@
-package com.foolproof.ui
+﻿package com.foolproof.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.foolproof.common.navigation.FoolproofDestination
@@ -23,6 +29,19 @@ import com.foolproof.ui.compression.CompressionTabScreen
  */
 @Composable
 fun FoolproofScreen(modifier: Modifier = Modifier) {
+    // 防误触：返回键第一次只提示，2 秒内再按才退出
+    val context = LocalContext.current
+    var lastBackAt by remember { mutableStateOf(0L) }
+    BackHandler {
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (now - lastBackAt <= 2_000L) {
+            (context as? android.app.Activity)?.finish()
+        } else {
+            lastBackAt = now
+            android.widget.Toast.makeText(context, "再按一次退出", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
     FoolproofTabHost(modifier = modifier.fillMaxSize()) { destination ->
         when (destination) {
             FoolproofDestination.Images -> CompressionTabScreen()
