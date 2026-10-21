@@ -25,4 +25,5 @@
     <string name="back_press_again">もう一度戻るボタンを押すと終了します</string>
     <string name="video_mode_compress">圧縮</string>
     <string name="video_mode_merge">結合</string>    <string name="ads_skip">スキップ</string>
+    <string name="ads_skip_countdown">スキップ %1$d</string>
 </resources>

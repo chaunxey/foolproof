@@ -126,20 +126,23 @@ fun SplashAdOverlay(onFinished: () -> Unit) {
             )
         }
 
-        // 前 3 秒不给跳过，之后右上角出现【跳过】
-        if (secondsLeft <= 2) {
-            TextButton(
-                onClick = onFinished,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .statusBarsPadding()
-                    .padding(8.dp),
-            ) {
-                Text(
-                    text = androidx.compose.ui.res.stringResource(com.foolproof.R.string.ads_skip),
-                    color = Color.White,
-                )
-            }
+        // 右上角始终显示倒计时；前 3 秒不可点，之后可跳过
+        val canSkip = secondsLeft <= 2
+        TextButton(
+            onClick = onFinished,
+            enabled = canSkip,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+                .padding(8.dp),
+        ) {
+            Text(
+                text = androidx.compose.ui.res.stringResource(
+                    com.foolproof.R.string.ads_skip_countdown,
+                    secondsLeft,
+                ),
+                color = Color.White.copy(alpha = if (canSkip) 1f else 0.5f),
+            )
         }
     }
 }

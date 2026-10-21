@@ -6,7 +6,10 @@ import java.io.File
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +41,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.stringResource
@@ -48,6 +53,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.zIndex
+import kotlin.math.abs
 import kotlin.math.roundToInt
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -167,6 +173,7 @@ fun VideoMergeSection(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(vertical = 3.dp)
                         .offset {
                             IntOffset(
                                 0,
@@ -174,6 +181,15 @@ fun VideoMergeSection(
                             )
                         }
                         .zIndex(if (draggingId == clip.source.id) 1f else 0f)
+                        .shadow(
+                            elevation = if (draggingId == clip.source.id) 8.dp else 0.dp,
+                            shape = RoundedCornerShape(12.dp),
+                        )
+                        .background(
+                            color = rowColorFor(clip.source.id),
+                            shape = RoundedCornerShape(12.dp),
+                        )
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
                         .onSizeChanged { if (it.height > 0) rowHeightPx = it.height.toFloat() },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -416,6 +432,22 @@ private fun VideoMergeEffect.MessageKind.labelRes(): Int = when (this) {
     VideoMergeEffect.MessageKind.SAVED -> R.string.video_msg_saved
     VideoMergeEffect.MessageKind.SAVE_FAILED -> R.string.video_msg_save_failed
     VideoMergeEffect.MessageKind.SAVE_UNSUPPORTED -> R.string.video_msg_save_unsupported
+}
+
+/** 按视频 id 派生一个稳定的浅色底，拖拽时更容易分辨每一段。 */
+@Composable
+private fun rowColorFor(id: String): Color {
+    val palette = listOf(
+        Color(0xFF5C6BC0),
+        Color(0xFF26A69A),
+        Color(0xFFEF6C00),
+        Color(0xFFAB47BC),
+        Color(0xFF42A5F5),
+        Color(0xFF66BB6A),
+        Color(0xFFEC407A),
+    )
+    val base = palette[abs(id.hashCode()) % palette.size]
+    return base.copy(alpha = if (isSystemInDarkTheme()) 0.30f else 0.16f)
 }
 
 private fun Context.shareVideo(path: String) {

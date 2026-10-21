@@ -25,4 +25,5 @@
     <string name="back_press_again">Press back again to exit</string>
     <string name="video_mode_compress">Compress</string>
     <string name="video_mode_merge">Merge</string>    <string name="ads_skip">Skip</string>
+    <string name="ads_skip_countdown">Skip %1$d</string>
 </resources>
