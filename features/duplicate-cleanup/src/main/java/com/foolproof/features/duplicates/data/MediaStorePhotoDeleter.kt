@@ -48,7 +48,13 @@ class MediaStorePhotoDeleter(
 
         when (channel()) {
             DeleteChannel.SYSTEM_REQUEST -> {
-                val pending: PendingIntent = MediaStore.createDeleteRequest(context.contentResolver, uris)
+                // 必须用 createTrashRequest（移入回收站、可恢复），而不是 createDeleteRequest（永久删除）。
+                // 两者在 API 30+ 都存在，用错会让"删除可恢复"的承诺失效（宪法 §3.2 v1.6）。
+                val pending: PendingIntent = MediaStore.createTrashRequest(
+                    context.contentResolver,
+                    uris,
+                    true,
+                )
                 DeleteResult.NeedsConfirmation(token = pending, requested = ids)
             }
 

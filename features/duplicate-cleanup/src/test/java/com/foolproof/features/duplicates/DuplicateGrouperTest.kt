@@ -115,6 +115,62 @@ class DuplicateGrouperTest {
     }
 
     @Test
+    fun `identical copies always land in the same group`() {
+        // 回归测试（v1.14）：实测发现字节完全相同的两张图曾被分到不同组。
+        val groups = DuplicateGrouper.group(
+            listOf(
+                item("a", 0b000000L),
+                item("b", 0b111111L), // 与 a 距离 6 → 独立成组
+                item("c1", 0b000011L), // 与 a 距离 2
+                item("c2", 0b000011L), // 与 c1 完全相同
+            ),
+        )
+
+        val groupWithC = groups.firstOrNull { g -> g.items.any { it.id == "c1" } }
+        assertTrue("c1 必须成组", groupWithC != null)
+        assertTrue(
+            "完全相同的 c1/c2 必须在同一组",
+            groupWithC!!.items.map { it.id }.containsAll(listOf("c1", "c2")),
+        )
+    }
+
+    @Test
+    fun `exact duplicate joins its twin even when representative is far`() {
+        // 组代表是 a（与 z 距离 5，刚过阈值内），z 的副本 z2 与 a 距离 5 但仍应与 z 同组。
+        // 更强的情形：z2 与代表距离超过阈值也必须因"哈希完全相同"而并入。
+        val groups = DuplicateGrouper.group(
+            listOf(
+                item("a", 0b000000L),
+                item("b", 0b000000L),   // a、b 同组，代表 = a
+                item("z", 0b111100L),   // 与 a 距离 4 → 并入同一组
+                item("z2", 0b111100L),  // z 的完全副本
+            ),
+        )
+
+        val single = groups.singleOrNull()
+        assertTrue("应只有一组", single != null)
+        assertTrue(
+            "z2 必须与 z 同组",
+            single!!.items.map { it.id }.containsAll(listOf("z", "z2")),
+        )
+    }
+
+    @Test
+    fun `similar but distinct items do not chain into a mega group`() {
+        // 防链式合并回归：a-b 相近、b-c 相近、c-d 相近，但 d 与代表 a 距离 > 阈值。
+        // d = 0b11111100（6 位）与 a 距离 6（超阈值 5），与 c（0b00011100，3 位）距离 3。
+        val a = item("a", 0b00000000L)
+        val b = item("b", 0b00000111L) // 距 a 3
+        val c = item("c", 0b00011100L) // 距 b 4
+        val d = item("d", 0b11111100L) // 距 c 3，距 a 6（超阈值）
+
+        val groups = DuplicateGrouper.group(listOf(a, b, c, d), threshold = 5)
+        val groupWithD = groups.firstOrNull { g -> g.items.any { it.id == "d" } }
+
+        assertTrue("d 不应与 a 同组", groupWithD == null || groupWithD.items.none { it.id == "a" })
+    }
+
+    @Test
     fun `default selection keeps the largest item`() {
         val group = DuplicateGrouper.group(
             listOf(

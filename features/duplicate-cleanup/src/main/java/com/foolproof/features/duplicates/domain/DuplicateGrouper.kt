@@ -3,7 +3,7 @@ package com.foolproof.features.duplicates.domain
 import kotlin.math.abs
 
 /**
- * 重复分组与默认预选规则（宪法 §3.2 / v1.10）。
+ * 重复分组与默认预选规则（宪法 §3.2 / v1.10 / v1.14）。
  *
  * 纯函数：输入扫描结果，输出分组与默认勾选；不触碰平台 API，可直接单测。
  */
@@ -17,7 +17,13 @@ object DuplicateGrouper {
     private const val SIZE_TOLERANCE = 0.02
 
     /**
-     * 流式贪心分组：每张图与已有组的**代表图**比较，命中则入组，否则新建组。
+     * 分组。两条规则组合，兼顾「不拆分同图」与「不链式合并」：
+     *
+     * 1. **完全相同哈希优先**：若已有组里存在哈希完全相同的成员，直接进那一组。
+     *    这保证同一张图的副本（哪怕与组代表的距离略大）不会被分到两组。
+     * 2. 否则与各组的**代表**比较，取距离最小且 ≤ 阈值的那一组；都不满足则新建组。
+     *    只跟代表比较是为了避免"链式合并"：实测若与组内所有成员比较，
+     *    26 张不同截图会串成一个 11 张的大组（相邻两张都相似，但整体并不相同）。
      *
      * 只返回成员数 ≥ 2 的组；单张图没有清理价值。
      */
@@ -27,16 +33,35 @@ object DuplicateGrouper {
     ): List<PhotoGroup> {
         val buckets = mutableListOf<Bucket>()
         for (item in items) {
-            val bucket = buckets.firstOrNull { it.accepts(item, threshold) }
-            if (bucket != null) {
-                bucket.items += item
+            // 规则 1：完全相同的哈希优先并入（但仍要过纯色保护：
+            // 纯白与纯黑的 dHash 都是 0，不能因为"哈希相同"就合并）
+            val exactMatch = buckets.firstOrNull { bucket ->
+                bucket.items.any { it.hash == item.hash && isAcceptable(it, item) }
+            }
+            if (exactMatch != null) {
+                exactMatch.items += item
+                continue
+            }
+
+            // 规则 2：按代表比较，取距离最小的组（仍用代表，避免链式合并）
+            var best: Bucket? = null
+            var bestDistance = Int.MAX_VALUE
+            for (bucket in buckets) {
+                val distance = bucket.acceptDistance(item, threshold) ?: continue
+                if (distance < bestDistance) {
+                    bestDistance = distance
+                    best = bucket
+                }
+            }
+            if (best != null) {
+                best.items += item
             } else {
                 buckets += Bucket(item)
             }
         }
         return buckets
             .filter { it.items.size > 1 }
-            .map { PhotoGroup(id = it.representative.hash.toULong().toString(), items = it.items) }
+            .map { PhotoGroup(id = it.items.first().hash.toULong().toString(), items = it.items) }
     }
 
     /**
@@ -53,26 +78,35 @@ object DuplicateGrouper {
     fun defaultSelection(groups: List<PhotoGroup>): Set<String> =
         groups.flatMap { defaultSelection(it) }.toSet()
 
+    /**
+     * 纯色/低方差图的保护：任一张是低信息量时，仅靠哈希距离不足以判定，
+     * 必须同时满足宽高比接近与体积接近，否则宁可分到不同组。
+     */
+    private fun isAcceptable(a: PhotoItem, b: PhotoItem): Boolean {
+        if (!a.lowInformation && !b.lowInformation) return true
+        val aspectClose = abs(a.aspectRatio - b.aspectRatio) <= ASPECT_TOLERANCE
+        val sizeClose = relativeDifference(a.sizeBytes, b.sizeBytes) <= SIZE_TOLERANCE
+        return aspectClose && sizeClose
+    }
+
+    private fun relativeDifference(a: Long, b: Long): Double {
+        val max = maxOf(a, b)
+        if (max <= 0L) return 0.0
+        return abs(a - b).toDouble() / max
+    }
+
     private class Bucket(val representative: PhotoItem) {
         val items = mutableListOf(representative)
 
-        fun accepts(candidate: PhotoItem, threshold: Int): Boolean {
-            if (PerceptualHash.hamming(representative.hash, candidate.hash) > threshold) return false
-
-            // 任一张是低信息量（纯色/近乎纯色）时，仅靠距离不足以判定，
-            // 必须同时满足宽高比接近与体积接近，否则宁可分到不同组。
-            val lowInformationPair = representative.lowInformation || candidate.lowInformation
-            if (!lowInformationPair) return true
-
-            val aspectClose = abs(representative.aspectRatio - candidate.aspectRatio) <= ASPECT_TOLERANCE
-            val sizeClose = relativeDifference(representative.sizeBytes, candidate.sizeBytes) <= SIZE_TOLERANCE
-            return aspectClose && sizeClose
-        }
-
-        private fun relativeDifference(a: Long, b: Long): Double {
-            val max = maxOf(a, b)
-            if (max <= 0L) return 0.0
-            return abs(a - b).toDouble() / max
+        /**
+         * 与**代表**比较，返回可接受的距离；不可接受时返回 null。
+         *
+         * 只比代表是有意为之：与所有成员比较会导致链式合并（见 [group] 的说明）。
+         */
+        fun acceptDistance(candidate: PhotoItem, threshold: Int): Int? {
+            val distance = PerceptualHash.hamming(representative.hash, candidate.hash)
+            if (distance > threshold) return null
+            return if (isAcceptable(representative, candidate)) distance else null
         }
     }
 }

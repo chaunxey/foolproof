@@ -2,11 +2,10 @@ package com.foolproof.features.duplicates.data
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
-import android.util.Size
+import com.foolproof.base.util.BitmapSampling
 import com.foolproof.features.duplicates.domain.PerceptualHash
-import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -22,21 +21,22 @@ data class SampledPixels(
 }
 
 /**
- * 把一张图片采样成 9×8 灰度。
+ * 把一张图片采样成 9×8 灰度，用于计算 dHash。
  *
- * - API ≥ 29：用 `ContentResolver.loadThumbnail`，走系统缩略图缓存，比完整解码快一个数量级；
- * - API ≤ 28：退回「采样解码 + 缩放」，复用 `:base` 的 [com.foolproof.base.util.BitmapSampling]。
+ * **为什么不用 `ContentResolver.loadThumbnail`**（v1.14 修正）：
+ * 实测发现两份**字节完全相同**的图片经 `loadThumbnail` 得到的像素不一致
+ * （系统缩略图缓存/生成路径不同），导致同一张图算出不同哈希、被分到不同组。
+ * 改为 `BitmapFactory` + `inSampleSize` 的确定性解码后，相同文件必然得到相同哈希。
  *
- * 失败（HEIC 不支持、文件损坏、权限不足）一律抛异常，由扫描器计为跳过。
+ * 性能上仍可控：只解到 [SOURCE_MAX_DIMENSION] 以内，且 `inSampleSize` 是 2 的幂。
  */
 class ThumbnailPixelSource(
     private val context: Context,
-    private val sdkInt: Int = Build.VERSION.SDK_INT,
 ) {
 
     suspend fun sample(id: String, width: Int, height: Int): SampledPixels = withContext(Dispatchers.IO) {
         val uri = Uri.parse(id)
-        val bitmap = if (sdkInt >= API_Q) loadThumbnail(uri) else decodeSampled(uri, width, height)
+        val bitmap = decodeSampled(uri, width, height)
         try {
             val scaled = Bitmap.createScaledBitmap(bitmap, PerceptualHash.WIDTH, PerceptualHash.HEIGHT, true)
             try {
@@ -55,28 +55,24 @@ class ThumbnailPixelSource(
         }
     }
 
-    private fun loadThumbnail(uri: Uri): Bitmap =
-        context.contentResolver.loadThumbnail(
-            uri,
-            Size(PerceptualHash.WIDTH * 4, PerceptualHash.HEIGHT * 4),
-            null,
-        ) ?: throw IllegalStateException("thumbnail is null for $uri")
-
     private fun decodeSampled(uri: Uri, width: Int, height: Int): Bitmap {
-        val sample = com.foolproof.base.util.BitmapSampling.calculateInSampleSize(
+        val sample = BitmapSampling.calculateInSampleSize(
             width = width.coerceAtLeast(1),
             height = height.coerceAtLeast(1),
-            maxDimension = HASH_SOURCE_MAX_DIMENSION,
+            maxDimension = SOURCE_MAX_DIMENSION,
         )
-        val options = android.graphics.BitmapFactory.Options().apply { inSampleSize = sample }
+        val options = BitmapFactory.Options().apply {
+            inSampleSize = sample
+            inPreferredConfig = Bitmap.Config.ARGB_8888
+        }
         val stream = context.contentResolver.openInputStream(uri)
             ?: throw IllegalStateException("cannot open $uri")
-        return stream.use { android.graphics.BitmapFactory.decodeStream(it, null, options) }
+        return stream.use { BitmapFactory.decodeStream(it, null, options) }
             ?: throw IllegalStateException("decode failed for $uri")
     }
 
     private companion object {
-        const val API_Q = 29
-        const val HASH_SOURCE_MAX_DIMENSION = 256
+        /** 计算哈希前把图解到这个尺寸以内即可（9×8 目标，留足余量）。 */
+        const val SOURCE_MAX_DIMENSION = 256
     }
 }

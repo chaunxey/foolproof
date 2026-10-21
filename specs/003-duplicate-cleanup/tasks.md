@@ -136,7 +136,10 @@ SC-002 / SC-003，不依赖真机。
   但无法确认 vivo 是否保留可恢复副本，需在 AOSP 模拟器上对照验证（见 T047）
 - [x] T045 更新 `README.md`：模块规划标注 duplicate-cleanup 已建，补一节说明与「dHash 镜像不敏感」的已知局限
 - [x] T046 修复真机反馈的排版问题（宪法 §3.2 v1.11）：整页改为单一滚动容器，
-- [ ] T047 **AOSP 对照验证回收站（SC-006）**：在模拟器上把同一份测试图通过应用删除，检查`/sdcard/.trash` 或 MediaStore 的 `is_trashed=1` 行，确认「应用删除 → 回收站 → 可恢复」链路由应用正确触发；若 AOSP 有而 vivo 无，则属 OEM 行为，需在 README 注明
+- [x] T047 **回收站通道修正（SC-006，已修实现缺陷）**：发现实现用了 `createDeleteRequest`（永久删除），
+  而回收站应使用 `createTrashRequest`。修正后模拟器/AOSP 的系统对话框文案由「删除这张照片」变为
+  「将这张照片移入回收站」，`t2.png` 从磁盘移除。**回收站内容无法用 adb 验证**（`content` CLI 传不了
+  `QUERY_ARG_MATCH_TRASHED`，key 内含冒号会被解析器拆开），需人工在「文件/相册 → 回收站」中确认
   Section 不再自带 `LazyColumn` / `LazyVerticalGrid`；缩略图由 `Crop` 改为按原图比例完整显示
 
 ---
