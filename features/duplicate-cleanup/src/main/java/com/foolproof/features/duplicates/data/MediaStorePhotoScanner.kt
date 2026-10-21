@@ -96,10 +96,15 @@ class MediaStorePhotoScanner(
         )
 
         val result = mutableListOf<RawPhoto>()
+        val selection = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            "${MediaStore.MediaColumns.IS_TRASHED}=0"
+        } else {
+            null
+        }
         context.contentResolver.query(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
             projection,
-            null,
+            selection,
             null,
             "${MediaStore.Images.Media.DATE_MODIFIED} DESC",
         )?.use { cursor ->

@@ -94,7 +94,7 @@ class DuplicateViewModel(
 
     // region 扫描
 
-    private fun startScan() {
+    private fun startScan(keepReport: Boolean = false) {
         if (currentState.isScanning) return
 
         updateState {
@@ -102,7 +102,7 @@ class DuplicateViewModel(
                 scan = ScanState.Scanning(scanned = 0, total = 0),
                 groups = emptyList(),
                 selected = emptySet(),
-                report = null,
+                report = if (keepReport) it.report else null,
             )
         }
 
@@ -252,6 +252,8 @@ class DuplicateViewModel(
         sendEffect(
             DuplicateEffect.Message(DuplicateEffect.MessageKind.DELETED),
         )
+        // 删除成功后重新扫描，避免回收站/已删项继续显示在列表里
+        startScan(keepReport = true)
     }
 
     /** 以「还在不在」为准收尾，而不是相信删除请求的返回码。 */
@@ -277,6 +279,10 @@ class DuplicateViewModel(
                     },
                 ),
             )
+
+            if (report.allSucceeded) {
+                startScan(keepReport = true)
+            }
         }
     }
 
