@@ -275,3 +275,16 @@ data class VideoUiState(
 | 取消后残留文件 | 占空间 | `onCancelled` 后再删 + 启动时清理 `.tmp` |
 | 存储不足 | 写一半失败 | 压缩前按预估体积校验剩余空间 |
 | Transformer 与 `MediaMetadataRetriever` 同时读同一 Uri | 文件锁/解码器冲突 | 元信息在进入页面时读一次即释放；压缩期间不持有 retriever |
+
+### D7. 预览播放器复用
+
+- 播放行为（点按切换、进度条、终点停止）抽成 `ui.VideoPreview`，
+  `TrimTimeline`（含裁剪控件）与压缩结果弹窗共用，避免两份实现漂移；
+- 结果预览用 `Dialog`（`usePlatformDefaultWidth = false`，最大宽 420dp），
+  主页面不进入第二种状态；
+- `VideoPreview` 在离开组合时 `stopPlayback()`，避免控件消失后声音还在。
+
+### D8. 体积不降反升的处理
+
+- 源本身很小（如纯色画面）时，档位码率可能高于源，压缩结果会更大；
+- 不阻止压缩（转码仍可能有必要，如格式兼容），但 **MUST 明确提示**并给出差额（FR-022）。
