@@ -1,4 +1,4 @@
-# Feature Specification: 文件转 PDF（file-conversion）
+﻿# Feature Specification: 文件转 PDF（file-conversion）
 
 **Feature Branch**: `feature_foundation1`（目录：`specs/005-file-conversion`）
 
@@ -164,3 +164,13 @@
 - PPT → PDF（宪法 §3.3 标记为不做）
 - PDF 合并 / 拆分 / 压缩 / 编辑
 - OCR、扫描件矫正
+
+**预览与排版（实现后回写，2026-10-21）**
+
+- **FR-020**: 生成完成后 MUST 在应用内预览 PDF 全部页面（横向排列、标注「第 x 页 / 共 n 页」），
+  **不得依赖设备是否装有 PDF 阅读器**；【打开】失败时 MUST 明确提示而不是静默。
+- **FR-021**: 图片模式 MUST 支持设置「每页张数」（1–6）；排版 MUST 为**纯上下排列**，
+  不做左右并排；每张图按原比例缩放居中。
+- **FR-022**: 三个功能页（图片压缩 / 视频压缩 / 文件转 PDF）MUST 提供【重置】：
+  取消进行中的任务、清空已选输入与参数、回到初始状态；已生成的产物文件 MUST NOT 被删除
+  （由"下次生成前清理 + 启动清理"回收）。重复照片清理的重置语义为「只清勾选、保留扫描结果」。
