@@ -12,10 +12,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
+import com.foolproof.features.duplicates.R
 
 /**
  * 全屏预览（宪法 §3.2：点击图片放大查看）。点击任意处关闭。
@@ -43,7 +45,7 @@ fun PhotoPreviewDialog(
                 modifier = Modifier.fillMaxSize(),
             )
             Text(
-                text = "点击任意处关闭",
+                text = stringResource(R.string.duplicates_preview_close_hint),
                 color = Color.White,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.align(Alignment.BottomCenter).padding(24.dp),

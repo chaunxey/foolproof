@@ -37,10 +37,12 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.foolproof.base.util.ByteFormat
 import com.foolproof.features.duplicates.DuplicateUiState
+import com.foolproof.features.duplicates.R
 import com.foolproof.features.duplicates.domain.PhotoGroup
 import com.foolproof.features.duplicates.domain.PhotoItem
 import kotlinx.coroutines.Dispatchers
@@ -85,7 +87,7 @@ fun LazyGridScope.duplicatePhotoRows(
     if (remaining <= 0) {
         item(key = "group-limit-hint", span = { GridItemSpan(maxLineSpan) }) {
             Text(
-                text = "结果较多，仅显示前 $MAX_PHOTOS 张；删除后可重新查询继续",
+                text = stringResource(R.string.duplicates_limit_hint, MAX_PHOTOS),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 8.dp),
@@ -131,7 +133,11 @@ private fun GroupHeader(group: PhotoGroup) {
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = "${group.count} 张 · 可释放 ${ByteFormat.formatBytes(group.reclaimableBytes)}",
+                text = stringResource(
+                    R.string.duplicates_group_summary,
+                    group.count,
+                    ByteFormat.formatBytes(group.reclaimableBytes),
+                ),
                 style = MaterialTheme.typography.bodyMedium,
             )
         }

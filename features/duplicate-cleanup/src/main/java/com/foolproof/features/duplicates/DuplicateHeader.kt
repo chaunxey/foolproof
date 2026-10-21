@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -127,12 +128,15 @@ fun DuplicateHeader(
                             IntentSenderRequest.Builder(sender).build(),
                         )
                     } else {
-                        message = UiMessage("系统删除请求不可用", isError = true)
+                        message = UiMessage(
+                            textRes = R.string.duplicates_msg_system_delete_unavailable,
+                            isError = true,
+                        )
                     }
                 }
 
                 is DuplicateEffect.Message -> message = UiMessage(
-                    text = effect.kind.label(),
+                    textRes = effect.kind.labelRes(),
                     isError = effect.kind.isError(),
                 )
 
@@ -154,7 +158,10 @@ fun DuplicateHeader(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("重复照片清理", style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = stringResource(R.string.duplicates_title),
+                style = MaterialTheme.typography.titleMedium,
+            )
             ScanButton(
                 state = state,
                 hasPermission = hasPermission,
@@ -173,10 +180,18 @@ fun DuplicateHeader(
 
         state.scan.let { scan ->
             val text = when (scan) {
-                is ScanState.Scanning -> "扫描中 ${scan.scanned}/${scan.total}"
-                is ScanState.Done -> "已扫描 ${scan.scanned} 张，跳过 ${scan.skipped} 张"
-                ScanState.Cancelled -> "已取消"
-                is ScanState.Failed -> "扫描失败"
+                is ScanState.Scanning -> stringResource(
+                    R.string.duplicates_scanning,
+                    scan.scanned,
+                    scan.total,
+                )
+                is ScanState.Done -> stringResource(
+                    R.string.duplicates_scan_done,
+                    scan.scanned,
+                    scan.skipped,
+                )
+                ScanState.Cancelled -> stringResource(R.string.duplicates_scan_cancelled)
+                is ScanState.Failed -> stringResource(R.string.duplicates_scan_failed)
                 ScanState.Idle -> null
             }
             text?.let {
@@ -184,10 +199,14 @@ fun DuplicateHeader(
             }
         }
 
-        message?.let {
+        message?.let { uiMessage ->
             Text(
-                text = it.text,
-                color = if (it.isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                text = stringResource(uiMessage.textRes),
+                color = if (uiMessage.isError) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -199,31 +218,38 @@ fun DuplicateHeader(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "已选 ${state.selectedCount} 张 · ${ByteFormat.formatBytes(state.selectedBytes)}",
+                    text = stringResource(
+                        R.string.duplicates_selected_summary,
+                        state.selectedCount,
+                        ByteFormat.formatBytes(state.selectedBytes),
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                 )
                 TextButton(onClick = { viewModel.dispatch(DuplicateAction.ClearSelection) }) {
-                    Text("清空选择")
+                    Text(stringResource(R.string.duplicates_clear_selection))
                 }
                 Button(
                     onClick = { viewModel.dispatch(DuplicateAction.RequestDelete) },
                     enabled = state.canDelete,
                 ) {
-                    Text("删除")
+                    Text(stringResource(R.string.duplicates_delete))
                 }
             }
             // 结果区由 :app 的 LazyVerticalGrid 以 item 形式贡献（duplicatePhotoRows），
             // 这里只留一行说明，避免把网格塞回 Section 里再次变成"非懒加载"。
             Text(
-                text = "结果见下方，点击缩略图可放大查看",
+                text = stringResource(R.string.duplicates_results_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else {
             val hint = when {
-                state.scan is ScanState.Done -> "没有发现重复照片"
-                state.scan is ScanState.Cancelled -> "已取消，可重新查询"
-                else -> "点击「查询相同图片」扫描相册中的重复照片"
+                state.scan is ScanState.Done -> stringResource(R.string.duplicates_hint_no_duplicates)
+                state.scan is ScanState.Cancelled -> stringResource(R.string.duplicates_hint_cancelled)
+                else -> stringResource(
+                    R.string.duplicates_hint_idle,
+                    stringResource(R.string.duplicates_scan_start),
+                )
             }
             Text(
                 text = hint,
@@ -237,13 +263,19 @@ fun DuplicateHeader(
     confirm?.let { current ->
         AlertDialog(
             onDismissRequest = { confirm = null },
-            title = { Text("删除确认") },
+            title = { Text(stringResource(R.string.duplicates_delete_title)) },
             text = {
                 Column {
-                    Text("将删除 ${current.count} 张，约 ${ByteFormat.formatBytes(current.bytes)}")
+                    Text(
+                        stringResource(
+                            R.string.duplicates_delete_message,
+                            current.count,
+                            ByteFormat.formatBytes(current.bytes),
+                        ),
+                    )
                     if (current.irreversible) {
                         Text(
-                            "当前系统版本删除后无法恢复",
+                            stringResource(R.string.duplicates_delete_irreversible),
                             color = MaterialTheme.colorScheme.error,
                         )
                     }
@@ -253,10 +285,10 @@ fun DuplicateHeader(
                 TextButton(onClick = {
                     confirm = null
                     viewModel.dispatch(DuplicateAction.ConfirmDelete)
-                }) { Text("删除") }
+                }) { Text(stringResource(R.string.duplicates_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { confirm = null }) { Text("取消") }
+                TextButton(onClick = { confirm = null }) { Text(stringResource(R.string.duplicates_cancel)) }
             },
         )
     }
@@ -275,33 +307,42 @@ private fun ScanButton(
     onCancel: () -> Unit,
 ) {
     when {
-        state.isScanning -> OutlinedButton(onClick = onCancel) { Text("取消") }
+        state.isScanning -> OutlinedButton(onClick = onCancel) {
+            Text(stringResource(R.string.duplicates_cancel))
+        }
         state.permission == PermissionState.DENIED_FOREVER -> {
-            OutlinedButton(onClick = onRequestPermission) { Text("去设置授权") }
+            OutlinedButton(onClick = onRequestPermission) {
+                Text(stringResource(R.string.duplicates_open_settings))
+            }
         }
-        !hasPermission -> OutlinedButton(onClick = onRequestPermission) { Text("授权并查询") }
+        !hasPermission -> OutlinedButton(onClick = onRequestPermission) {
+            Text(stringResource(R.string.duplicates_grant_and_scan))
+        }
         state.hasResults || state.scan is ScanState.Done -> {
-            Button(onClick = onScan) { Text("重新查询") }
+            Button(onClick = onScan) { Text(stringResource(R.string.duplicates_scan_again)) }
         }
-        else -> Button(onClick = onScan) { Text("查询相同图片") }
+        else -> Button(onClick = onScan) { Text(stringResource(R.string.duplicates_scan_start)) }
     }
 }
 
-private fun DuplicateEffect.MessageKind.label(): String = when (this) {
-    DuplicateEffect.MessageKind.EMPTY_GALLERY -> "相册里没有可读取的图片"
-    DuplicateEffect.MessageKind.NO_DUPLICATES -> "没有发现重复照片"
-    DuplicateEffect.MessageKind.SCAN_FAILED -> "扫描失败，请重试"
-    DuplicateEffect.MessageKind.PERMISSION_DENIED -> "需要相册读取权限才能扫描"
-    DuplicateEffect.MessageKind.PERMISSION_DENIED_FOREVER -> "权限已被永久拒绝，请到系统设置中开启"
-    DuplicateEffect.MessageKind.SAF_REQUIRED -> "当前系统需先授权一个目录才能删除"
-    DuplicateEffect.MessageKind.DELETED -> "已删除"
-    DuplicateEffect.MessageKind.DELETE_FAILED -> "部分图片删除失败"
+/** 一次性提示 → 文案资源。 */
+private fun DuplicateEffect.MessageKind.labelRes(): Int = when (this) {
+    DuplicateEffect.MessageKind.EMPTY_GALLERY -> R.string.duplicates_msg_empty_gallery
+    DuplicateEffect.MessageKind.NO_DUPLICATES -> R.string.duplicates_msg_no_duplicates
+    DuplicateEffect.MessageKind.SCAN_FAILED -> R.string.duplicates_msg_scan_failed
+    DuplicateEffect.MessageKind.PERMISSION_DENIED -> R.string.duplicates_msg_permission_denied
+    DuplicateEffect.MessageKind.PERMISSION_DENIED_FOREVER ->
+        R.string.duplicates_msg_permission_denied_forever
+    DuplicateEffect.MessageKind.SAF_REQUIRED -> R.string.duplicates_msg_saf_required
+    DuplicateEffect.MessageKind.DELETED -> R.string.duplicates_msg_deleted
+    DuplicateEffect.MessageKind.DELETE_FAILED -> R.string.duplicates_msg_delete_failed
 }
 
 private fun DuplicateEffect.MessageKind.isError(): Boolean =
     this != DuplicateEffect.MessageKind.DELETED
 
-private data class UiMessage(val text: String, val isError: Boolean)
+/** 提示只存文案资源 id，渲染时再取当前语言文案。 */
+private data class UiMessage(val textRes: Int, val isError: Boolean)
 
 private data class ConfirmState(val count: Int, val bytes: Long, val irreversible: Boolean)
 
