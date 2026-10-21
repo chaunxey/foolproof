@@ -1,4 +1,4 @@
-﻿# Foolproof
+# Foolproof
 
 > **状态：规格阶段** — 宪法已定稿（v1.2），工程仍是 Android Studio 新建的 Compose 模板，模块骨架尚未搭建。
 
@@ -348,3 +348,14 @@ chore: 构建/依赖/配置调整
 - **生成**：原生 `PdfDocument`（零第三方 PDF 库）；图片页位图、文本页矢量文字可选中复制
 - **导出**：`files/pdf/` + FileProvider（`<包名>.files`）；API ≥ 29 可存「下载/Foolproof」，零写权限
 - **清理**：新任务前删旧产物、失败/取消删半成品、启动清残留（与视频模块同一模式）
+
+## 多语言（已实现，简体中文 / English）
+
+- **文案位置**：每个模块自己的 `src/main/res/values/strings.xml`（中文默认）与 `values-en/strings.xml`（英文）；
+  Compose 统一用 `stringResource`，代码里不写用户可见字面量；带参数的文案一律位置参数（`%1$s` / `%1$d`）
+- **切换入口**：设置页「语言」= 跟随系统 / 中文 / English，偏好持久化在 `SettingsStore`
+- **生效方式**：
+  - Android 13+：`LocaleManager` + `localeConfig`（`res/xml/locales_config.xml`），与系统「应用语言」双向同步；
+  - Android 12 及以下：`MainActivity.attachBaseContext` 按偏好包一层 locale Context，切换后 `recreate()`
+- **新增语言**：在 `app` / `common` / `features/*` 各加一份 `values-xx/strings.xml`（key 与 `values/` 一致），
+  再到 `app/src/main/res/xml/locales_config.xml` 注册；英文资源目前是草拟译文，直接改 `values-en/` 即可
