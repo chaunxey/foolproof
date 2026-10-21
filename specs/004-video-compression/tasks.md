@@ -222,6 +222,6 @@ Phase 1 (T001–T007)  ← T007 是信息门槛：先知道设备能编什么
   但界面没有说明，用户无从得知输出帧率被降低 per 边界情况 (partial)
 - [x] T055 压缩中提示「离开页面会取消」：规格要求该提示，当前只有代码注释；
   应在 `phase is Compressing` 时显示一行说明 per 边界情况 (partial)
-- [x] T056 启动时清理孤儿半成品：进程被杀时 `files/videos/` 会留下不完整 `.mp4`，
+- [x] T056 启动时清理孤儿半成品（真机已验证）：`VideoOutputCleaner` 注册为 Koin 单例，`FoolproofApp.onCreate` 在后台线程调用 `cleanAll()`；实测未进入视频页即清空残留。进程被杀时 `files/videos/` 会留下不完整 `.mp4`，
   失败/取消路径虽已清理但进程死亡无从执行；应在 VM 初始化时删除目录内无对应结果的残留文件
   （只删本次进程启动前就存在的、且不是最近成功产物的文件，避免误删）per FR-014 (partial)
