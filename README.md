@@ -63,6 +63,7 @@ CameraX · PDFBox-Android · Meta Audience Network。版本统一在
 - [产物命名](docs/naming.md) — `Foolproof_*` 命名规则
 - [开发流程](docs/development.md) — spec-kit、提交规范、测试要求
 - [功能机会评估](docs/feature-opportunities.md) — 视频目标体积/PDF/OCR 的竞品与工作量
+- [海外市场与技术机会（2026）](docs/market-opportunities-2026.md) — IAA 工具缺口、端侧 AI 技术雷达
 
 ## 状态
 
