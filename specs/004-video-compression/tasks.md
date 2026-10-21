@@ -1,4 +1,4 @@
-# Tasks: 视频压缩（video-compression）
+﻿# Tasks: 视频压缩（video-compression）
 
 **Input**: Design documents from `specs/004-video-compression/`
 
@@ -18,33 +18,33 @@
 
 **目的**：先建模块并**打印设备真实编码能力**，在写业务代码前知道这台机器能不能编 1080p
 
-- [ ] T001 在 `settings.gradle.kts` 注册 `include(":features:video-compression")`
-- [ ] T002 创建 `features/video-compression/build.gradle.kts`：`android.library` + `kotlin.compose`、
+- [x] T001 在 `settings.gradle.kts` 注册 `include(":features:video-compression")`
+- [x] T002 创建 `features/video-compression/build.gradle.kts`：`android.library` + `kotlin.compose`、
   `namespace = com.foolproof.features.video`、`compileSdk { release(37) }`、`minSdk 24`、Java 11、
   `buildFeatures { compose = true; buildConfig = true }`；依赖 `:base`、Compose BOM/material3、
   `activity-compose`、`koin-compose-viewmodel`、**`media3-transformer:1.11.1`**、**`media3-effect:1.11.1`**；
   测试依赖 `junit`、`kotlinx-coroutines-test`、`koin-test`、`androidx.test:runner`、`androidx.test.ext:junit`
-- [ ] T003 在 `gradle/libs.versions.toml` 增加 `media3 = "1.11.1"` 与两个库条目
-- [ ] T004 [P] 创建占位 `.../video/VideoCompressionSection.kt`（空 Composable）
-- [ ] T005 创建 `src/androidTest/.../EncoderCatalogTest.kt`：用 `MediaCodecList` 列出所有
+- [x] T003 在 `gradle/libs.versions.toml` 增加 `media3 = "1.11.1"` 与两个库条目
+- [x] T004 [P] 创建占位 `.../video/VideoCompressionSection.kt`（空 Composable）
+- [x] T005 创建 `src/androidTest/.../EncoderCatalogTest.kt`：用 `MediaCodecList` 列出所有
   `video/avc` / `video/hevc` 编码器的名称、`isHardwareAccelerated`、支持的最大分辨率与码率范围，
   用 `Log.i` 打印并在断言中要求「至少存在一个 avc 编码器」
-- [ ] T006 运行 `./gradlew :features:video-compression:assembleDebug` 通过（**硬门槛**）
-- [ ] T007 运行 `EncoderCatalogTest`，把**模拟器实测的编码能力**写入 `plan.md` 的 R2 小节
+- [x] T006 运行 `./gradlew :features:video-compression:assembleDebug` 通过（**硬门槛**）
+- [x] T007 运行 `EncoderCatalogTest`，把**模拟器实测的编码能力**写入 `plan.md` 的 R2 小节
   （**硬门槛**：这决定档位上限，结果必须先落地再往下做）
 
 ---
 
 ## Phase 2: Foundational（纯逻辑）
 
-- [ ] T008 [P] 创建 `.../domain/SourceVideo.kt`（id/名称/字节/时长/宽高/帧率/有无音轨）
-- [ ] T009 [P] 创建 `.../domain/CompressionPreset.kt`：`ResolutionTier`(480/720/1080)、
+- [x] T008 [P] 创建 `.../domain/SourceVideo.kt`（id/名称/字节/时长/宽高/帧率/有无音轨）
+- [x] T009 [P] 创建 `.../domain/CompressionPreset.kt`：`ResolutionTier`(480/720/1080)、
   `BitrateTier`(HIGH/MEDIUM/LOW)、码率表、`targetShortSide`（**不放大**）、`estimatedBytes`
-- [ ] T010 [P] 创建 `.../domain/TrimRange.kt`：起点/终点校验（最小区段 1s、不越界）+ 时长派生
-- [ ] T011 [P] 创建 `src/test/.../CompressionPresetTest.kt`：三档码率表、源更小时不放大、
+- [x] T010 [P] 创建 `.../domain/TrimRange.kt`：起点/终点校验（最小区段 1s、不越界）+ 时长派生
+- [x] T011 [P] 创建 `src/test/.../CompressionPresetTest.kt`：三档码率表、源更小时不放大、
   预估公式（含音频 128k）、1080p 源压到 720p 的体积关系
-- [ ] T012 [P] 创建 `src/test/.../TrimRangeTest.kt`：最小区段、越界裁剪、整段等价于不裁剪
-- [ ] T013 运行 `./gradlew :features:video-compression:testDebugUnitTest` 通过
+- [x] T012 [P] 创建 `src/test/.../TrimRangeTest.kt`：最小区段、越界裁剪、整段等价于不裁剪
+- [x] T013 运行 `./gradlew :features:video-compression:testDebugUnitTest` 通过
 
 ---
 

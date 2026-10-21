@@ -120,15 +120,29 @@ EditedMediaItem.Builder#setFrameRate(int) / setEffects(Effects) / setRemoveAudio
 **注意**：`TransformationRequest.Builder#setResolution(int)` 是**包内可见**，不能直接用；
 缩放必须走 `Presentation` 这个 `Effect`。这一条如果搞错，会在编译期或运行期踩空。
 
-### R2. 编码器能力只能运行时查
+### R2. 编码器能力只能运行时查（已实测，2026-10-21）
 
 - `dumpsys media.codec` 在 API 34 上拿不到编码器列表；`/vendor/etc/media_codecs.xml` 的
   `<Encoders>` 段在模拟器上是**空**的（现代设备用 Codec2 动态注册）。
-- 因此必须在应用内用 `MediaCodecList` 查询 `video/avc` 编码器及其 `VideoCapabilities`
-  （支持的分辨率、码率范围、是否 `isHardwareAccelerated`）。
-- **模拟器的 "编码器" 是软件实现**（`c2.android.avc.encoder`），严格硬编门槛会让功能在模拟器上
-  无法端到端验证。处理方式：编码器目录如实报告 `isHardware`，UI 在只有软编时**明确告知并拦住**
-  （满足 FR-004 "不静默降级"），而仪器化测试可直接驱动压缩器以验证管线本身。
+- 因此必须在应用内用 `MediaCodecList` 查询 `video/avc` 编码器及其 `VideoCapabilities`。
+
+**实测结果（`EncoderCatalogTest`，两台设备）**：
+
+| 设备 | 硬件 AVC 编码器 | 最大编码尺寸 | 码率上限 | HEVC |
+| --- | --- | --- | --- | --- |
+| 真机 vivo V2602A（API 37） | `c2.mtk.avc.encoder` hardware=true | 7680×7680 | 100 Mbps | 硬编可用（7680×7680），profiles: Baseline/Main/High |
+| 模拟器（API 34） | **无**（只有 `c2.android.avc.encoder` / `OMX.google.h264.encoder`，hardware=false） | 2048×2048 | 12 Mbps | 软编上限仅 512×512，**不可用** |
+
+- 真机有硬件编码器，且支持到 4K 以上 → **480p/720p/1080p 三档全部可用**；
+- 模拟器只有软编，但 2048×2048 与 12 Mbps 上限仍**覆盖我们全部档位**（1080p=1920×1080、最高 8 Mbps），
+  所以管线可以在模拟器上验证（只是慢）；
+- 模拟器 HEVC 编码上限 512×512 → **H.265 选项必须按能力探测后再显示**（FR-005）。
+
+**由此确定两条实现约束**：
+
+1. `Media3VideoCompressor` 必须通过 `DefaultEncoderFactory.Builder.setVideoEncoderSelector(...)`
+   显式**优先选硬件编码器**，否则 Media3 可能选到软编（真机上存在两套编码器）；
+2. `EncoderCatalog` 需提供 `maxEncodeSize` 与 `isHardware`，供档位降级与 UI 提示使用。
 
 ### R3. 裁剪与缩放在同一次转码里完成
 
