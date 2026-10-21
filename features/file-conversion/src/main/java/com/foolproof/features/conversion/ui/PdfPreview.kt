@@ -4,7 +4,11 @@ import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,45 +35,54 @@ import kotlinx.coroutines.withContext
  */
 @Composable
 internal fun PdfPreview(path: String, modifier: Modifier = Modifier) {
-    var page by remember(path) { mutableStateOf<Bitmap?>(null) }
+    var pages by remember(path) { mutableStateOf<List<Bitmap>>(emptyList()) }
 
     LaunchedEffect(path) {
-        page = withContext(Dispatchers.IO) { renderFirstPage(path) }
+        pages = withContext(Dispatchers.IO) { renderPages(path) }
     }
 
-    page?.let { bitmap ->
-        Image(
-            bitmap = bitmap.asImageBitmap(),
-            contentDescription = "PDF 首页预览",
-            contentScale = ContentScale.Fit,
-            modifier = modifier
-                .fillMaxWidth()
-                .height(260.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(androidx.compose.ui.graphics.Color.White),
-        )
+    if (pages.isEmpty()) return
+
+    // 所有页横向排列：多张图片时用户能一眼确认"页数对、顺序对"
+    LazyRow(
+        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        itemsIndexed(pages) { index, bitmap ->
+            Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = "第 ${index + 1} 页预览",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .height(240.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(androidx.compose.ui.graphics.Color.White),
+                )
+                Text(
+                    text = "第 ${index + 1} 页 / 共 ${pages.size} 页",
+                    style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                )
+            }
+        }
     }
 }
 
 /** 用 PdfRenderer 渲染首页；失败返回 null（例如文件损坏）。 */
-private fun renderFirstPage(path: String): Bitmap? = runCatching {
+private fun renderPages(path: String): List<Bitmap> = runCatching {
     val file = File(path)
-    if (!file.exists()) return null
+    if (!file.exists()) return emptyList()
     ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
         PdfRenderer(descriptor).use { renderer ->
-            if (renderer.pageCount <= 0) return null
-            renderer.openPage(0).use { page ->
-                val scale = 2
-                Bitmap.createBitmap(
-                    page.width * scale,
-                    page.height * scale,
-                    Bitmap.Config.ARGB_8888,
-                ).also { bitmap ->
-                    // PdfRenderer 不铺白底，不填会得到透明/黑色
-                    bitmap.eraseColor(android.graphics.Color.WHITE)
-                    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+            (0 until renderer.pageCount).map { index ->
+                renderer.openPage(index).use { page ->
+                    Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888).also { bitmap ->
+                        // PdfRenderer 不铺白底，不填会得到透明/黑色
+                        bitmap.eraseColor(android.graphics.Color.WHITE)
+                        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                    }
                 }
             }
         }
     }
-}.getOrNull()
+}.getOrDefault(emptyList())
