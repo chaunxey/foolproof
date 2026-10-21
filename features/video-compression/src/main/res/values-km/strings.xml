@@ -74,7 +74,7 @@
     <string name="video_target_size">ទំហំគោលដៅ</string>
     <string name="video_target_chip">%1$d MB</string>
     <string name="video_target_dialog_title">កំណត់ទំហំគោលដៅ</string>
-    <string name="video_target_range">ជួរ 5–1024 MB</string>
+    <string name="video_target_range">ជួរ %1$d–%2$d MB</string>
     <string name="video_target_custom">ផ្ទាល់ខ្លួន</string>
     <string name="video_target_input_label">ទំហំគោលដៅ (MB)</string>
     <string name="video_target_confirm">យល់ព្រម</string>

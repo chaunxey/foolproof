@@ -74,7 +74,7 @@
     <string name="video_target_size">目標サイズ</string>
     <string name="video_target_chip">%1$d MB</string>
     <string name="video_target_dialog_title">目標サイズを設定</string>
-    <string name="video_target_range">5〜1024 MB</string>
+    <string name="video_target_range">%1$d〜%2$d MB</string>
     <string name="video_target_custom">カスタム</string>
     <string name="video_target_input_label">目標サイズ（MB）</string>
     <string name="video_target_confirm">決定</string>

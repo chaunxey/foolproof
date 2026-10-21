@@ -196,6 +196,7 @@ fun VideoCompressionSection(
                 trimDurationMs = state.trimDurationMs,
                 frameRate = minOf(video.frameRate, CompressionPreset.MAX_FRAME_RATE),
                 targetSizeMb = state.targetSizeMb,
+                maxTargetMb = state.maxTargetMb,
                 onResolutionChange = { viewModel.dispatch(VideoAction.ResolutionChanged(it)) },
                 onBitrateChange = { viewModel.dispatch(VideoAction.BitrateChanged(it)) },
                 onTargetSizeChange = { viewModel.dispatch(VideoAction.TargetSizeChanged(it)) },

@@ -43,6 +43,7 @@ internal fun PresetSelector(
     trimDurationMs: Long,
     frameRate: Int,
     targetSizeMb: Int?,
+    maxTargetMb: Int,
     onResolutionChange: (ResolutionTier) -> Unit,
     onBitrateChange: (BitrateTier) -> Unit,
     onTargetSizeChange: (Int?) -> Unit,
@@ -93,7 +94,8 @@ internal fun PresetSelector(
 
         if (showTargetDialog) {
             TargetSizeDialog(
-                initialMb = targetSizeMb ?: DEFAULT_TARGET_MB,
+                initialMb = (targetSizeMb ?: DEFAULT_TARGET_MB).coerceAtMost(maxTargetMb),
+                maxMb = maxTargetMb,
                 onDismiss = { showTargetDialog = false },
                 onConfirm = {
                     onTargetSizeChange(it)
@@ -162,17 +164,18 @@ internal fun PresetSelector(
 /** 码率档 → 可翻译的显示名。 */
 private const val DEFAULT_TARGET_MB = 16
 private const val MIN_TARGET_MB = 5
-private const val MAX_TARGET_MB = 1024
 
 @Composable
 private fun TargetSizeDialog(
     initialMb: Int,
+    maxMb: Int,
     onDismiss: () -> Unit,
     onConfirm: (Int) -> Unit,
 ) {
-    var text by remember { mutableStateOf(initialMb.toString()) }
+    val minMb = if (maxMb < MIN_TARGET_MB) 1 else MIN_TARGET_MB
+    var text by remember { mutableStateOf(initialMb.coerceIn(minMb, maxMb).toString()) }
     val parsed = text.toIntOrNull()
-    val valid = parsed != null && parsed in MIN_TARGET_MB..MAX_TARGET_MB
+    val valid = parsed != null && parsed in minMb..maxMb
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -190,7 +193,7 @@ private fun TargetSizeDialog(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
                 Text(
-                    text = stringResource(R.string.video_target_range),
+                    text = stringResource(R.string.video_target_range, minMb, maxMb),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp),

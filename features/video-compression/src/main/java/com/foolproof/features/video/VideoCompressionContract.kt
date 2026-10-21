@@ -67,6 +67,12 @@ data class VideoUiState(
     /** 省了多少（负数表示变大）。 */
     val savedBytes: Long
         get() = output?.let { (video?.sizeBytes ?: 0L) - it.bytes } ?: 0L
+
+    /** 目标体积上限：不超过源文件大小。 */
+    val maxTargetMb: Int
+        get() = video?.sizeBytes?.let { bytes ->
+            maxOf(1, (bytes / (1024L * 1024L)).toInt())
+        } ?: 1024
 }
 
 sealed interface VideoAction : UiAction {

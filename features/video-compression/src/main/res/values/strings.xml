@@ -88,7 +88,7 @@
     <string name="video_target_size">目标体积</string>
     <string name="video_target_chip">%1$d MB</string>
     <string name="video_target_dialog_title">设置目标体积</string>
-    <string name="video_target_range">范围 5–1024 MB</string>
+    <string name="video_target_range">范围 %1$d–%2$d MB</string>
     <string name="video_target_custom">自定义</string>
     <string name="video_target_input_label">目标体积（MB）</string>
     <string name="video_target_confirm">确定</string>

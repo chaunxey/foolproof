@@ -77,8 +77,10 @@ class VideoCompressionViewModel(
                 it.copy(preset = it.preset.copy(bitrate = action.tier))
             }
 
-            is VideoAction.TargetSizeChanged -> updateState {
-                it.copy(targetSizeMb = action.mb)
+            is VideoAction.TargetSizeChanged -> updateState { state ->
+                state.copy(
+                    targetSizeMb = action.mb?.coerceIn(1, state.maxTargetMb),
+                )
             }
 
             VideoAction.Start -> startCompression()
@@ -140,10 +142,12 @@ class VideoCompressionViewModel(
             )
 
             updateState {
+                val sourceMb = maxOf(1, (video.sizeBytes / (1024L * 1024L)).toInt())
                 it.copy(
                     video = video,
                     trim = TrimRange.full(video.durationMs),
                     preset = cappedPreset,
+                    targetSizeMb = it.targetSizeMb?.coerceIn(1, sourceMb),
                     phase = VideoPhase.Ready,
                     encoderNote = if (avc.isHardware) null else EncoderNote.SOFTWARE_ONLY,
                 )
