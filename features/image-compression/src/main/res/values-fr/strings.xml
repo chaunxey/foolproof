@@ -48,4 +48,8 @@
     <string name="compression_target_note">La qualité et la taille sont réduites automatiquement pour respecter la cible</string>
     <string name="compression_target_input">Taille cible (Ko)</string>
     <string name="compression_target_confirm">OK</string>
+    <string name="compression_strip_metadata">Supprimer EXIF / position</string>
+    <string name="compression_strip_location_hint">Position détectée ; elle sera supprimée après compression</string>
+    <string name="compression_strip_hint">Supprime le GPS, le modèle et autres métadonnées</string>
+    <string name="compression_strip_off_hint">Les EXIF sources sont conservés (position possible)</string>
 </resources>

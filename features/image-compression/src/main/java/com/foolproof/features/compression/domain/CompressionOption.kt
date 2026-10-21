@@ -14,6 +14,8 @@ data class CompressionOption(
     val quality: Int = DEFAULT_QUALITY,
     /** 目标体积（字节）；null 表示按质量压缩。 */
     val targetBytes: Long? = null,
+    /** true：输出移除 GPS/设备等 EXIF；false：尽量保留原图元数据。 */
+    val stripMetadata: Boolean = true,
 ) {
     init {
         require(quality in MIN_QUALITY..MAX_QUALITY) {
@@ -28,6 +30,8 @@ data class CompressionOption(
 
     fun withTargetBytes(value: Long?): CompressionOption =
         copy(targetBytes = value?.coerceAtLeast(MIN_TARGET_BYTES))
+
+    fun withStripMetadata(value: Boolean): CompressionOption = copy(stripMetadata = value)
 
     /** 输出文件扩展名（不含点）。 */
     val extension: String

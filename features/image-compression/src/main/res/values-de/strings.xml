@@ -48,4 +48,8 @@
     <string name="compression_target_note">Qualität und Größe werden automatisch an die Zielgröße angepasst</string>
     <string name="compression_target_input">Zielgröße (KB)</string>
     <string name="compression_target_confirm">OK</string>
+    <string name="compression_strip_metadata">EXIF / Standort entfernen</string>
+    <string name="compression_strip_location_hint">Standort gefunden; wird nach dem Komprimieren entfernt</string>
+    <string name="compression_strip_hint">Entfernt GPS, Gerätemodell und weitere Metadaten</string>
+    <string name="compression_strip_off_hint">Original-EXIF bleibt erhalten (evtl. mit Standort)</string>
 </resources>

@@ -66,6 +66,8 @@ sealed interface CompressionAction : UiAction {
 
     data class ChangeTargetBytes(val bytes: Long?) : CompressionAction
 
+    data class ChangeStripMetadata(val strip: Boolean) : CompressionAction
+
     data class Share(val id: String) : CompressionAction
 
     data class SaveToGallery(val id: String) : CompressionAction

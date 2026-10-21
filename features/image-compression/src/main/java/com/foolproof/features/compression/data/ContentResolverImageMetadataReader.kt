@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.OpenableColumns
+import androidx.exifinterface.media.ExifInterface
 import com.foolproof.base.log.LogUtil
 import com.foolproof.features.compression.domain.ImageMetadataReader
 import com.foolproof.features.compression.domain.SourceImage
@@ -77,6 +78,10 @@ class ContentResolverImageMetadataReader(
             )
         }
 
+        val hasLocation = runCatching {
+            resolver.openInputStream(uri)?.use { ExifInterface(it).latLong != null } ?: false
+        }.getOrDefault(false)
+
         return SourceImage(
             id = id,
             displayName = displayName,
@@ -84,6 +89,7 @@ class ContentResolverImageMetadataReader(
             mimeType = resolver.getType(uri),
             width = bounds.outWidth,
             height = bounds.outHeight,
+            hasLocation = hasLocation,
         )
     }
 

@@ -51,6 +51,9 @@ class AndroidImageCompressor(
 
                 try {
                     write(oriented, target, option)
+                    if (!option.stripMetadata) {
+                        preserveExif(image.id, target)
+                    }
                 } finally {
                     oriented.recycle()
                 }
@@ -207,6 +210,43 @@ class AndroidImageCompressor(
         if (!written) throw CompressionFailure(FailureReason.DECODE)
         return stream.toByteArray()
     }
+
+    /** 用户选择“保留元数据”时，把原图的相机/时间/位置字段写回 JPEG。 */
+    private fun preserveExif(sourceId: String, target: File) {
+        runCatching {
+            val source = openStream(sourceId)?.use { ExifInterface(it) } ?: return
+            val output = ExifInterface(target.absolutePath)
+            EXIF_TAGS.forEach { tag ->
+                source.getAttribute(tag)?.let { output.setAttribute(tag, it) }
+            }
+            // 像素已转正，方向必须写回 NORMAL，否则会二次旋转
+            output.setAttribute(ExifInterface.TAG_ORIENTATION, "1")
+            output.saveAttributes()
+        }.onFailure {
+            logUtil.d { "preserve exif failed: ${it::class.simpleName}" }
+        }
+    }
+
+    private val EXIF_TAGS = listOf(
+        ExifInterface.TAG_DATETIME_ORIGINAL,
+        ExifInterface.TAG_DATETIME,
+        ExifInterface.TAG_MAKE,
+        ExifInterface.TAG_MODEL,
+        ExifInterface.TAG_F_NUMBER,
+        ExifInterface.TAG_EXPOSURE_TIME,
+        ExifInterface.TAG_ISO_SPEED_RATINGS,
+        ExifInterface.TAG_FOCAL_LENGTH,
+        ExifInterface.TAG_FLASH,
+        ExifInterface.TAG_WHITE_BALANCE,
+        ExifInterface.TAG_GPS_LATITUDE,
+        ExifInterface.TAG_GPS_LATITUDE_REF,
+        ExifInterface.TAG_GPS_LONGITUDE,
+        ExifInterface.TAG_GPS_LONGITUDE_REF,
+        ExifInterface.TAG_GPS_ALTITUDE,
+        ExifInterface.TAG_GPS_ALTITUDE_REF,
+        ExifInterface.TAG_GPS_TIMESTAMP,
+        ExifInterface.TAG_GPS_DATESTAMP,
+    )
 
     private fun CompressionOption.toCompressFormat(): Bitmap.CompressFormat = when (format) {
         OutputFormat.JPEG -> Bitmap.CompressFormat.JPEG

@@ -48,4 +48,8 @@
     <string name="compression_target_note">目標に収めるため品質とサイズを自動調整します</string>
     <string name="compression_target_input">目標サイズ（KB）</string>
     <string name="compression_target_confirm">決定</string>
+    <string name="compression_strip_metadata">EXIF / 位置情報を削除</string>
+    <string name="compression_strip_location_hint">位置情報を検出しました。圧縮後に削除されます</string>
+    <string name="compression_strip_hint">GPS・機種名などのメタデータを削除します</string>
+    <string name="compression_strip_off_hint">元の EXIF を保持します（位置情報を含む場合あり）</string>
 </resources>

@@ -61,4 +61,8 @@
     <string name="compression_target_note">将自动降低质量/尺寸以不超过目标</string>
     <string name="compression_target_input">目标体积（KB）</string>
     <string name="compression_target_confirm">确定</string>
+    <string name="compression_strip_metadata">移除 EXIF / 位置信息</string>
+    <string name="compression_strip_location_hint">检测到位置信息，压缩后将移除</string>
+    <string name="compression_strip_hint">移除 GPS、设备型号等元数据</string>
+    <string name="compression_strip_off_hint">将保留原始 EXIF（可能包含位置）</string>
 </resources>

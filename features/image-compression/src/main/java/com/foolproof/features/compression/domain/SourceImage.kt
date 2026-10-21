@@ -13,6 +13,8 @@ data class SourceImage(
     val mimeType: String?,
     val width: Int,
     val height: Int,
+    /** 原图是否带 GPS 位置信息（用于分享前提示）。 */
+    val hasLocation: Boolean = false,
 ) {
     val isHeic: Boolean
         get() = mimeType?.lowercase() in HEIC_MIME_TYPES

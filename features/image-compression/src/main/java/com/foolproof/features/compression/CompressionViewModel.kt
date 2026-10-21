@@ -59,6 +59,9 @@ class CompressionViewModel(
             is CompressionAction.ChangeTargetBytes ->
                 changeOption { it.withTargetBytes(action.bytes) }
 
+            is CompressionAction.ChangeStripMetadata ->
+                changeOption { it.withStripMetadata(action.strip) }
+
             is CompressionAction.Share -> share(action.id)
 
             is CompressionAction.SaveToGallery -> saveToGallery(action.id)

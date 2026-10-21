@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -172,6 +173,15 @@ fun CompressionSection(
             }
         }
 
+        MetadataRow(
+            stripMetadata = state.option.stripMetadata,
+            hasLocation = state.images.any { it.hasLocation },
+            enabled = !state.isRunning,
+            onChange = {
+                viewModel.dispatch(CompressionAction.ChangeStripMetadata(it))
+            },
+        )
+
         val maxTargetKb = state.maxTargetKb
         if (maxTargetKb != null && maxTargetKb >= 5) {
             TargetOptionRow(
@@ -279,6 +289,46 @@ fun CompressionSection(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun MetadataRow(
+    stripMetadata: Boolean,
+    hasLocation: Boolean,
+    enabled: Boolean,
+    onChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.compression_strip_metadata),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = stringResource(
+                    when {
+                        stripMetadata && hasLocation -> R.string.compression_strip_location_hint
+                        stripMetadata -> R.string.compression_strip_hint
+                        else -> R.string.compression_strip_off_hint
+                    },
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (stripMetadata && hasLocation) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
+        }
+        Switch(
+            checked = stripMetadata,
+            onCheckedChange = onChange,
+            enabled = enabled,
+        )
     }
 }
 
