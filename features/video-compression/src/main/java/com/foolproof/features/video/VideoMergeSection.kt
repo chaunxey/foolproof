@@ -39,6 +39,7 @@ import com.foolproof.base.ads.FeatureId
 import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.findActivity
 import com.foolproof.features.video.domain.MergeClip
+import com.foolproof.features.video.ui.ResultPreviewDialog
 import com.foolproof.features.video.ui.formatDuration
 import kotlinx.coroutines.delay
 import org.koin.compose.viewmodel.koinViewModel
@@ -54,6 +55,7 @@ fun VideoMergeSection(
     val activity = context.findActivity()
     var messageRes by remember { mutableStateOf<Int?>(null) }
     var trimTargetId by remember { mutableStateOf<String?>(null) }
+    var showPreview by remember { mutableStateOf(false) }
 
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(MAX_PICK),
@@ -202,6 +204,9 @@ fun VideoMergeSection(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(top = 8.dp),
             ) {
+                OutlinedButton(onClick = { showPreview = true }) {
+                    Text(stringResource(R.string.video_preview_result))
+                }
                 OutlinedButton(onClick = { viewModel.dispatch(VideoMergeAction.Share) }) {
                     Text(stringResource(R.string.video_share))
                 }
@@ -212,6 +217,26 @@ fun VideoMergeSection(
                 }
             }
         }
+    }
+
+    val previewOutput = state.output
+    if (showPreview && previewOutput != null) {
+        ResultPreviewDialog(
+            path = previewOutput.path,
+            bytes = previewOutput.bytes,
+            // 拼接是多段来源，没有单一的“原文件”，不显示体积对比
+            originalBytes = 0L,
+            // 用合并成功时锁存的时长：之后改列表/移除片段也不影响预览信息
+            durationMs = if (state.outputDurationMs > 0) {
+                state.outputDurationMs
+            } else {
+                state.totalDurationMs
+            },
+            videoAspect = state.clips.firstOrNull()
+                ?.let { it.source.width.toFloat() / it.source.height.toFloat() }
+                ?: (16f / 9f),
+            onDismiss = { showPreview = false },
+        )
     }
 
     trimTargetId?.let { id ->

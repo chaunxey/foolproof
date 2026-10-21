@@ -125,6 +125,7 @@ class VideoMergeViewModel(
                                 isMerging = false,
                                 progress = 100,
                                 output = CompressedVideo(progress.path, progress.bytes),
+                                outputDurationMs = it.clips.sumOf { clip -> clip.durationMs },
                             )
                         }
                         sendEffect(VideoMergeEffect.Message(VideoMergeEffect.MessageKind.DONE))

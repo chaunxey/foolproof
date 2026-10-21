@@ -11,6 +11,8 @@ data class VideoMergeUiState(
     val isMerging: Boolean = false,
     val progress: Int = 0,
     val output: CompressedVideo? = null,
+    /** 成功合并时的总时长；之后用户改列表也不影响预览/分享信息。 */
+    val outputDurationMs: Long = 0L,
     /** API ≥ 29 才显示【存相册】。 */
     val saveSupported: Boolean = false,
 ) : UiState {

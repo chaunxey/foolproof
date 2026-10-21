@@ -1,13 +1,18 @@
 package com.foolproof.features.video.data
 
 import android.content.Context
+import android.media.metrics.LogSessionId
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.Clock
 import androidx.media3.effect.Presentation
 import androidx.media3.transformer.Composition
+import androidx.media3.transformer.DefaultAssetLoaderFactory
+import androidx.media3.transformer.DefaultDecoderFactory
 import androidx.media3.transformer.DefaultEncoderFactory
 import androidx.media3.transformer.EditedMediaItem
 import androidx.media3.transformer.EditedMediaItemSequence
@@ -116,12 +121,33 @@ class Media3VideoMerger(
             }
         }
 
-        val transformer = Transformer.Builder(context)
+        val transformerBuilder = Transformer.Builder(context)
             .setVideoMimeType(MimeTypes.VIDEO_H264)
             .setAudioMimeType(MimeTypes.AUDIO_AAC)
             .setEncoderFactory(encoderFactory)
             .addListener(listener)
-            .build()
+
+        // 多段拼接会同时准备多个硬解码器，部分机型（如 vivo MTK）第二个解码器初始化会失败。
+        // API 31+ 显式打开解码器回退：硬解失败时自动退到软解。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            runCatching {
+                val decoderFactory = DefaultDecoderFactory.Builder(context)
+                    .setEnableDecoderFallback(true)
+                    .build()
+                transformerBuilder.setAssetLoaderFactory(
+                    DefaultAssetLoaderFactory(
+                        context,
+                        decoderFactory,
+                        Clock.DEFAULT,
+                        LogSessionId.LOG_SESSION_ID_NONE,
+                    ),
+                )
+            }.onFailure {
+                logUtil.w { "decoder fallback setup failed: ${it::class.simpleName}" }
+            }
+        }
+
+        val transformer = transformerBuilder.build()
 
         activeTransformer = transformer
         logUtil.d {
