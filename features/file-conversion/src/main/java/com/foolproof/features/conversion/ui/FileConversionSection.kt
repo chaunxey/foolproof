@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 import com.foolproof.base.util.ByteFormat
@@ -51,6 +52,8 @@ import com.foolproof.features.conversion.ConversionEffect
 import com.foolproof.features.conversion.ConversionMode
 import com.foolproof.features.conversion.ConversionPhase
 import com.foolproof.features.conversion.FileConversionViewModel
+import com.foolproof.features.conversion.R
+import com.foolproof.features.conversion.domain.PdfPageSpec
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.compose.viewmodel.koinViewModel
@@ -67,7 +70,7 @@ fun FileConversionSection(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    var message by remember { mutableStateOf<Pair<String, Boolean>?>(null) }
+    var message by remember { mutableStateOf<Pair<Int, Boolean>?>(null) }
 
     val imagePicker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(),
@@ -95,9 +98,11 @@ fun FileConversionSection(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is ConversionEffect.Message -> message = effect.kind.label() to effect.kind.isError()
-                is ConversionEffect.Share -> if (!context.sharePdf(effect.path)) message = "没有可分享的应用" to true
-                is ConversionEffect.Open -> if (!context.openPdf(effect.path)) message = "没有可打开 PDF 的应用" to true
+                is ConversionEffect.Message -> message = effect.kind.labelRes() to effect.kind.isError()
+                is ConversionEffect.Share ->
+                    if (!context.sharePdf(effect.path)) message = R.string.conversion_msg_no_share_app to true
+                is ConversionEffect.Open ->
+                    if (!context.openPdf(effect.path)) message = R.string.conversion_msg_no_pdf_app to true
             }
         }
     }
@@ -115,14 +120,16 @@ fun FileConversionSection(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("文件转 PDF", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.conversion_title), style = MaterialTheme.typography.titleMedium)
             // 没有输入/结果时重置没有意义，隐藏按钮
             if (
                 state.images.isNotEmpty() ||
                 state.text != null ||
                 state.phase != ConversionPhase.Idle
             ) {
-                TextButton(onClick = { viewModel.dispatch(ConversionAction.Reset) }) { Text("重置") }
+                TextButton(onClick = { viewModel.dispatch(ConversionAction.Reset) }) {
+                    Text(stringResource(R.string.conversion_reset))
+                }
             }
         }
 
@@ -134,13 +141,13 @@ fun FileConversionSection(
                 selected = state.mode == ConversionMode.IMAGES,
                 onClick = { viewModel.dispatch(ConversionAction.ModeChanged(ConversionMode.IMAGES)) },
                 enabled = !state.isConverting,
-                label = { Text("图片") },
+                label = { Text(stringResource(R.string.conversion_mode_images)) },
             )
             FilterChip(
                 selected = state.mode == ConversionMode.TEXT,
                 onClick = { viewModel.dispatch(ConversionAction.ModeChanged(ConversionMode.TEXT)) },
                 enabled = !state.isConverting,
-                label = { Text("文本 / Markdown") },
+                label = { Text(stringResource(R.string.conversion_mode_text)) },
             )
         }
 
@@ -157,7 +164,13 @@ fun FileConversionSection(
                     enabled = !state.isConverting,
                     modifier = Modifier.padding(top = 12.dp),
                 ) {
-                    Text(if (state.images.isEmpty()) "选择图片" else "继续添加")
+                    Text(
+                        if (state.images.isEmpty()) {
+                            stringResource(R.string.conversion_pick_images)
+                        } else {
+                            stringResource(R.string.conversion_add_images)
+                        },
+                    )
                 }
 
                 if (state.images.isNotEmpty()) {
@@ -169,14 +182,21 @@ fun FileConversionSection(
                             onClick = { viewModel.dispatch(ConversionAction.PerPageChanged(state.perPage - 1)) },
                             enabled = !state.isConverting && state.perPage > 1,
                         ) { Text("−") }
-                        Text("每页 ${state.perPage} 张", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            stringResource(R.string.conversion_per_page, state.perPage),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
                         OutlinedButton(
                             onClick = { viewModel.dispatch(ConversionAction.PerPageChanged(state.perPage + 1)) },
                             enabled = !state.isConverting && state.perPage < 6,
                         ) { Text("＋") }
                     }
                     Text(
-                        text = "已选 ${state.images.size} 张（最多 50 张），点缩略图右上角可删除",
+                        text = stringResource(
+                            R.string.conversion_images_summary,
+                            state.images.size,
+                            PdfPageSpec.MAX_IMAGES,
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 8.dp),
@@ -212,7 +232,10 @@ fun FileConversionSection(
                                         },
                                         enabled = !state.isConverting,
                                     ) {
-                                        Text("上移", style = MaterialTheme.typography.labelSmall)
+                                        Text(
+                                            stringResource(R.string.conversion_move_up),
+                                            style = MaterialTheme.typography.labelSmall,
+                                        )
                                     }
                                 }
                             }
@@ -227,11 +250,21 @@ fun FileConversionSection(
                     enabled = !state.isConverting,
                     modifier = Modifier.padding(top = 12.dp),
                 ) {
-                    Text(if (state.text == null) "选择文本 / Markdown" else "重新选择")
+                    Text(
+                        if (state.text == null) {
+                            stringResource(R.string.conversion_pick_text)
+                        } else {
+                            stringResource(R.string.conversion_repick)
+                        },
+                    )
                 }
                 state.text?.let {
                     Text(
-                        text = "${it.displayName} · ${ByteFormat.formatBytes(it.bytes)}",
+                        text = stringResource(
+                            R.string.conversion_text_meta,
+                            it.displayName,
+                            ByteFormat.formatBytes(it.bytes),
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 8.dp),
@@ -240,9 +273,9 @@ fun FileConversionSection(
             }
         }
 
-        message?.let { (text, isError) ->
+        message?.let { (textRes, isError) ->
             Text(
-                text = text,
+                text = stringResource(textRes),
                 color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 8.dp),
@@ -258,7 +291,11 @@ fun FileConversionSection(
                     modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                 )
                 Text(
-                    text = "生成中 ${phase.current}/${phase.total} · 离开页面会取消",
+                    text = stringResource(
+                        R.string.conversion_generating,
+                        phase.current,
+                        phase.total,
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 4.dp),
                 )
@@ -266,7 +303,7 @@ fun FileConversionSection(
                     onClick = { viewModel.dispatch(ConversionAction.Cancel) },
                     modifier = Modifier.padding(top = 8.dp),
                 ) {
-                    Text("取消")
+                    Text(stringResource(R.string.conversion_cancel))
                 }
             }
 
@@ -276,7 +313,7 @@ fun FileConversionSection(
                     enabled = state.canConvert,
                     modifier = Modifier.padding(top = 12.dp),
                 ) {
-                    Text("生成 PDF")
+                    Text(stringResource(R.string.conversion_start))
                 }
             }
         }
@@ -284,8 +321,12 @@ fun FileConversionSection(
         (state.phase as? ConversionPhase.Done)?.let { done ->
             PdfPreview(path = done.result.path, modifier = Modifier.padding(top = 8.dp))
             Text(
-                text = "${done.result.path.substringAfterLast('/')} · " +
-                    "${ByteFormat.formatBytes(done.result.bytes)} · ${done.result.pageCount} 页",
+                text = stringResource(
+                    R.string.conversion_result_meta,
+                    done.result.path.substringAfterLast('/'),
+                    ByteFormat.formatBytes(done.result.bytes),
+                    done.result.pageCount,
+                ),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(top = 8.dp),
             )
@@ -293,11 +334,15 @@ fun FileConversionSection(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(top = 4.dp),
             ) {
-                OutlinedButton(onClick = { viewModel.dispatch(ConversionAction.Open) }) { Text("打开") }
-                OutlinedButton(onClick = { viewModel.dispatch(ConversionAction.Share) }) { Text("分享") }
+                OutlinedButton(onClick = { viewModel.dispatch(ConversionAction.Open) }) {
+                    Text(stringResource(R.string.conversion_open))
+                }
+                OutlinedButton(onClick = { viewModel.dispatch(ConversionAction.Share) }) {
+                    Text(stringResource(R.string.conversion_share))
+                }
                 if (state.canSaveToDownloads) {
                     OutlinedButton(onClick = { viewModel.dispatch(ConversionAction.SaveToDownloads) }) {
-                        Text("存到下载")
+                        Text(stringResource(R.string.conversion_save_to_downloads))
                     }
                 }
             }
@@ -354,20 +399,21 @@ private fun Context.readFileMeta(uri: Uri): Pair<String, Long> = runCatching {
     } ?: ("document.txt" to 0L)
 }.getOrDefault("document.txt" to 0L)
 
-private fun ConversionEffect.MessageKind.label(): String = when (this) {
-    ConversionEffect.MessageKind.DONE -> "PDF 已生成"
-    ConversionEffect.MessageKind.CANCELLED -> "已取消"
-    ConversionEffect.MessageKind.NO_CONTENT -> "没有可转换的内容"
-    ConversionEffect.MessageKind.UNREADABLE -> "无法读取所选内容"
-    ConversionEffect.MessageKind.UNSUPPORTED_ENCODING -> "文本编码不支持，请另存为 UTF-8"
-    ConversionEffect.MessageKind.OUT_OF_SPACE -> "存储空间不足"
-    ConversionEffect.MessageKind.HEIC_UNSUPPORTED -> "当前系统不支持 HEIC 格式，已跳过"
-    ConversionEffect.MessageKind.GENERATION_FAILED -> "生成失败，请重试"
-    ConversionEffect.MessageKind.SAVED -> "已保存到 下载/Foolproof"
-    ConversionEffect.MessageKind.SAVE_FAILED -> "保存失败"
-    ConversionEffect.MessageKind.SAVE_UNSUPPORTED -> "当前系统版本不支持直接存到下载"
-    ConversionEffect.MessageKind.TOO_MANY_IMAGES -> "最多 50 张图片"
-    ConversionEffect.MessageKind.TEXT_TOO_LARGE -> "文本文件过大（上限 2MB）"
+/** 一次性提示 → 文案资源。 */
+private fun ConversionEffect.MessageKind.labelRes(): Int = when (this) {
+    ConversionEffect.MessageKind.DONE -> R.string.conversion_msg_done
+    ConversionEffect.MessageKind.CANCELLED -> R.string.conversion_msg_cancelled
+    ConversionEffect.MessageKind.NO_CONTENT -> R.string.conversion_msg_no_content
+    ConversionEffect.MessageKind.UNREADABLE -> R.string.conversion_msg_unreadable
+    ConversionEffect.MessageKind.UNSUPPORTED_ENCODING -> R.string.conversion_msg_unsupported_encoding
+    ConversionEffect.MessageKind.OUT_OF_SPACE -> R.string.conversion_msg_out_of_space
+    ConversionEffect.MessageKind.HEIC_UNSUPPORTED -> R.string.conversion_msg_heic_unsupported
+    ConversionEffect.MessageKind.GENERATION_FAILED -> R.string.conversion_msg_generation_failed
+    ConversionEffect.MessageKind.SAVED -> R.string.conversion_msg_saved
+    ConversionEffect.MessageKind.SAVE_FAILED -> R.string.conversion_msg_save_failed
+    ConversionEffect.MessageKind.SAVE_UNSUPPORTED -> R.string.conversion_msg_save_unsupported
+    ConversionEffect.MessageKind.TOO_MANY_IMAGES -> R.string.conversion_msg_too_many_images
+    ConversionEffect.MessageKind.TEXT_TOO_LARGE -> R.string.conversion_msg_text_too_large
 }
 
 private fun ConversionEffect.MessageKind.isError(): Boolean = when (this) {

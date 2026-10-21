@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.conversion.ui
+package com.foolproof.features.conversion.ui
 
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
@@ -22,7 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.foolproof.features.conversion.R
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -52,7 +54,10 @@ internal fun PdfPreview(path: String, modifier: Modifier = Modifier) {
             Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
                 Image(
                     bitmap = bitmap.asImageBitmap(),
-                    contentDescription = "第 ${index + 1} 页预览",
+                    contentDescription = stringResource(
+                        R.string.conversion_preview_page_desc,
+                        index + 1,
+                    ),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
                         .height(240.dp)
@@ -60,7 +65,11 @@ internal fun PdfPreview(path: String, modifier: Modifier = Modifier) {
                         .background(androidx.compose.ui.graphics.Color.White),
                 )
                 Text(
-                    text = "第 ${index + 1} 页 / 共 ${pages.size} 页",
+                    text = stringResource(
+                        R.string.conversion_preview_page_label,
+                        index + 1,
+                        pages.size,
+                    ),
                     style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
                 )
             }
