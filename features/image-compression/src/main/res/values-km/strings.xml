@@ -40,7 +40,7 @@
     <string name="compression_msg_save_failed">មិនអាចរក្សាទុកទៅវិចិត្រសាលបានទេ</string>
     <string name="compression_msg_save_unsupported">កំណែប្រព័ន្ធនេះមិនគាំទ្រការរក្សាទុកដោយផ្ទាល់ទៅវិចិត្រសាលទេ</string>
     <string name="compression_empty_hint">ជ្រើសរើសរូបភាព ដើម្បីកែទម្រង់ និងគុណភាព ព្រមទាំងមើលការប៉ាន់ទំហំ</string>
-    <string name="compression_target_range">ជួរ 5–10240 KB</string>
+    <string name="compression_target_range">ជួរ 5–%1$d KB</string>
     <string name="compression_target_dialog_title">កំណត់ទំហំគោលដៅ</string>
     <string name="compression_target_kb">%1$d KB</string>
     <string name="compression_target_custom">ផ្ទាល់ខ្លួន</string>

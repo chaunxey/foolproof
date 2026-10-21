@@ -40,7 +40,7 @@
     <string name="compression_msg_save_failed">Enregistrement dans la galerie impossible</string>
     <string name="compression_msg_save_unsupported">Cette version du système ne permet pas la sauvegarde directe dans la galerie</string>
     <string name="compression_empty_hint">Sélectionnez des images pour régler le format et la qualité avec une estimation de taille</string>
-    <string name="compression_target_range">Plage 5–10240 Ko</string>
+    <string name="compression_target_range">Plage 5–%1$d Ko</string>
     <string name="compression_target_dialog_title">Définir la taille cible</string>
     <string name="compression_target_kb">%1$d Ko</string>
     <string name="compression_target_custom">Personnalisé</string>

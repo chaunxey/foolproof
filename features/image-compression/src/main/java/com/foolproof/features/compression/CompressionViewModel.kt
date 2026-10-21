@@ -84,6 +84,7 @@ class CompressionViewModel(
             updateState { state ->
                 state.copy(
                     images = images,
+                    option = clampTarget(state.option, images),
                     outcomes = images.associate { image ->
                         image.id to CompressionOutcome(id = image.id, originalBytes = image.sizeBytes)
                     },
@@ -174,9 +175,19 @@ class CompressionViewModel(
     // region 参数与预估
 
     private fun changeOption(transform: (CompressionOption) -> CompressionOption) {
-        val option = transform(currentState.option)
+        val option = clampTarget(transform(currentState.option), currentState.images)
         updateState { it.copy(option = option) }
         scheduleEstimate(option)
+    }
+
+    /** 目标体积不能达到/超过原图：否则“压缩”反而可能变大。 */
+    private fun clampTarget(
+        option: CompressionOption,
+        images: List<SourceImage>,
+    ): CompressionOption {
+        val maxBytes = images.minOfOrNull { it.sizeBytes - 1 } ?: return option
+        val target = option.targetBytes ?: return option
+        return option.withTargetBytes(target.coerceAtMost(maxBytes))
     }
 
     private fun scheduleEstimate(option: CompressionOption) {

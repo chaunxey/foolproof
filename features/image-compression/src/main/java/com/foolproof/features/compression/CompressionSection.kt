@@ -163,13 +163,17 @@ fun CompressionSection(
             }
         }
 
-        TargetOptionRow(
-            targetBytes = state.option.targetBytes,
-            enabled = !state.isRunning,
-            onTargetChange = {
-                viewModel.dispatch(CompressionAction.ChangeTargetBytes(it))
-            },
-        )
+        val maxTargetKb = state.maxTargetKb
+        if (maxTargetKb != null && maxTargetKb >= 5) {
+            TargetOptionRow(
+                targetBytes = state.option.targetBytes,
+                maxKb = maxTargetKb,
+                enabled = !state.isRunning,
+                onTargetChange = {
+                    viewModel.dispatch(CompressionAction.ChangeTargetBytes(it))
+                },
+            )
+        }
 
         OptionRow(
             format = state.option.format,
@@ -272,6 +276,7 @@ fun CompressionSection(
 @Composable
 private fun TargetOptionRow(
     targetBytes: Long?,
+    maxKb: Int,
     enabled: Boolean,
     onTargetChange: (Long?) -> Unit,
 ) {
@@ -318,6 +323,7 @@ private fun TargetOptionRow(
     if (showDialog) {
         TargetKbDialog(
             initialKb = ((targetBytes ?: DEFAULT_TARGET_KB.toLong()) / 1024L).toInt(),
+            maxKb = maxKb,
             onDismiss = { showDialog = false },
             onConfirm = {
                 onTargetChange(it * 1024L)
@@ -330,12 +336,13 @@ private fun TargetOptionRow(
 @Composable
 private fun TargetKbDialog(
     initialKb: Int,
+    maxKb: Int,
     onDismiss: () -> Unit,
     onConfirm: (Int) -> Unit,
 ) {
-    var text by remember { mutableStateOf(initialKb.coerceIn(MIN_TARGET_KB, MAX_TARGET_KB).toString()) }
+    var text by remember { mutableStateOf(initialKb.coerceIn(MIN_TARGET_KB, maxKb).toString()) }
     val parsed = text.toIntOrNull()
-    val valid = parsed != null && parsed in MIN_TARGET_KB..MAX_TARGET_KB
+    val valid = parsed != null && parsed in MIN_TARGET_KB..maxKb
 
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
@@ -355,7 +362,7 @@ private fun TargetKbDialog(
                     ),
                 )
                 Text(
-                    text = stringResource(R.string.compression_target_range),
+                    text = stringResource(R.string.compression_target_range, maxKb),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp),

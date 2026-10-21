@@ -40,7 +40,7 @@
     <string name="compression_msg_save_failed">Could not save to gallery</string>
     <string name="compression_msg_save_unsupported">This system version does not support saving directly to the gallery</string>
     <string name="compression_empty_hint">Pick images to adjust format and quality with a live size estimate</string>
-    <string name="compression_target_range">Range 5–10240 KB</string>
+    <string name="compression_target_range">Range 5–%1$d KB</string>
     <string name="compression_target_dialog_title">Set target size</string>
     <string name="compression_target_kb">%1$d KB</string>
     <string name="compression_target_custom">Custom</string>

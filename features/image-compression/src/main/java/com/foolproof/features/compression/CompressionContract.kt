@@ -29,6 +29,12 @@ data class CompressionUiState(
             it.status == OutcomeStatus.SUCCESS || it.status == OutcomeStatus.NO_GAIN
         }
 
+    /** 目标体积上限：不能达到或超过最小的原图，否则不叫压缩。 */
+    val maxTargetKb: Int?
+        get() = images.minOfOrNull { it.sizeBytes }?.let { bytes ->
+            ((bytes - 1) / 1024L).toInt().coerceAtLeast(5)
+        }
+
     /** 实际节省的总字节数（只统计压缩成功的项）。 */
     val totalSavedBytes: Long
         get() = outcomes.values.sumOf { outcome ->
