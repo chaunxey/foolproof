@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="duplicates_title">Doppelte Fotos bereinigen</string>
+    <string name="duplicates_scan_start">Duplikate finden</string>
+    <string name="duplicates_scan_again">Erneut suchen</string>
+    <string name="duplicates_cancel">Abbrechen</string>
+    <string name="duplicates_grant_and_scan">Zugriff erlauben und suchen</string>
+    <string name="duplicates_open_settings">Einstellungen öffnen</string>
+    <string name="duplicates_clear_selection">Auswahl aufheben</string>
+    <string name="duplicates_delete">Löschen</string>
+
+    <string name="duplicates_scanning">Scan läuft: %1$d/%2$d</string>
+    <string name="duplicates_scan_done">%1$d Fotos gescannt, %2$d übersprungen</string>
+    <string name="duplicates_scan_cancelled">Abgebrochen</string>
+    <string name="duplicates_scan_failed">Scan fehlgeschlagen</string>
+
+    <string name="duplicates_selected_summary">%1$d ausgewählt · %2$s</string>
+    <string name="duplicates_results_hint">Die Ergebnisse stehen unten. Tippe auf eine Miniaturansicht, um sie zu vergrößern.</string>
+
+    <string name="duplicates_hint_no_duplicates">Keine doppelten Fotos gefunden</string>
+    <string name="duplicates_hint_cancelled">Abgebrochen. Du kannst erneut suchen.</string>
+    <string name="duplicates_hint_idle">Tippe auf „%1$s“, um deine Galerie nach doppelten Fotos zu durchsuchen</string>
+
+    <string name="duplicates_delete_title">Löschen bestätigen</string>
+    <string name="duplicates_delete_message">Es werden %1$d Fotos gelöscht, ca. %2$s</string>
+    <string name="duplicates_delete_irreversible">Gelöschte Fotos können in dieser Systemversion nicht wiederhergestellt werden</string>
+
+    <string name="duplicates_group_summary">%1$d Fotos · %2$s freigebbar</string>
+    <string name="duplicates_limit_hint">Viele Ergebnisse – es werden die ersten %1$d Fotos angezeigt. Suche nach dem Löschen erneut, um fortzufahren.</string>
+
+    <string name="duplicates_preview_close_hint">Zum Schließen irgendwo tippen</string>
+
+    <string name="duplicates_msg_empty_gallery">Keine lesbaren Fotos in deiner Galerie</string>
+    <string name="duplicates_msg_no_duplicates">Keine doppelten Fotos gefunden</string>
+    <string name="duplicates_msg_scan_failed">Scan fehlgeschlagen. Versuche es erneut.</string>
+    <string name="duplicates_msg_permission_denied">Für den Scan ist Zugriff auf Fotos erforderlich</string>
+    <string name="duplicates_msg_permission_denied_forever">Berechtigung dauerhaft verweigert. Aktiviere sie in den Systemeinstellungen.</string>
+    <string name="duplicates_msg_saf_required">In dieser Systemversion musst du einen Ordner freigeben, bevor gelöscht werden kann</string>
+    <string name="duplicates_msg_deleted">Gelöscht</string>
+    <string name="duplicates_msg_delete_failed">Einige Fotos konnten nicht gelöscht werden</string>
+    <string name="duplicates_msg_system_delete_unavailable">Löschanfrage des Systems nicht verfügbar</string>
+</resources>

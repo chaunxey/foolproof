@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Foolproof</string>
+
+    <!-- Settings -->
+    <string name="settings_title">ការកំណត់</string>
+    <string name="settings_font_size">ទំហំអក្សរ៖ %1$d%%</string>
+    <string name="settings_font_preview">អត្ថបទមើលជាមុន៖ នេះជាគំរូសម្រាប់ពិនិត្យមើលទំហំ</string>
+    <string name="settings_restore_default">ត្រឡប់ទៅលំនាំដើមវិញ</string>
+    <string name="settings_close">បិទ</string>
+    <string name="settings_language">ភាសា</string>
+    <string name="settings_language_system">តាមប្រព័ន្ធ</string>
+    <string name="settings_language_zh">中文</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_language_km">ខ្មែរ</string>
+    <string name="settings_language_ja">日本語</string>
+    <string name="settings_language_fr">Français</string>
+    <string name="settings_language_de">Deutsch</string>
+
+    <!-- Back press -->
+    <string name="back_press_again">ចុចត្រឡប់ម្តងទៀតដើម្បីចាកចេញ</string>
+</resources>

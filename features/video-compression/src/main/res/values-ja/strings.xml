@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="video_title">動画圧縮</string>
+    <string name="video_pick">動画を選択</string>
+    <string name="video_repick">選び直す</string>
+    <string name="video_start">圧縮を開始</string>
+    <string name="video_restart">もう一度圧縮</string>
+    <string name="video_cancel">キャンセル</string>
+    <string name="video_preview_result">結果をプレビュー</string>
+    <string name="video_share">共有</string>
+    <string name="video_save_to_gallery">ギャラリーに保存</string>
+    <string name="video_compressing">圧縮中 %1$d%% · この画面を離れるとキャンセルされます</string>
+
+    <string name="video_meta">%1$s · %2$s · %3$dx%4$d · %5$dfps</string>
+
+    <string name="video_result_source">完了：%1$s → %2$s · %3$s</string>
+    <string name="video_result_source_saved">完了：%1$s → %2$s · %3$s（%4$s 節約）</string>
+    <string name="video_result_source_larger">完了：%1$s → %2$s · %3$s（元のファイルより %4$s 大きい）</string>
+    <string name="video_result_only">完了：%1$s · %2$s</string>
+
+    <string name="video_resolution">解像度</string>
+    <string name="video_bitrate">ビットレート</string>
+    <string name="video_bitrate_high">高</string>
+    <string name="video_bitrate_medium">中</string>
+    <string name="video_bitrate_low">低</string>
+    <string name="video_preset_summary">%1$s · %2$s（%3$s Mbps）</string>
+    <string name="video_preset_detail">%1$s · %2$dfps · %3$s · 推定 %4$s</string>
+
+    <string name="video_trim_range">クリップ %1$s / 全体 %2$s</string>
+
+    <string name="video_preview_play">再生</string>
+    <string name="video_preview_progress">再生位置 %1$d%%</string>
+
+    <string name="video_result_title">圧縮結果</string>
+    <string name="video_close">閉じる</string>
+    <string name="video_size_duration">%1$s · %2$s</string>
+    <string name="video_size_duration_compare">%1$s → %2$s · %3$s</string>
+
+    <string name="video_msg_source_unreadable">この動画を読み込めませんでした</string>
+    <string name="video_msg_no_encoder">このデバイスで使用できる動画エンコーダーがありません</string>
+    <string name="video_msg_software_encoder_only">このデバイスにはハードウェアエンコーダーがありません。圧縮に時間がかかります</string>
+    <string name="video_msg_out_of_space">ストレージの空き容量が不足しています</string>
+    <string name="video_msg_transcode_failed">圧縮に失敗しました。もう一度お試しください。</string>
+    <string name="video_msg_cancelled">キャンセルしました</string>
+    <string name="video_msg_done">圧縮が完了しました</string>
+    <string name="video_msg_saved">ギャラリーに保存しました（Movies/Foolproof）</string>
+    <string name="video_msg_save_failed">ギャラリーに保存できませんでした</string>
+    <string name="video_msg_save_unsupported">このシステムバージョンではギャラリーへの直接保存に対応していません</string>
+    <string name="video_msg_long_video">長い、または大きな動画です。先にクリップを切り出してから圧縮してください</string>
+    <string name="video_msg_larger_than_source">出力が元のファイルより大きくなりました（元動画がすでに小さいためです）。より高い圧縮プリセットをお試しください。</string>
+</resources>

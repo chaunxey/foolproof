@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="conversion_title">ឯកសារទៅជា PDF</string>
+    <string name="conversion_reset">កំណត់ឡើងវិញ</string>
+    <string name="conversion_mode_images">រូបភាព</string>
+    <string name="conversion_mode_text">អត្ថបទ / Markdown</string>
+    <string name="conversion_pick_images">ជ្រើសរើសរូបភាព</string>
+    <string name="conversion_add_images">បន្ថែមទៀត</string>
+    <string name="conversion_pick_text">ជ្រើសរើសអត្ថបទ / Markdown</string>
+    <string name="conversion_repick">ជ្រើសរើសម្តងទៀត</string>
+    <string name="conversion_cancel">បោះបង់</string>
+    <string name="conversion_start">បង្កើត PDF</string>
+    <string name="conversion_open">បើក</string>
+    <string name="conversion_share">ចែករំលែក</string>
+    <string name="conversion_save_to_downloads">រក្សាទុកទៅ Downloads</string>
+
+    <string name="conversion_per_page">%1$d ក្នុងមួយទំព័រ</string>
+    <string name="conversion_images_summary">បានជ្រើសរើស %1$d (អតិបរមា %2$d)។ ចុចជ្រុងខាងលើខាងស្តាំនៃរូបតូច ដើម្បីដកវាចេញ។</string>
+    <string name="conversion_move_up">ផ្លាស់ឡើងលើ</string>
+
+    <string name="conversion_text_meta">%1$s · %2$s</string>
+
+    <string name="conversion_generating">កំពុងបង្កើត %1$d/%2$d · ការចាកចេញពីទំព័រនេះនឹងបោះបង់</string>
+    <string name="conversion_result_meta">%1$s · %2$s · %3$d ទំព័រ</string>
+    <string name="conversion_preview_page_desc">មើលទំព័រ %1$d ជាមុន</string>
+    <string name="conversion_preview_page_label">ទំព័រ %1$d នៃ %2$d</string>
+
+    <string name="conversion_msg_done">បានបង្កើត PDF</string>
+    <string name="conversion_msg_cancelled">បានបោះបង់</string>
+    <string name="conversion_msg_no_content">គ្មានអ្វីត្រូវបម្លែងទេ</string>
+    <string name="conversion_msg_unreadable">មិនអាចអានខ្លឹមសារដែលបានជ្រើសរើសបានទេ</string>
+    <string name="conversion_msg_unsupported_encoding">មិនគាំទ្រការអ៊ិនកូដអត្ថបទនេះទេ។ សូមរក្សាទុកជា UTF-8 ហើយព្យាយាមម្តងទៀត។</string>
+    <string name="conversion_msg_out_of_space">ទំហំផ្ទុកមិនគ្រប់គ្រាន់</string>
+    <string name="conversion_msg_heic_unsupported">HEIC មិនត្រូវបានគាំទ្រនៅលើកំណែប្រព័ន្ធនេះទេ ដូច្នេះត្រូវបានរំលង</string>
+    <string name="conversion_msg_generation_failed">ការបង្កើតបរាជ័យ។ សូមព្យាយាមម្តងទៀត។</string>
+    <string name="conversion_msg_saved">បានរក្សាទុកទៅ Downloads/Foolproof</string>
+    <string name="conversion_msg_save_failed">ការរក្សាទុកបរាជ័យ</string>
+    <string name="conversion_msg_save_unsupported">កំណែប្រព័ន្ធនេះមិនគាំទ្រការរក្សាទុកទៅ Downloads ទេ</string>
+    <string name="conversion_msg_too_many_images">រហូតដល់ 50 រូបភាព</string>
+    <string name="conversion_msg_text_too_large">ឯកសារអត្ថបទធំពេក (កំណត់ត្រឹម 2 MB)</string>
+    <string name="conversion_msg_no_share_app">គ្មានកម្មវិធីសម្រាប់ចែករំលែកទេ</string>
+    <string name="conversion_msg_no_pdf_app">គ្មានកម្មវិធីសម្រាប់បើក PDF ទេ</string>
+</resources>

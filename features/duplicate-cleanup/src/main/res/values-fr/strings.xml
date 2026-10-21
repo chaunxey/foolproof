@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="duplicates_title">Nettoyage des photos en double</string>
+    <string name="duplicates_scan_start">Rechercher les doublons</string>
+    <string name="duplicates_scan_again">Rechercher à nouveau</string>
+    <string name="duplicates_cancel">Annuler</string>
+    <string name="duplicates_grant_and_scan">Autoriser l\'accès et rechercher</string>
+    <string name="duplicates_open_settings">Ouvrir les paramètres</string>
+    <string name="duplicates_clear_selection">Effacer la sélection</string>
+    <string name="duplicates_delete">Supprimer</string>
+
+    <string name="duplicates_scanning">Analyse %1$d/%2$d</string>
+    <string name="duplicates_scan_done">%1$d photos analysées, %2$d ignorées</string>
+    <string name="duplicates_scan_cancelled">Annulé</string>
+    <string name="duplicates_scan_failed">Analyse impossible</string>
+
+    <string name="duplicates_selected_summary">%1$d sélectionnées · %2$s</string>
+    <string name="duplicates_results_hint">Les résultats sont ci-dessous. Touchez une vignette pour agrandir.</string>
+
+    <string name="duplicates_hint_no_duplicates">Aucune photo en double trouvée</string>
+    <string name="duplicates_hint_cancelled">Annulé. Vous pouvez relancer la recherche.</string>
+    <string name="duplicates_hint_idle">Touchez « %1$s » pour analyser la galerie et trouver les photos en double</string>
+
+    <string name="duplicates_delete_title">Confirmer la suppression</string>
+    <string name="duplicates_delete_message">Vous allez supprimer %1$d photos, soit environ %2$s</string>
+    <string name="duplicates_delete_irreversible">Les photos supprimées ne peuvent pas être récupérées sur cette version du système</string>
+
+    <string name="duplicates_group_summary">%1$d photos · %2$s récupérables</string>
+    <string name="duplicates_limit_hint">De nombreux résultats — affichage des %1$d premières photos. Relancez la recherche après suppression pour continuer.</string>
+
+    <string name="duplicates_preview_close_hint">Touchez n\'importe où pour fermer</string>
+
+    <string name="duplicates_msg_empty_gallery">Aucune photo lisible dans la galerie</string>
+    <string name="duplicates_msg_no_duplicates">Aucune photo en double trouvée</string>
+    <string name="duplicates_msg_scan_failed">Analyse impossible. Réessayez.</string>
+    <string name="duplicates_msg_permission_denied">L\'accès aux photos est nécessaire pour analyser</string>
+    <string name="duplicates_msg_permission_denied_forever">Autorisation refusée définitivement. Activez-la dans les paramètres du système.</string>
+    <string name="duplicates_msg_saf_required">Accordez l\'accès à un dossier avant de supprimer sur cette version du système</string>
+    <string name="duplicates_msg_deleted">Suppression effectuée</string>
+    <string name="duplicates_msg_delete_failed">Certaines photos n\'ont pas pu être supprimées</string>
+    <string name="duplicates_msg_system_delete_unavailable">Suppression par le système indisponible</string>
+</resources>

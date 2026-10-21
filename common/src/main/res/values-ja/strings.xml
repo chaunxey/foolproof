@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bottom navigation -->
+    <string name="tab_images">画像</string>
+    <string name="tab_videos">動画</string>
+    <string name="tab_converter">変換</string>
+</resources>

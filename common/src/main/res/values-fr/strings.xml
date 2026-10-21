@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Navigation du bas -->
+    <string name="tab_images">Images</string>
+    <string name="tab_videos">Vidéos</string>
+    <string name="tab_converter">Convertir</string>
+</resources>

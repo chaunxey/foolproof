@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="video_title">Videokomprimierung</string>
+    <string name="video_pick">Video auswählen</string>
+    <string name="video_repick">Erneut auswählen</string>
+    <string name="video_start">Komprimierung starten</string>
+    <string name="video_restart">Erneut komprimieren</string>
+    <string name="video_cancel">Abbrechen</string>
+    <string name="video_preview_result">Ergebnis ansehen</string>
+    <string name="video_share">Teilen</string>
+    <string name="video_save_to_gallery">In Galerie speichern</string>
+    <string name="video_compressing">Komprimiere %1$d%% · Verlassen dieser Seite bricht ab</string>
+
+    <string name="video_meta">%1$s · %2$s · %3$dx%4$d · %5$dfps</string>
+
+    <string name="video_result_source">Fertig: %1$s → %2$s · %3$s</string>
+    <string name="video_result_source_saved">Fertig: %1$s → %2$s · %3$s (%4$s gespart)</string>
+    <string name="video_result_source_larger">Fertig: %1$s → %2$s · %3$s (%4$s größer als das Original)</string>
+    <string name="video_result_only">Fertig: %1$s · %2$s</string>
+
+    <string name="video_resolution">Auflösung</string>
+    <string name="video_bitrate">Bitrate</string>
+    <string name="video_bitrate_high">Hoch</string>
+    <string name="video_bitrate_medium">Mittel</string>
+    <string name="video_bitrate_low">Niedrig</string>
+    <string name="video_preset_summary">%1$s · %2$s (%3$s Mbps)</string>
+    <string name="video_preset_detail">%1$s · %2$dfps · %3$s · gesch. %4$s</string>
+
+    <string name="video_trim_range">Ausschnitt %1$s / gesamt %2$s</string>
+
+    <string name="video_preview_play">Abspielen</string>
+    <string name="video_preview_progress">Wiedergabe %1$d%%</string>
+
+    <string name="video_result_title">Komprimierungsergebnis</string>
+    <string name="video_close">Schließen</string>
+    <string name="video_size_duration">%1$s · %2$s</string>
+    <string name="video_size_duration_compare">%1$s → %2$s · %3$s</string>
+
+    <string name="video_msg_source_unreadable">Dieses Video konnte nicht gelesen werden</string>
+    <string name="video_msg_no_encoder">Kein nutzbarer Video-Encoder auf diesem Gerät</string>
+    <string name="video_msg_software_encoder_only">Kein Hardware-Encoder auf diesem Gerät; die Komprimierung dauert länger</string>
+    <string name="video_msg_out_of_space">Nicht genügend Speicher</string>
+    <string name="video_msg_transcode_failed">Komprimierung fehlgeschlagen. Versuche es erneut.</string>
+    <string name="video_msg_cancelled">Abgebrochen</string>
+    <string name="video_msg_done">Komprimierung abgeschlossen</string>
+    <string name="video_msg_saved">In Galerie gespeichert (Movies/Foolproof)</string>
+    <string name="video_msg_save_failed">Speichern in Galerie fehlgeschlagen</string>
+    <string name="video_msg_save_unsupported">Diese Systemversion unterstützt das direkte Speichern in der Galerie nicht</string>
+    <string name="video_msg_long_video">Langes oder großes Video – schneide zuerst einen Ausschnitt zu und komprimiere dann</string>
+    <string name="video_msg_larger_than_source">Die Ausgabe ist größer als das Original (die Quelle ist bereits klein). Wähle eine stärkere Komprimierungsvoreinstellung.</string>
+</resources>

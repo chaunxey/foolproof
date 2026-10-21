@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="video_title">បង្ហាប់វីដេអូ</string>
+    <string name="video_pick">ជ្រើសរើសវីដេអូ</string>
+    <string name="video_repick">ជ្រើសរើសម្តងទៀត</string>
+    <string name="video_start">ចាប់ផ្តើមបង្ហាប់</string>
+    <string name="video_restart">បង្ហាប់ម្តងទៀត</string>
+    <string name="video_cancel">បោះបង់</string>
+    <string name="video_preview_result">មើលលទ្ធផលជាមុន</string>
+    <string name="video_share">ចែករំលែក</string>
+    <string name="video_save_to_gallery">រក្សាទុកទៅវិចិត្រសាល</string>
+    <string name="video_compressing">កំពុងបង្ហាប់ %1$d%% · ការចាកចេញពីទំព័រនេះនឹងបោះបង់</string>
+
+    <string name="video_meta">%1$s · %2$s · %3$dx%4$d · %5$dfps</string>
+
+    <string name="video_result_source">រួចរាល់៖ %1$s → %2$s · %3$s</string>
+    <string name="video_result_source_saved">រួចរាល់៖ %1$s → %2$s · %3$s (សន្សំបាន %4$s)</string>
+    <string name="video_result_source_larger">រួចរាល់៖ %1$s → %2$s · %3$s (%4$s ធំជាងឯកសារដើម)</string>
+    <string name="video_result_only">រួចរាល់៖ %1$s · %2$s</string>
+
+    <string name="video_resolution">គុណភាពបង្ហាញ</string>
+    <string name="video_bitrate">អត្រាប៊ីត</string>
+    <string name="video_bitrate_high">ខ្ពស់</string>
+    <string name="video_bitrate_medium">មធ្យម</string>
+    <string name="video_bitrate_low">ទាប</string>
+    <string name="video_preset_summary">%1$s · %2$s (%3$s Mbps)</string>
+    <string name="video_preset_detail">%1$s · %2$dfps · %3$s · ប្រមាណ %4$s</string>
+
+    <string name="video_trim_range">ក្លិប %1$s / សរុប %2$s</string>
+
+    <string name="video_preview_play">លេង</string>
+    <string name="video_preview_progress">កំពុងលេង %1$d%%</string>
+
+    <string name="video_result_title">លទ្ធផលបង្ហាប់</string>
+    <string name="video_close">បិទ</string>
+    <string name="video_size_duration">%1$s · %2$s</string>
+    <string name="video_size_duration_compare">%1$s → %2$s · %3$s</string>
+
+    <string name="video_msg_source_unreadable">មិនអាចអានវីដេអូនេះបានទេ</string>
+    <string name="video_msg_no_encoder">គ្មានអ៊ិនកូឌ័រវីដេអូដែលអាចប្រើបាននៅលើឧបករណ៍នេះទេ</string>
+    <string name="video_msg_software_encoder_only">គ្មានអ៊ិនកូឌ័រផ្នែករឹងនៅលើឧបករណ៍នេះទេ ការបង្ហាប់នឹងយូរជាងធម្មតា</string>
+    <string name="video_msg_out_of_space">ទំហំផ្ទុកមិនគ្រប់គ្រាន់</string>
+    <string name="video_msg_transcode_failed">ការបង្ហាប់បរាជ័យ។ សូមព្យាយាមម្តងទៀត។</string>
+    <string name="video_msg_cancelled">បានបោះបង់</string>
+    <string name="video_msg_done">ការបង្ហាប់បានបញ្ចប់</string>
+    <string name="video_msg_saved">បានរក្សាទុកទៅវិចិត្រសាល (Movies/Foolproof)</string>
+    <string name="video_msg_save_failed">មិនអាចរក្សាទុកទៅវិចិត្រសាលបានទេ</string>
+    <string name="video_msg_save_unsupported">កំណែប្រព័ន្ធនេះមិនគាំទ្រការរក្សាទុកដោយផ្ទាល់ទៅវិចិត្រសាលទេ</string>
+    <string name="video_msg_long_video">វីដេអូវែង ឬធំ — សូមកាត់ជាក្លិបខ្លីជាមុន រួចទើបបង្ហាប់</string>
+    <string name="video_msg_larger_than_source">លទ្ធផលធំជាងឯកសារដើម (ប្រភពមានទំហំតូចរួចហើយ)។ សូមសាកល្បងកម្រិតបង្ហាប់ខ្ពស់ជាងនេះ។</string>
+</resources>

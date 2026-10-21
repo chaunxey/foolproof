@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="compression_title">Bildkomprimierung</string>
+    <string name="compression_pick_image">Bilder auswählen</string>
+    <string name="compression_reselect">Erneut auswählen</string>
+    <string name="compression_start">Komprimierung starten</string>
+    <string name="compression_reset">Zurücksetzen</string>
+    <string name="compression_cancel">Abbrechen</string>
+    <string name="compression_clear">Leeren</string>
+
+    <string name="compression_quality">Qualität %1$d</string>
+    <string name="compression_estimate">Gesch. %1$s</string>
+    <string name="compression_estimate_separator">"  ·  %1$s"</string>
+    <string name="compression_estimating">Wird geschätzt…</string>
+
+    <string name="compression_progress">%1$d ausgewählt, %2$d fertig</string>
+    <string name="compression_progress_saved">%1$d ausgewählt, %2$d fertig, %3$s gespart</string>
+
+    <string name="compression_size_compare">%1$s → %2$s</string>
+
+    <string name="compression_retry">Erneut versuchen</string>
+    <string name="compression_save_to_gallery">In Galerie speichern</string>
+    <string name="compression_share">Teilen</string>
+    <string name="compression_status_pending">Wartet</string>
+    <string name="compression_status_running">Wird komprimiert…</string>
+    <string name="compression_status_success">Fertig, %1$d%% gespart</string>
+    <string name="compression_status_no_gain">Keine Einsparung (nicht kleiner)</string>
+    <string name="compression_status_failed">Fehlgeschlagen: %1$s</string>
+    <string name="compression_status_unsupported">Format wird von diesem System nicht unterstützt</string>
+
+    <string name="compression_failure_decode">Decodierung fehlgeschlagen</string>
+    <string name="compression_failure_io">Lesen/Schreiben fehlgeschlagen</string>
+    <string name="compression_failure_format">Format nicht unterstützt</string>
+    <string name="compression_failure_unknown">Unbekannter Fehler</string>
+
+    <string name="compression_msg_nothing_selected">Keine Bilder ausgewählt</string>
+    <string name="compression_msg_read_failed">Die ausgewählten Bilder konnten nicht gelesen werden (Format- oder Berechtigungsproblem)</string>
+    <string name="compression_msg_saved">In Galerie gespeichert (Pictures/Foolproof)</string>
+    <string name="compression_msg_share_failed">Teilen fehlgeschlagen</string>
+    <string name="compression_msg_save_failed">Speichern in Galerie fehlgeschlagen</string>
+    <string name="compression_msg_save_unsupported">Diese Systemversion unterstützt das direkte Speichern in der Galerie nicht</string>
+</resources>

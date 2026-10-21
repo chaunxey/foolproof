@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bottom navigation -->
+    <string name="tab_images">រូបភាព</string>
+    <string name="tab_videos">វីដេអូ</string>
+    <string name="tab_converter">បម្លែង</string>
+</resources>

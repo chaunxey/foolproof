@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="compression_title">画像圧縮</string>
+    <string name="compression_pick_image">画像を選択</string>
+    <string name="compression_reselect">選び直す</string>
+    <string name="compression_start">圧縮を開始</string>
+    <string name="compression_reset">リセット</string>
+    <string name="compression_cancel">キャンセル</string>
+    <string name="compression_clear">クリア</string>
+
+    <string name="compression_quality">品質 %1$d</string>
+    <string name="compression_estimate">推定 %1$s</string>
+    <string name="compression_estimate_separator">"  ·  %1$s"</string>
+    <string name="compression_estimating">推定中…</string>
+
+    <string name="compression_progress">%1$d 件選択、%2$d 件完了</string>
+    <string name="compression_progress_saved">%1$d 件選択、%2$d 件完了、%3$s 節約</string>
+
+    <string name="compression_size_compare">%1$s → %2$s</string>
+
+    <string name="compression_retry">再試行</string>
+    <string name="compression_save_to_gallery">ギャラリーに保存</string>
+    <string name="compression_share">共有</string>
+    <string name="compression_status_pending">待機中</string>
+    <string name="compression_status_running">圧縮中…</string>
+    <string name="compression_status_success">完了、%1$d%% 削減</string>
+    <string name="compression_status_no_gain">削減なし（サイズは小さくなりません）</string>
+    <string name="compression_status_failed">失敗：%1$s</string>
+    <string name="compression_status_unsupported">このシステムでは未対応の形式です</string>
+
+    <string name="compression_failure_decode">デコードに失敗</string>
+    <string name="compression_failure_io">読み書きに失敗</string>
+    <string name="compression_failure_format">未対応の形式</string>
+    <string name="compression_failure_unknown">不明なエラー</string>
+
+    <string name="compression_msg_nothing_selected">画像が選択されていません</string>
+    <string name="compression_msg_read_failed">選択した画像を読み込めませんでした（形式または権限の問題）</string>
+    <string name="compression_msg_saved">ギャラリーに保存しました（Pictures/Foolproof）</string>
+    <string name="compression_msg_share_failed">共有に失敗しました</string>
+    <string name="compression_msg_save_failed">ギャラリーに保存できませんでした</string>
+    <string name="compression_msg_save_unsupported">このシステムバージョンではギャラリーへの直接保存に対応していません</string>
+</resources>

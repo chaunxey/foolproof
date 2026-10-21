@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="conversion_title">Fichiers en PDF</string>
+    <string name="conversion_reset">Réinitialiser</string>
+    <string name="conversion_mode_images">Images</string>
+    <string name="conversion_mode_text">Texte / Markdown</string>
+    <string name="conversion_pick_images">Choisir des images</string>
+    <string name="conversion_add_images">Ajouter</string>
+    <string name="conversion_pick_text">Choisir un texte / Markdown</string>
+    <string name="conversion_repick">Choisir à nouveau</string>
+    <string name="conversion_cancel">Annuler</string>
+    <string name="conversion_start">Créer le PDF</string>
+    <string name="conversion_open">Ouvrir</string>
+    <string name="conversion_share">Partager</string>
+    <string name="conversion_save_to_downloads">Enregistrer dans Downloads</string>
+
+    <string name="conversion_per_page">%1$d par page</string>
+    <string name="conversion_images_summary">%1$d sélectionnées (max. %2$d). Touchez le coin supérieur droit d\'une vignette pour la retirer.</string>
+    <string name="conversion_move_up">Déplacer vers le haut</string>
+
+    <string name="conversion_text_meta">%1$s · %2$s</string>
+
+    <string name="conversion_generating">Génération %1$d/%2$d · quitter cette page annule</string>
+    <string name="conversion_result_meta">%1$s · %2$s · %3$d pages</string>
+    <string name="conversion_preview_page_desc">Aperçu de la page %1$d</string>
+    <string name="conversion_preview_page_label">Page %1$d sur %2$d</string>
+
+    <string name="conversion_msg_done">PDF créé</string>
+    <string name="conversion_msg_cancelled">Annulé</string>
+    <string name="conversion_msg_no_content">Rien à convertir</string>
+    <string name="conversion_msg_unreadable">Impossible de lire le contenu sélectionné</string>
+    <string name="conversion_msg_unsupported_encoding">Encodage de texte non pris en charge. Enregistrez en UTF-8 et réessayez.</string>
+    <string name="conversion_msg_out_of_space">Espace de stockage insuffisant</string>
+    <string name="conversion_msg_heic_unsupported">HEIC non pris en charge sur cette version du système ; fichier ignoré</string>
+    <string name="conversion_msg_generation_failed">Échec de la génération. Réessayez.</string>
+    <string name="conversion_msg_saved">Enregistré dans Downloads/Foolproof</string>
+    <string name="conversion_msg_save_failed">Enregistrement impossible</string>
+    <string name="conversion_msg_save_unsupported">Cette version du système ne permet pas la sauvegarde dans Downloads</string>
+    <string name="conversion_msg_too_many_images">50 images maximum</string>
+    <string name="conversion_msg_text_too_large">Fichier texte trop volumineux (limite 2 MB)</string>
+    <string name="conversion_msg_no_share_app">Aucune application pour partager</string>
+    <string name="conversion_msg_no_pdf_app">Aucune application pour ouvrir les PDF</string>
+</resources>

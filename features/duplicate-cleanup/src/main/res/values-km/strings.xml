@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="duplicates_title">សម្អាតរូបថតស្ទួន</string>
+    <string name="duplicates_scan_start">ស្វែងរករូបថតស្ទួន</string>
+    <string name="duplicates_scan_again">ស្វែងរកម្តងទៀត</string>
+    <string name="duplicates_cancel">បោះបង់</string>
+    <string name="duplicates_grant_and_scan">ផ្តល់ការអនុញ្ញាត ហើយស្វែងរក</string>
+    <string name="duplicates_open_settings">បើកការកំណត់</string>
+    <string name="duplicates_clear_selection">សម្អាតជម្រើស</string>
+    <string name="duplicates_delete">លុប</string>
+
+    <string name="duplicates_scanning">កំពុងស្កេន %1$d/%2$d</string>
+    <string name="duplicates_scan_done">បានស្កេនរូបថត %1$d រូប, រំលង %2$d រូប</string>
+    <string name="duplicates_scan_cancelled">បានបោះបង់</string>
+    <string name="duplicates_scan_failed">ការស្កេនបរាជ័យ</string>
+
+    <string name="duplicates_selected_summary">បានជ្រើសរើស %1$d · %2$s</string>
+    <string name="duplicates_results_hint">លទ្ធផលនៅខាងក្រោម។ ចុចលើរូបតូចដើម្បីពង្រីក។</string>
+
+    <string name="duplicates_hint_no_duplicates">រកមិនឃើញរូបថតស្ទួនទេ</string>
+    <string name="duplicates_hint_cancelled">បានបោះបង់។ អ្នកអាចស្វែងរកម្តងទៀត។</string>
+    <string name="duplicates_hint_idle">ចុច “%1$s” ដើម្បីស្កេនវិចិត្រសាលរករូបថតស្ទួន</string>
+
+    <string name="duplicates_delete_title">បញ្ជាក់ការលុប</string>
+    <string name="duplicates_delete_message">នឹងលុបរូបថត %1$d រូប ប្រមាណ %2$s</string>
+    <string name="duplicates_delete_irreversible">រូបថតដែលបានលុបមិនអាចយកមកវិញបានទេ នៅលើកំណែប្រព័ន្ធនេះ</string>
+
+    <string name="duplicates_group_summary">រូបថត %1$d រូប · អាចដកវិញបាន %2$s</string>
+    <string name="duplicates_limit_hint">លទ្ធផលច្រើន — បង្ហាញតែរូបថត %1$d ដំបូង។ សូមស្វែងរកម្តងទៀតបន្ទាប់ពីលុប ដើម្បីបន្ត។</string>
+
+    <string name="duplicates_preview_close_hint">ចុចកន្លែងណាមួយដើម្បីបិទ</string>
+
+    <string name="duplicates_msg_empty_gallery">គ្មានរូបថតដែលអាចអានបានក្នុងវិចិត្រសាលរបស់អ្នកទេ</string>
+    <string name="duplicates_msg_no_duplicates">រកមិនឃើញរូបថតស្ទួនទេ</string>
+    <string name="duplicates_msg_scan_failed">ការស្កេនបរាជ័យ។ សូមព្យាយាមម្តងទៀត។</string>
+    <string name="duplicates_msg_permission_denied">ត្រូវការការអនុញ្ញាតចូលប្រើរូបថត ដើម្បីស្កេន</string>
+    <string name="duplicates_msg_permission_denied_forever">ការអនុញ្ញាតត្រូវបានបដិសេធជាអចិន្ត្រៃយ៍។ សូមបើកវានៅក្នុងការកំណត់ប្រព័ន្ធ។</string>
+    <string name="duplicates_msg_saf_required">សូមផ្តល់សិទ្ធិចូលប្រើថតឯកសារ មុននឹងលុបនៅលើកំណែប្រព័ន្ធនេះ</string>
+    <string name="duplicates_msg_deleted">បានលុប</string>
+    <string name="duplicates_msg_delete_failed">រូបថតមួយចំនួនមិនអាចលុបបានទេ</string>
+    <string name="duplicates_msg_system_delete_unavailable">សំណើលុបតាមប្រព័ន្ធមិនអាចប្រើបានទេ</string>
+</resources>

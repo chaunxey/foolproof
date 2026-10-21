@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="duplicates_title">重複写真の整理</string>
+    <string name="duplicates_scan_start">重複写真を検索</string>
+    <string name="duplicates_scan_again">再検索</string>
+    <string name="duplicates_cancel">キャンセル</string>
+    <string name="duplicates_grant_and_scan">アクセスを許可して検索</string>
+    <string name="duplicates_open_settings">設定を開く</string>
+    <string name="duplicates_clear_selection">選択をクリア</string>
+    <string name="duplicates_delete">削除</string>
+
+    <string name="duplicates_scanning">スキャン中 %1$d/%2$d</string>
+    <string name="duplicates_scan_done">%1$d 枚をスキャン、%2$d 枚をスキップ</string>
+    <string name="duplicates_scan_cancelled">キャンセルしました</string>
+    <string name="duplicates_scan_failed">スキャンに失敗しました</string>
+
+    <string name="duplicates_selected_summary">%1$d 枚選択 · %2$s</string>
+    <string name="duplicates_results_hint">結果は下に表示されます。サムネイルをタップすると拡大できます。</string>
+
+    <string name="duplicates_hint_no_duplicates">重複写真は見つかりませんでした</string>
+    <string name="duplicates_hint_cancelled">キャンセルしました。再検索できます。</string>
+    <string name="duplicates_hint_idle">「%1$s」をタップして、ギャラリー内の重複写真をスキャンします</string>
+
+    <string name="duplicates_delete_title">削除の確認</string>
+    <string name="duplicates_delete_message">%1$d 枚の写真（約 %2$s）を削除します</string>
+    <string name="duplicates_delete_irreversible">このシステムバージョンでは、削除した写真を復元できません</string>
+
+    <string name="duplicates_group_summary">%1$d 枚 · %2$s を解放できます</string>
+    <string name="duplicates_limit_hint">結果が多いため、最初の %1$d 枚を表示しています。削除後に再検索すると続きを確認できます。</string>
+
+    <string name="duplicates_preview_close_hint">どこかをタップすると閉じます</string>
+
+    <string name="duplicates_msg_empty_gallery">ギャラリーに読み取り可能な写真がありません</string>
+    <string name="duplicates_msg_no_duplicates">重複写真は見つかりませんでした</string>
+    <string name="duplicates_msg_scan_failed">スキャンに失敗しました。もう一度お試しください。</string>
+    <string name="duplicates_msg_permission_denied">スキャンには写真へのアクセス権限が必要です</string>
+    <string name="duplicates_msg_permission_denied_forever">権限が完全に拒否されています。システム設定で有効にしてください。</string>
+    <string name="duplicates_msg_saf_required">このシステムバージョンでは、削除する前にフォルダーへのアクセス許可が必要です</string>
+    <string name="duplicates_msg_deleted">削除しました</string>
+    <string name="duplicates_msg_delete_failed">一部の写真を削除できませんでした</string>
+    <string name="duplicates_msg_system_delete_unavailable">システムの削除リクエストを利用できません</string>
+</resources>

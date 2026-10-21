@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="compression_title">បង្ហាប់រូបភាព</string>
+    <string name="compression_pick_image">ជ្រើសរើសរូបភាព</string>
+    <string name="compression_reselect">ជ្រើសរើសម្តងទៀត</string>
+    <string name="compression_start">ចាប់ផ្តើមបង្ហាប់</string>
+    <string name="compression_reset">កំណត់ឡើងវិញ</string>
+    <string name="compression_cancel">បោះបង់</string>
+    <string name="compression_clear">សម្អាត</string>
+
+    <string name="compression_quality">គុណភាព %1$d</string>
+    <string name="compression_estimate">ប្រមាណ %1$s</string>
+    <string name="compression_estimate_separator">"  ·  %1$s"</string>
+    <string name="compression_estimating">កំពុងប៉ាន់ស្មាន…</string>
+
+    <string name="compression_progress">បានជ្រើសរើស %1$d, រួចរាល់ %2$d</string>
+    <string name="compression_progress_saved">បានជ្រើសរើស %1$d, រួចរាល់ %2$d, សន្សំបាន %3$s</string>
+
+    <string name="compression_size_compare">%1$s → %2$s</string>
+
+    <string name="compression_retry">ព្យាយាមម្តងទៀត</string>
+    <string name="compression_save_to_gallery">រក្សាទុកទៅវិចិត្រសាល</string>
+    <string name="compression_share">ចែករំលែក</string>
+    <string name="compression_status_pending">កំពុងរង់ចាំ</string>
+    <string name="compression_status_running">កំពុងបង្ហាប់…</string>
+    <string name="compression_status_success">រួចរាល់ សន្សំបាន %1$d%%</string>
+    <string name="compression_status_no_gain">គ្មានផលចំណេញ (មិនតូចជាង)</string>
+    <string name="compression_status_failed">បរាជ័យ៖ %1$s</string>
+    <string name="compression_status_unsupported">ទម្រង់នេះមិនត្រូវបានគាំទ្រនៅលើប្រព័ន្ធនេះទេ</string>
+
+    <string name="compression_failure_decode">ឌិកូដបរាជ័យ</string>
+    <string name="compression_failure_io">អាន/សរសេរបរាជ័យ</string>
+    <string name="compression_failure_format">ទម្រង់មិនត្រូវបានគាំទ្រ</string>
+    <string name="compression_failure_unknown">កំហុសមិនស្គាល់</string>
+
+    <string name="compression_msg_nothing_selected">មិនបានជ្រើសរើសរូបភាពទេ</string>
+    <string name="compression_msg_read_failed">មិនអាចអានរូបភាពដែលបានជ្រើសរើសបានទេ (បញ្ហាទម្រង់ ឬការអនុញ្ញាត)</string>
+    <string name="compression_msg_saved">បានរក្សាទុកទៅវិចិត្រសាល (Pictures/Foolproof)</string>
+    <string name="compression_msg_share_failed">ការចែករំលែកបរាជ័យ</string>
+    <string name="compression_msg_save_failed">មិនអាចរក្សាទុកទៅវិចិត្រសាលបានទេ</string>
+    <string name="compression_msg_save_unsupported">កំណែប្រព័ន្ធនេះមិនគាំទ្រការរក្សាទុកដោយផ្ទាល់ទៅវិចិត្រសាលទេ</string>
+</resources>
