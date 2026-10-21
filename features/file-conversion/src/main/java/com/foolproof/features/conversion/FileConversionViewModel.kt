@@ -10,14 +10,14 @@ import com.foolproof.features.conversion.domain.PdfImageLoader
 import com.foolproof.features.conversion.domain.PdfPageSpec
 import com.foolproof.features.conversion.domain.PdfProgress
 import com.foolproof.features.conversion.domain.PdfSource
-import com.foolproof.features.conversion.data.MediaStorePdfExporter
+import com.foolproof.features.conversion.domain.PdfExporter
 import java.io.File
 import kotlinx.coroutines.Job
 
 class FileConversionViewModel(
     private val converter: PdfConverter,
     private val imageLoader: PdfImageLoader,
-    private val exporter: MediaStorePdfExporter,
+    private val exporter: PdfExporter,
     private val outputDir: File,
     private val log: LogUtil,
 ) : BaseViewModel<FileConversionUiState, ConversionEffect>(

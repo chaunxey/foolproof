@@ -1,4 +1,4 @@
-package com.foolproof.features.conversion.domain
+﻿package com.foolproof.features.conversion.domain
 
 /** 可转 PDF 的内容来源（宪法 §3.3：图片 / 文本两类）。 */
 sealed interface PdfSource {
@@ -102,3 +102,8 @@ interface PdfTextLoader {
 class HeicUnsupportedException : Exception("HEIC not supported on this API level")
 
 class UnsupportedEncodingException : Exception("cannot decode text")
+/** 导出器接口（spec FR-019：生成/导出链路可替换，便于单测）。 */
+interface PdfExporter {
+    fun canSaveToDownloads(): Boolean
+    fun save(path: String): Boolean
+}

@@ -1,4 +1,4 @@
-package com.foolproof.features.conversion.data
+﻿package com.foolproof.features.conversion.data
 
 import android.content.ContentValues
 import android.content.Context
@@ -12,11 +12,11 @@ import java.io.File
 class MediaStorePdfExporter(
     private val context: Context,
     private val log: LogUtil,
-) {
+) : com.foolproof.features.conversion.domain.PdfExporter {
 
-    fun canSaveToDownloads(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+    override fun canSaveToDownloads(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
 
-    fun save(path: String): Boolean {
+    override fun save(path: String): Boolean {
         if (!canSaveToDownloads()) return false
         val source = File(path)
         if (!source.exists()) return false
