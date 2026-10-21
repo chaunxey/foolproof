@@ -37,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,12 +74,26 @@ internal fun TrimTimeline(
     // 选中视频后不自动播放：由用户点【播放】才开始（避免一进页面就出声）
     var isPlaying by remember(videoId) { mutableStateOf(false) }
     var positionMs by remember(videoId) { mutableStateOf(startMs) }
+    // 播放结束回调是在 factory 里注册的，用 updatedState 保证拿到最新的裁剪起点
+    val latestStartMs by rememberUpdatedState(startMs)
 
     // 播放时轮询位置（VideoView 没有位置回调）；暂停时保留当前位置，进度条不回跳
     LaunchedEffect(isPlaying, startMs, endMs) {
         if (!isPlaying) return@LaunchedEffect
         while (true) {
-            videoView?.let { positionMs = it.currentPosition.toLong() }
+            val view = videoView
+            if (view != null) {
+                val position = view.currentPosition.toLong()
+                // 播到裁剪终点就停：暂停并回到起点，与「只裁这一段」的语义一致
+                if (position >= endMs) {
+                    view.pause()
+                    view.seekTo(startMs.toInt())
+                    positionMs = startMs
+                    isPlaying = false
+                    break
+                }
+                positionMs = position
+            }
             delay(100)
         }
     }
@@ -130,7 +145,12 @@ internal fun TrimTimeline(
                             player.isLooping = false
                             seekTo(startMs.toInt())
                         }
-                        setOnCompletionListener { isPlaying = false }
+                        setOnCompletionListener {
+                            // 播到文件末尾（通常就是裁剪终点之后）：停下来并回到起点
+                            isPlaying = false
+                            seekTo(latestStartMs.toInt())
+                            positionMs = latestStartMs
+                        }
                         videoView = this
                     }
                 },
