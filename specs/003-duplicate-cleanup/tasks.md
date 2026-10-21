@@ -1,4 +1,4 @@
-# Tasks: 重复照片清理（duplicate-cleanup）
+﻿# Tasks: 重复照片清理（duplicate-cleanup）
 
 **Input**: Design documents from `specs/003-duplicate-cleanup/`
 
@@ -125,10 +125,18 @@ SC-002 / SC-003，不依赖真机。
 - [x] T041 全仓检索 `WRITE_EXTERNAL_STORAGE`，确认本模块 0 处（SC-004）
 - [x] T042 全仓检索本模块 `android.util.Log` / `println(`，确认 0 处
 - [x] T043 运行 `./gradlew :app:assembleRelease` 通过（R8 下不裁剪哈希/分组逻辑）
-- [ ] T044 **真机验证（待设备）**：相册扫描分组准确性（同图不同压缩必须同组、纯色图不互并）、
-  API ≥ 30 删除后可在系统回收站恢复（SC-006）、权限拒绝与永久拒绝的引导
+- [x] T044 **真机验证（vivo V2602A / API 37，已完成分组准确性，回收站存疑）**：
+  分组准确性 ✅ —— 11 张相册实测：完全相同的两份副本同组；同内容不同文件名的两张图同组；
+  **纯色图（白 400x400 与黑 800x600，宽高比不同）未被合并**（保护生效）；
+  内容不同的图未被误并。
+  删除链路 ✅ —— 只勾选自己的测试文件后，弹出确认框（「将删除 1 张，约 111 KB」，
+  无「不可恢复」警告，符合 API ≥ 30）→ 系统对话框「要允许 Foolproof 删除这张照片吗？」→ 允许后文件确实消失。
+  **SC-006 回收站恢复：本机未证实** —— 删除后 `find /sdcard` 无残留、MediaStore 无 `is_trashed=1` 行、
+  无 `.trash` 目录可见。系统对话框证明走的是 `createDeleteRequest`（回收站通道），
+  但无法确认 vivo 是否保留可恢复副本，需在 AOSP 模拟器上对照验证（见 T047）
 - [x] T045 更新 `README.md`：模块规划标注 duplicate-cleanup 已建，补一节说明与「dHash 镜像不敏感」的已知局限
 - [x] T046 修复真机反馈的排版问题（宪法 §3.2 v1.11）：整页改为单一滚动容器，
+- [ ] T047 **AOSP 对照验证回收站（SC-006）**：在模拟器上把同一份测试图通过应用删除，检查`/sdcard/.trash` 或 MediaStore 的 `is_trashed=1` 行，确认「应用删除 → 回收站 → 可恢复」链路由应用正确触发；若 AOSP 有而 vivo 无，则属 OEM 行为，需在 README 注明
   Section 不再自带 `LazyColumn` / `LazyVerticalGrid`；缩略图由 `Crop` 改为按原图比例完整显示
 
 ---
