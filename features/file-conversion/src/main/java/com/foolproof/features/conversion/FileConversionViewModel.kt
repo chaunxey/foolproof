@@ -44,6 +44,10 @@ class FileConversionViewModel(
                 state.copy(images = remaining, phase = ConversionPhase.Idle)
             }
 
+            is ConversionAction.PerPageChanged -> updateState {
+                it.copy(perPage = action.perPage.coerceIn(1, 4), phase = ConversionPhase.Idle)
+            }
+
             is ConversionAction.MoveImage -> updateState { state ->
                 val list = state.images.toMutableList()
                 if (action.from in list.indices && action.to in list.indices) {
@@ -118,6 +122,7 @@ class FileConversionViewModel(
             ConversionMode.IMAGES -> PdfConvertRequest.FromImages(
                 images = state.images,
                 outputPath = nextOutputPath(),
+                perPage = state.perPage,
             )
 
             ConversionMode.TEXT -> PdfConvertRequest.FromText(

@@ -1,4 +1,4 @@
-package com.foolproof.features.conversion
+﻿package com.foolproof.features.conversion
 
 import com.foolproof.base.mvi.UiAction
 import com.foolproof.base.mvi.UiEffect
@@ -26,6 +26,8 @@ data class FileConversionUiState(
     val phase: ConversionPhase = ConversionPhase.Idle,
     /** API ≥ 29 才显示【存到下载】（宪法 §8：低版本需要写权限）。 */
     val canSaveToDownloads: Boolean = false,
+    /** 每页放几张图（1/2/4）。 */
+    val perPage: Int = 1,
 ) : UiState {
 
     val isConverting: Boolean get() = phase is ConversionPhase.Converting
@@ -45,6 +47,7 @@ sealed interface ConversionAction : UiAction {
     data class ImagesPicked(val uris: List<String>) : ConversionAction
     data class RemoveImage(val index: Int) : ConversionAction
     data class MoveImage(val from: Int, val to: Int) : ConversionAction
+    data class PerPageChanged(val perPage: Int) : ConversionAction
     data class TextPicked(val uri: String, val displayName: String, val bytes: Long) : ConversionAction
     data object Start : ConversionAction
     data object Cancel : ConversionAction

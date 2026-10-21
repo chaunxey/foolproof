@@ -1,4 +1,4 @@
-package com.foolproof.features.conversion.data
+﻿package com.foolproof.features.conversion.data
 
 import android.graphics.Canvas
 import android.graphics.Color
@@ -86,27 +86,70 @@ class NativePdfGenerator(
         document: PdfDocument,
         request: PdfConvertRequest.FromImages,
     ): Int {
+        val perPage = request.perPage.coerceIn(1, 4)
         var page = 0
-        for (image in request.images) {
+        request.images.chunked(perPage).forEachIndexed { pageIndex, group ->
             if (cancelled) throw ConversionCancelled()
-            page++
-            emit(PdfProgress.Running(page, request.images.size))
+            page = pageIndex + 1
+            emit(PdfProgress.Running(page * group.size, request.images.size))
 
-            val bitmap = imageLoader.load(image.uri)
-            try {
-                val pageInfo = PdfDocument.PageInfo
-                    .Builder(PdfPageSpec.WIDTH_PT, PdfPageSpec.HEIGHT_PT, page)
-                    .create()
-                val pdfPage = document.startPage(pageInfo)
-                drawImageCentered(pdfPage.canvas, bitmap)
-                document.finishPage(pdfPage)
-            } finally {
-                bitmap.recycle()
+            val pageInfo = PdfDocument.PageInfo
+                .Builder(PdfPageSpec.WIDTH_PT, PdfPageSpec.HEIGHT_PT, page)
+                .create()
+            val pdfPage = document.startPage(pageInfo)
+            val cells = gridCells(perPage)
+            group.forEachIndexed { index, image ->
+                val bitmap = imageLoader.load(image.uri)
+                try {
+                    drawImageInCell(pdfPage.canvas, bitmap, cells[index])
+                } finally {
+                    bitmap.recycle()
+                }
             }
+            document.finishPage(pdfPage)
         }
         return page
     }
 
+    /** 按每页张数计算各格子的绘制区域（含 6pt 间隔）。 */    private fun gridCells(perPage: Int): List<RectF> {
+        val left = PdfPageSpec.IMAGE_MARGIN_PT
+        val top = PdfPageSpec.IMAGE_MARGIN_PT
+        val width = PdfPageSpec.WIDTH_PT - left * 2
+        val height = PdfPageSpec.HEIGHT_PT - top * 2
+        val gap = 6f
+        return when (perPage) {
+            1 -> listOf(RectF(left, top, left + width, top + height))
+            2 -> {
+                val cellHeight = (height - gap) / 2
+                (0..1).map { i ->
+                    val y = top + i * (cellHeight + gap)
+                    RectF(left, y, left + width, y + cellHeight)
+                }
+            }
+            else -> {
+                val cellWidth = (width - gap) / 2
+                val cellHeight = (height - gap) / 2
+                (0..3).map { i ->
+                    val col = i % 2
+                    val row = i / 2
+                    val x = left + col * (cellWidth + gap)
+                    val y = top + row * (cellHeight + gap)
+                    RectF(x, y, x + cellWidth, y + cellHeight)
+                }
+            }
+        }
+    }
+
+    private fun drawImageInCell(canvas: Canvas, bitmap: android.graphics.Bitmap, cell: RectF) {
+        val scale = minOf(cell.width() / bitmap.width, cell.height() / bitmap.height)
+        val drawWidth = bitmap.width * scale
+        val drawHeight = bitmap.height * scale
+        val left = cell.left + (cell.width() - drawWidth) / 2f
+        val top = cell.top + (cell.height() - drawHeight) / 2f
+        canvas.drawBitmap(bitmap, null, RectF(left, top, left + drawWidth, top + drawHeight), null)
+    }
+
+    @Suppress("unused")
     private fun drawImageCentered(canvas: Canvas, bitmap: android.graphics.Bitmap) {
         val availWidth = PdfPageSpec.WIDTH_PT - PdfPageSpec.IMAGE_MARGIN_PT * 2
         val availHeight = PdfPageSpec.HEIGHT_PT - PdfPageSpec.IMAGE_MARGIN_PT * 2

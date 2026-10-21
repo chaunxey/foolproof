@@ -67,6 +67,8 @@ sealed interface PdfConvertRequest {
     data class FromImages(
         val images: List<PdfSource.Image>,
         override val outputPath: String,
+        /** 每页放几张图（1/2/4），排版为 1 行 1 张、2 行 1 张、2x2 网格。 */
+        val perPage: Int = 1,
     ) : PdfConvertRequest
 
     data class FromText(

@@ -147,6 +147,16 @@ fun FileConversionSection(
                 }
 
                 if (state.images.isNotEmpty()) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(1, 2, 4).forEach { per ->
+                            FilterChip(
+                                selected = state.perPage == per,
+                                onClick = { viewModel.dispatch(ConversionAction.PerPageChanged(per)) },
+                                enabled = !state.isConverting,
+                                label = { Text("每页 $per 张") },
+                            )
+                        }
+                    }
                     Text(
                         text = "已选 ${state.images.size} 张（最多 50 张），点缩略图右上角可删除",
                         style = MaterialTheme.typography.bodySmall,
