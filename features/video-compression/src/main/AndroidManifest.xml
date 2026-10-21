@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  视频压缩：选视频走系统 Photo Picker（零权限）；存相册经 MediaStore（API 29+，同样零权限）。
+  绝不申请任何存储写权限（宪法 §8）。
+  FileProvider 由 :app 统一声明（authority = <packageName>.files），本模块不重复声明。
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />
+

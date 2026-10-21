@@ -9,6 +9,7 @@ import com.foolproof.features.video.domain.ResolutionTier
 import com.foolproof.features.video.domain.TrimRange
 import com.foolproof.features.video.domain.VideoCompressRequest
 import com.foolproof.features.video.domain.VideoCompressor
+import com.foolproof.features.video.domain.VideoExporter
 import com.foolproof.features.video.domain.VideoFailure
 import com.foolproof.features.video.domain.VideoProgress
 import com.foolproof.features.video.domain.VideoReader
@@ -25,6 +26,7 @@ class VideoCompressionViewModel(
     private val reader: VideoReader,
     private val compressor: VideoCompressor,
     private val encoderCatalog: EncoderCatalog,
+    private val exporter: VideoExporter,
     private val outputDir: File,
     private val log: LogUtil,
 ) : BaseViewModel<VideoUiState, VideoEffect>(VideoUiState(), log) {
@@ -42,8 +44,9 @@ class VideoCompressionViewModel(
                 updateState { it.copy(trim = range) }
             }
 
-            is VideoAction.ResolutionChanged -> updateState {
-                it.copy(preset = it.preset.copy(resolution = cappedResolution(action.tier)))
+            is VideoAction.ResolutionChanged -> updateState { state ->
+                val sourceShortSide = state.video?.shortSide ?: Int.MAX_VALUE
+                state.copy(preset = state.preset.copy(resolution = cappedResolution(action.tier, sourceShortSide)))
             }
 
             is VideoAction.BitrateChanged -> updateState {
@@ -53,6 +56,17 @@ class VideoCompressionViewModel(
             VideoAction.Start -> startCompression()
 
             VideoAction.Cancel -> cancelCompression()
+
+            VideoAction.Share -> {
+                val path = currentState.output?.path
+                if (path == null) {
+                    sendEffect(VideoEffect.Message(VideoEffect.MessageKind.TRANSCODE_FAILED))
+                } else {
+                    sendEffect(VideoEffect.Share(path))
+                }
+            }
+
+            VideoAction.SaveToGallery -> saveToGallery()
 
             VideoAction.Reset -> updateState {
                 it.copy(
@@ -90,9 +104,9 @@ class VideoCompressionViewModel(
                 sendEffect(VideoEffect.Message(VideoEffect.MessageKind.SOFTWARE_ENCODER_ONLY))
             }
 
-            // 档位上限受编码器能力约束（编码器只到 720p 时，1080p 档自动降级）
+            // 档位上限：编码器能力 + 源分辨率（不放大）。两者取小后自动降档，避免界面显示 720p 却按 480p 编码。
             val cappedPreset = currentState.preset.copy(
-                resolution = cappedResolution(currentState.preset.resolution),
+                resolution = cappedResolution(currentState.preset.resolution, video.shortSide),
             )
 
             updateState {
@@ -109,12 +123,43 @@ class VideoCompressionViewModel(
 
     // endregion
 
-    /** 把请求的档位夹到编码器能编码的最大短边以内。 */
-    private fun cappedResolution(requested: ResolutionTier): ResolutionTier {
-        val maxShortSide = encoderCatalog.findEncoder(VIDEO_AVC)?.maxShortSide ?: return requested
-        if (requested.shortSide <= maxShortSide) return requested
+    // region 导出
+
+    private fun saveToGallery() {
+        val output = currentState.output
+        if (output == null) {
+            sendEffect(VideoEffect.Message(VideoEffect.MessageKind.SAVE_FAILED))
+            return
+        }
+        if (!exporter.canSaveToGallery()) {
+            sendEffect(VideoEffect.Message(VideoEffect.MessageKind.SAVE_UNSUPPORTED))
+            return
+        }
+
+        launch {
+            val name = currentState.video?.displayName?.substringBeforeLast('.') ?: "video"
+            val ok = exporter.saveToGallery(output.path, name)
+            sendEffect(
+                VideoEffect.Message(
+                    if (ok) VideoEffect.MessageKind.SAVED else VideoEffect.MessageKind.SAVE_FAILED,
+                ),
+            )
+        }
+    }
+
+    // endregion
+
+    /**
+     * 把请求的档位夹到「编码器能编码」且「不超过源分辨率」的范围内。
+     *
+     * @param sourceShortSide 源视频短边；档位高于它时降档（不放大）
+     */
+    private fun cappedResolution(requested: ResolutionTier, sourceShortSide: Int): ResolutionTier {
+        val encoderMax = encoderCatalog.findEncoder(VIDEO_AVC)?.maxShortSide ?: Int.MAX_VALUE
+        val limit = minOf(encoderMax, if (sourceShortSide > 0) sourceShortSide else Int.MAX_VALUE)
+        if (requested.shortSide <= limit) return requested
         return ResolutionTier.entries
-            .filter { it.shortSide <= maxShortSide }
+            .filter { it.shortSide <= limit }
             .maxByOrNull { it.shortSide }
             ?: ResolutionTier.P480
     }

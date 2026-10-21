@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.video
+package com.foolproof.features.video
 
 import com.foolproof.base.log.LogUtil
 import com.foolproof.features.video.domain.BitrateTier
@@ -8,6 +8,7 @@ import com.foolproof.features.video.domain.ResolutionTier
 import com.foolproof.features.video.domain.SourceVideo
 import com.foolproof.features.video.domain.VideoCompressRequest
 import com.foolproof.features.video.domain.VideoCompressor
+import com.foolproof.features.video.domain.VideoExporter
 import com.foolproof.features.video.domain.VideoFailure
 import com.foolproof.features.video.domain.VideoProgress
 import com.foolproof.features.video.domain.VideoReader
@@ -101,25 +102,41 @@ class VideoCompressionViewModelTest {
         }
     }
 
+    private class FakeExporter(
+        private val canSave: Boolean = true,
+        private val saveResult: Boolean = true,
+    ) : VideoExporter {
+        var savedPath: String? = null
+
+        override fun canSaveToGallery(): Boolean = canSave
+
+        override suspend fun saveToGallery(inputPath: String, displayName: String): Boolean {
+            savedPath = inputPath
+            return saveResult
+        }
+    }
+
     private fun hardwareCapability(maxShortSide: Int = 2160) = EncoderCapability(
         mime = "video/avc",
         name = "c2.mtk.avc.encoder",
         isHardware = true,
-        maxWidth = 7680,
-        maxHeight = 7680,
+        maxWidth = maxShortSide,
+        maxHeight = maxShortSide,
         maxBitrateKbps = 100_000,
         maxFrameRate = 960.0,
-    ).copy(maxWidth = maxShortSide, maxHeight = maxShortSide)
+    )
 
     private fun viewModel(
         reader: VideoReader = FakeReader(sourceVideo()),
         compressor: VideoCompressor = FakeCompressor(),
         catalog: EncoderCatalog = FakeEncoderCatalog(hardwareCapability()),
+        exporter: VideoExporter = FakeExporter(),
         outputDir: File = tempFolder.newFolder("videos"),
     ) = VideoCompressionViewModel(
         reader = reader,
         compressor = compressor,
         encoderCatalog = catalog,
+        exporter = exporter,
         outputDir = outputDir,
         log = LogUtil(enabled = false),
     )
@@ -233,9 +250,9 @@ class VideoCompressionViewModelTest {
 
         val request = compressor.lastRequest
         assertNotNull(request)
-        assertEquals(720, request!!.targetShortSide)          // 默认 720p
-        assertEquals(2_500, request.videoBitrateKbps)         // 中档
-        assertEquals(30, request.frameRate)                   // 源 60fps → 压到 30
+        assertEquals(720, request!!.targetShortSide)
+        assertEquals(2_500, request.videoBitrateKbps)
+        assertEquals(30, request.frameRate)
         assertTrue(request.outputPath.endsWith(".mp4"))
     }
 
@@ -298,7 +315,6 @@ class VideoCompressionViewModelTest {
 
     @Test
     fun `resolution is capped by encoder capability`() = runTest(dispatcher) {
-        // 编码器最大短边只有 720 → 选 1080p 应自动降档
         val vm = viewModel(catalog = FakeEncoderCatalog(hardwareCapability(maxShortSide = 720)))
 
         vm.dispatch(VideoAction.VideoPicked("content://video/1"))
@@ -310,14 +326,88 @@ class VideoCompressionViewModelTest {
     }
 
     @Test
+    fun `resolution is capped by source size to avoid upscaling`() = runTest(dispatcher) {
+        // 源是 640x480（短边 480），选 1080p 应降到 480p，界面不能显示 1080p
+        val vm = viewModel(reader = FakeReader(sourceVideo(width = 640, height = 480)))
+        vm.dispatch(VideoAction.VideoPicked("content://video/1"))
+        advanceUntilIdle()
+
+        assertEquals(ResolutionTier.P480, vm.uiState.value.preset.resolution)
+
+        vm.dispatch(VideoAction.ResolutionChanged(ResolutionTier.P1080))
+        advanceUntilIdle()
+        assertEquals(ResolutionTier.P480, vm.uiState.value.preset.resolution)
+    }
+
+    @Test
     fun `source without audio drops audio in estimate`() = runTest(dispatcher) {
         val vm = viewModel(reader = FakeReader(sourceVideo(hasAudio = false)))
         vm.dispatch(VideoAction.VideoPicked("content://video/1"))
         advanceUntilIdle()
 
         // 720p/中 = 2500kbps，无音频 → 20s = 6.25MB
-        assertEquals(6_250_000L, vm.uiState.value.estimateOrZero())
+        assertEquals(6_250_000L, vm.uiState.value.estimatedBytes)
     }
 
-    private fun VideoUiState.estimateOrZero(): Long = estimatedBytes
+    @Test
+    fun `save to gallery reports success`() = runTest(dispatcher) {
+        val exporter = FakeExporter(canSave = true, saveResult = true)
+        val vm = viewModel(exporter = exporter)
+        val effects = mutableListOf<VideoEffect>()
+        val job = launch { vm.effect.collect { effects += it } }
+        advanceUntilIdle()
+
+        vm.dispatch(VideoAction.VideoPicked("content://video/1"))
+        advanceUntilIdle()
+        vm.dispatch(VideoAction.Start)
+        advanceUntilIdle()
+        vm.dispatch(VideoAction.SaveToGallery)
+        advanceUntilIdle()
+
+        assertNotNull("必须真的调用了导出", exporter.savedPath)
+        assertTrue(
+            effects.any { it is VideoEffect.Message && it.kind == VideoEffect.MessageKind.SAVED },
+        )
+        job.cancel()
+    }
+
+    @Test
+    fun `save is refused below api 29`() = runTest(dispatcher) {
+        val vm = viewModel(exporter = FakeExporter(canSave = false))
+        val effects = mutableListOf<VideoEffect>()
+        val job = launch { vm.effect.collect { effects += it } }
+        advanceUntilIdle()
+
+        vm.dispatch(VideoAction.VideoPicked("content://video/1"))
+        advanceUntilIdle()
+        vm.dispatch(VideoAction.Start)
+        advanceUntilIdle()
+        vm.dispatch(VideoAction.SaveToGallery)
+        advanceUntilIdle()
+
+        assertTrue(
+            effects.any {
+                it is VideoEffect.Message && it.kind == VideoEffect.MessageKind.SAVE_UNSUPPORTED
+            },
+        )
+        job.cancel()
+    }
+
+    @Test
+    fun `share emits the output path`() = runTest(dispatcher) {
+        val vm = viewModel()
+        val effects = mutableListOf<VideoEffect>()
+        val job = launch { vm.effect.collect { effects += it } }
+        advanceUntilIdle()
+
+        vm.dispatch(VideoAction.VideoPicked("content://video/1"))
+        advanceUntilIdle()
+        vm.dispatch(VideoAction.Start)
+        advanceUntilIdle()
+        vm.dispatch(VideoAction.Share)
+        advanceUntilIdle()
+
+        assertTrue(effects.any { it is VideoEffect.Share })
+        job.cancel()
+    }
 }

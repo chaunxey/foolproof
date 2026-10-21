@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  全应用唯一的 FileProvider 路径表。
+
+  为什么放在 :app 而不是各 feature 里：多个模块各自声明
+  `androidx.core.content.FileProvider` 会在 manifest 合并时报 authorities 冲突。
+  feature 只使用 `<packageName>.files` 这个 authority，具体路径在这里统一登记。
+-->
+<paths>
+    <!-- 图片压缩的输出：filesDir/compressed/ -->
+    <files-path name="image_compressed" path="compressed/" />
+    <!-- 视频压缩的输出：filesDir/videos/ -->
+    <files-path name="video_output" path="videos/" />
+</paths>

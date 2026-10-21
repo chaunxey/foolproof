@@ -40,6 +40,7 @@ dependencies {
     implementation(project(":base"))
     implementation(project(":features:image-compression"))
     implementation(project(":features:duplicate-cleanup"))
+    implementation(project(":features:video-compression"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

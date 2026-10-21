@@ -73,57 +73,57 @@
 
 ## Phase 4: US1 收尾 — 导出与分享 (P1)
 
-- [ ] T023 [US1] 创建 `features/video-compression/src/main/res/xml/video_paths.xml` +
+- [x] T023 [US1] 创建 `features/video-compression/src/main/res/xml/video_paths.xml` +
   manifest 中声明 FileProvider（authority `${applicationId}.video`）
-- [ ] T024 [US1] 创建 `.../data/MediaStoreVideoExporter.kt`：`IS_PENDING` 写入 → 置 0；
+- [x] T024 [US1] 创建 `.../data/MediaStoreVideoExporter.kt`：`IS_PENDING` 写入 → 置 0；
   API < 29 时 `canSaveToGallery() = false`
-- [ ] T025 [US1] ViewModel 接入分享/存相册动作 + 成功/失败提示（复用图片压缩的交互口径）
-- [ ] T026 单测覆盖：`canSaveToGallery` 的 API 分支、导出失败映射
+- [x] T025 [US1] ViewModel 接入分享/存相册动作 + 成功/失败提示（复用图片压缩的交互口径）
+- [x] T026 单测覆盖：`canSaveToGallery` 的 API 分支、导出失败映射
 
 ---
 
 ## Phase 5: US2 — 裁剪时长 (P1)
 
-- [ ] T027 [US2] 创建 `.../ui/TrimTimeline.kt`：平台 `VideoView` 预览 + `MediaMetadataRetriever`
+- [x] T027 [US2] 创建 `.../ui/TrimTimeline.kt`：平台 `VideoView` 预览 + `MediaMetadataRetriever`
   抽 8–12 帧做缩略图条 + 双滑块（起止）+ 时间标签（mm:ss）
-- [ ] T028 [US2] ViewModel：`TrimChanged` 动作 → 校验（最小区段/越界）→ 更新状态与预估
-- [ ] T029 [US2] 单测：裁剪后预估体积按新时长计算；起止超界被夹紧；整段与不裁剪等价
-- [ ] T030 [US2] `Media3VideoCompressor` 接入 `ClippingConfiguration`（起止 ms）
+- [x] T028 [US2] ViewModel：`TrimChanged` 动作 → 校验（最小区段/越界）→ 更新状态与预估
+- [x] T029 [US2] 单测：裁剪后预估体积按新时长计算；起止超界被夹紧；整段与不裁剪等价
+- [x] T030 [US2] `Media3VideoCompressor` 接入 `ClippingConfiguration`（起止 ms）
 
 ---
 
 ## Phase 6: US3 — 档位与预估 (P2)
 
-- [ ] T031 [US3] 创建 `.../ui/PresetSelector.kt`：分辨率三档 + 码率三档（FilterChip），
+- [x] T031 [US3] 创建 `.../ui/PresetSelector.kt`：分辨率三档 + 码率三档（FilterChip），
   显示目标分辨率与目标码率；不可用档位置灰并说明
-- [ ] T032 [US3] 界面显示预估体积与「裁剪后时长」；参数变化实时联动
-- [ ] T033 [US3] 编码器能力不足时自动降档并在界面说明（如 1080p 不支持 → 降到 720p）
+- [x] T032 [US3] 界面显示预估体积与「裁剪后时长」；参数变化实时联动
+- [x] T033 [US3] 编码器能力不足时自动降档并在界面说明（如 1080p 不支持 → 降到 720p）
 
 ---
 
 ## Phase 7: 集成
 
-- [ ] T034 创建 `.../di/VideoModule.kt`：`viewModel { }` + `VideoCompressor` / `EncoderCatalog` /
+- [x] T034 创建 `.../di/VideoModule.kt`：`viewModel { }` + `VideoCompressor` / `EncoderCatalog` /
   `VideoReader` / `VideoExporter` 的 `single`
-- [ ] T035 在 `app/build.gradle.kts` 增加 `implementation(project(":features:video-compression"))`
-- [ ] T036 在 `FoolproofApp.kt` 的 `koinModules()` 追加 `videoCompressionModule`
-- [ ] T037 在 `:app` 新建 `ui/FoolproofScreen.kt`：`NavigationBar` 两个 tab（图片 / 视频），
+- [x] T035 在 `app/build.gradle.kts` 增加 `implementation(project(":features:video-compression"))`
+- [x] T036 在 `FoolproofApp.kt` 的 `koinModules()` 追加 `videoCompressionModule`
+- [x] T037 在 `:app` 新建 `ui/FoolproofScreen.kt`：`NavigationBar` 两个 tab（图片 / 视频），
   `compression` → `CompressionTabScreen`，`video` → `VideoTabScreen`（内部只放 `VideoCompressionSection`）；
   `MainActivity` 改为使用 `FoolproofScreen`（**`:app` 不写业务逻辑**）
-- [ ] T038 运行 `./gradlew :app:assembleDebug` 通过
+- [x] T038 运行 `./gradlew :app:assembleDebug` 通过
 
 ---
 
 ## Phase 8: Polish
 
-- [ ] T039 全仓检索本模块 `WRITE_EXTERNAL_STORAGE`（应为 0，SC-006）
-- [ ] T040 全仓检索本模块 `android.util.Log` / `println(`（应为 0）
-- [ ] T041 应用启动时清理 `files/videos/*.tmp`（防御进程被杀）
-- [ ] T042 运行 `./gradlew :app:assembleRelease` 通过
-- [ ] T043 更新 `README.md`：模块规划、视频压缩小节、媒体栈说明
+- [x] T039 全仓检索本模块 `WRITE_EXTERNAL_STORAGE`（应为 0，SC-006）
+- [x] T040 全仓检索本模块 `android.util.Log` / `println(`（应为 0）
+- [x] T041 应用启动时清理 `files/videos/*.tmp`（防御进程被杀）
+- [x] T042 运行 `./gradlew :app:assembleRelease` 通过
+- [x] T043 更新 `README.md`：模块规划、视频压缩小节、媒体栈说明
 - [ ] T044 **真机验证（待设备）**：1080p→720p 体积对比（SC-001）、预估偏差（SC-002）、
   裁剪 5s 时长（SC-003）、竖屏旋转正确（SC-007）、存相册可见（SC-005）
-- [ ] T045 **模拟器验证**：软件编码器路径能跑通管线（不计性能），确认取消后无残留（SC-004）
+- [x] T045 **模拟器验证**：软件编码器路径能跑通管线（不计性能），确认取消后无残留（SC-004）
 
 ---
 

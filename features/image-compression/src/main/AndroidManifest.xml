@@ -1,21 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   图片压缩模块：不申请任何存储权限。
-  读图走系统 Photo Picker，写图走应用私有目录 + FileProvider。
+  读图走系统 Photo Picker，写图走应用私有目录 + FileProvider
+  （provider 由 :app 统一声明，authority = <packageName>.files）。
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" />
 
-    <application>
-        <!-- authority 带 .imagecompression 后缀，避免与其他模块的 FileProvider 冲突 -->
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.imagecompression"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/image_compression_paths" />
-        </provider>
-    </application>
-
-</manifest>

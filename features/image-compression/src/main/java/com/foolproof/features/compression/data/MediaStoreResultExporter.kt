@@ -1,4 +1,4 @@
-package com.foolproof.features.compression.data
+﻿package com.foolproof.features.compression.data
 
 import android.content.ContentValues
 import android.content.Context
@@ -86,6 +86,6 @@ class MediaStoreResultExporter(
     }
 
     private companion object {
-        const val AUTHORITY_SUFFIX = ".imagecompression"
+        const val AUTHORITY_SUFFIX = ".files"
     }
 }

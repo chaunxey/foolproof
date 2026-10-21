@@ -72,6 +72,12 @@ sealed interface VideoAction : UiAction {
 
     data object Cancel : VideoAction
 
+    /** 分享压缩结果（UI 用 FileProvider 拼 Intent）。 */
+    data object Share : VideoAction
+
+    /** 存相册（仅 API ≥ 29）。 */
+    data object SaveToGallery : VideoAction
+
     /** 重新开始（清掉上一次结果）。 */
     data object Reset : VideoAction
 }
@@ -79,6 +85,9 @@ sealed interface VideoAction : UiAction {
 sealed interface VideoEffect : UiEffect {
 
     data class Message(val kind: MessageKind) : VideoEffect
+
+    /** 把输出路径交给 UI 去拉起分享面板。 */
+    data class Share(val path: String) : VideoEffect
 
     enum class MessageKind {
         SOURCE_UNREADABLE,
@@ -88,5 +97,8 @@ sealed interface VideoEffect : UiEffect {
         TRANSCODE_FAILED,
         CANCELLED,
         DONE,
+        SAVED,
+        SAVE_FAILED,
+        SAVE_UNSUPPORTED,
     }
 }
