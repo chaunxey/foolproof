@@ -11,16 +11,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -35,6 +38,7 @@ import com.foolproof.base.ads.AdGateProvider
 import com.foolproof.base.ads.FeatureId
 import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.findActivity
+import com.foolproof.features.video.domain.MergeClip
 import com.foolproof.features.video.ui.formatDuration
 import kotlinx.coroutines.delay
 import org.koin.compose.viewmodel.koinViewModel
@@ -49,6 +53,7 @@ fun VideoMergeSection(
     val context = LocalContext.current
     val activity = context.findActivity()
     var messageRes by remember { mutableStateOf<Int?>(null) }
+    var trimTargetId by remember { mutableStateOf<String?>(null) }
 
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(MAX_PICK),
@@ -100,7 +105,7 @@ fun VideoMergeSection(
             }
         }
 
-        if (state.videos.isEmpty()) {
+        if (state.clips.isEmpty()) {
             Text(
                 text = stringResource(R.string.video_merge_hint),
                 style = MaterialTheme.typography.bodySmall,
@@ -111,38 +116,42 @@ fun VideoMergeSection(
             Text(
                 text = stringResource(
                     R.string.video_merge_selected,
-                    state.videos.size,
+                    state.clips.size,
                     formatDuration(state.totalDurationMs),
                 ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp),
             )
-            state.videos.forEachIndexed { index, video ->
+            state.clips.forEachIndexed { index, clip ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "${index + 1}. ${video.displayName}",
+                        text = "${index + 1}. ${clip.source.displayName}",
                         style = MaterialTheme.typography.bodySmall,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f),
                     )
                     Text(
-                        text = formatDuration(video.durationMs),
+                        text = formatDuration(clip.durationMs),
                         style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.padding(start = 8.dp),
                     )
+                    TextButton(
+                        onClick = { trimTargetId = clip.source.id },
+                        enabled = !state.isMerging,
+                    ) { Text(stringResource(R.string.video_merge_trim)) }
                     if (index > 0) {
                         TextButton(
-                            onClick = { viewModel.dispatch(VideoMergeAction.MoveUp(video.id)) },
+                            onClick = { viewModel.dispatch(VideoMergeAction.MoveUp(clip.source.id)) },
                             enabled = !state.isMerging,
                         ) { Text(stringResource(R.string.video_merge_move_up)) }
                     }
                     TextButton(
-                        onClick = { viewModel.dispatch(VideoMergeAction.Remove(video.id)) },
+                        onClick = { viewModel.dispatch(VideoMergeAction.Remove(clip.source.id)) },
                         enabled = !state.isMerging,
                     ) { Text(stringResource(R.string.video_merge_remove)) }
                 }
@@ -204,6 +213,60 @@ fun VideoMergeSection(
             }
         }
     }
+
+    trimTargetId?.let { id ->
+        state.clips.firstOrNull { it.source.id == id }?.let { clip ->
+            TrimClipDialog(
+                clip = clip,
+                onDismiss = { trimTargetId = null },
+                onConfirm = { start, end ->
+                    viewModel.dispatch(VideoMergeAction.TrimChanged(id, start, end))
+                    trimTargetId = null
+                },
+            )
+        }
+    }
+}
+
+/** 单段裁剪：RangeSlider 同时控制起止点，至少保留 500ms。 */
+@Composable
+private fun TrimClipDialog(
+    clip: MergeClip,
+    onDismiss: () -> Unit,
+    onConfirm: (Long, Long) -> Unit,
+) {
+    var start by remember(clip) { mutableFloatStateOf(clip.startMs.toFloat()) }
+    var end by remember(clip) { mutableFloatStateOf(clip.endMs.toFloat()) }
+    val total = clip.source.durationMs.toFloat()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.video_merge_trim_title)) },
+        text = {
+            Column {
+                Text(
+                    text = "${formatDuration(start.toLong())} – ${formatDuration(end.toLong())}",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                RangeSlider(
+                    value = start..end,
+                    onValueChange = { range ->
+                        start = range.start.coerceIn(0f, total - MIN_TRIM_MS.toFloat())
+                        end = range.endInclusive.coerceIn(start + MIN_TRIM_MS.toFloat(), total)
+                    },
+                    valueRange = 0f..total,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(start.toLong(), end.toLong()) }) {
+                Text(stringResource(R.string.video_merge_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.video_cancel)) }
+        },
+    )
 }
 
 private fun VideoMergeEffect.MessageKind.labelRes(): Int = when (this) {
@@ -234,3 +297,4 @@ private fun Context.shareVideo(path: String) {
 }
 
 private const val MAX_PICK = 10
+private const val MIN_TRIM_MS = 500L

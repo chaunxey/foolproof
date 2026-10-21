@@ -61,4 +61,6 @@
     <string name="video_merge_too_many">最大 10 本</string>
     <string name="video_merge_failed">結合に失敗しました。もう一度お試しください</string>
     <string name="video_merge_done">結合完了</string>
-</resources>
+    <string name="video_merge_trim">トリミング</string>
+    <string name="video_merge_trim_title">クリップをトリミング</string>
+    <string name="video_merge_confirm">確定</string></resources>

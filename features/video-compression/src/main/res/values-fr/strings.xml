@@ -61,4 +61,6 @@
     <string name="video_merge_too_many">10 vidéos maximum</string>
     <string name="video_merge_failed">Échec de l\'assemblage. Réessayez.</string>
     <string name="video_merge_done">Assemblage terminé</string>
-</resources>
+    <string name="video_merge_trim">Rogner</string>
+    <string name="video_merge_trim_title">Rogner le clip</string>
+    <string name="video_merge_confirm">Valider</string></resources>

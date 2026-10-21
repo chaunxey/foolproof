@@ -75,4 +75,6 @@
     <string name="video_merge_too_many">最多 10 段视频</string>
     <string name="video_merge_failed">拼接失败，请重试</string>
     <string name="video_merge_done">拼接完成</string>
-</resources>
+    <string name="video_merge_trim">裁剪</string>
+    <string name="video_merge_trim_title">裁剪片段</string>
+    <string name="video_merge_confirm">确定</string></resources>

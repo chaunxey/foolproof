@@ -3,11 +3,11 @@ package com.foolproof.features.video
 import com.foolproof.base.mvi.UiAction
 import com.foolproof.base.mvi.UiEffect
 import com.foolproof.base.mvi.UiState
-import com.foolproof.features.video.domain.SourceVideo
+import com.foolproof.features.video.domain.MergeClip
 
-/** 视频拼接页状态。 */
+/** 视频拼接页状态（每段带自己的裁剪区间）。 */
 data class VideoMergeUiState(
-    val videos: List<SourceVideo> = emptyList(),
+    val clips: List<MergeClip> = emptyList(),
     val isMerging: Boolean = false,
     val progress: Int = 0,
     val output: CompressedVideo? = null,
@@ -16,16 +16,19 @@ data class VideoMergeUiState(
 ) : UiState {
 
     val totalDurationMs: Long
-        get() = videos.sumOf { it.durationMs }
+        get() = clips.sumOf { it.durationMs }
 
     val canStart: Boolean
-        get() = videos.size >= 2 && !isMerging
+        get() = clips.size >= 2 && !isMerging
 }
 
 sealed interface VideoMergeAction : UiAction {
     data class VideosPicked(val ids: List<String>) : VideoMergeAction
     data class Remove(val id: String) : VideoMergeAction
     data class MoveUp(val id: String) : VideoMergeAction
+
+    /** 逐段裁剪：start/end 单位毫秒，由 ViewModel 再夹紧。 */
+    data class TrimChanged(val id: String, val startMs: Long, val endMs: Long) : VideoMergeAction
 
     data object Start : VideoMergeAction
     data object Cancel : VideoMergeAction

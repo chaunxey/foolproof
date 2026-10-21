@@ -3,6 +3,7 @@ package com.foolproof.features.video
 import com.foolproof.base.log.LogUtil
 import com.foolproof.base.mvi.BaseViewModel
 import com.foolproof.base.mvi.UiAction
+import com.foolproof.features.video.domain.MergeClip
 import com.foolproof.features.video.domain.VideoExporter
 import com.foolproof.features.video.domain.VideoMerger
 import com.foolproof.features.video.domain.VideoProgress
@@ -33,9 +34,10 @@ class VideoMergeViewModel(
         when (action) {
             is VideoMergeAction.VideosPicked -> addVideos(action.ids)
             is VideoMergeAction.Remove -> updateState {
-                it.copy(videos = it.videos.filterNot { video -> video.id == action.id })
+                it.copy(clips = it.clips.filterNot { clip -> clip.source.id == action.id })
             }
             is VideoMergeAction.MoveUp -> moveUp(action.id)
+            is VideoMergeAction.TrimChanged -> trim(action.id, action.startMs, action.endMs)
             VideoMergeAction.Start -> start()
             VideoMergeAction.Cancel -> cancel()
             VideoMergeAction.Share -> currentState.output?.let {
@@ -54,10 +56,10 @@ class VideoMergeViewModel(
                 sendEffect(VideoMergeEffect.Message(VideoMergeEffect.MessageKind.READ_FAILED))
                 return@launch
             }
-            val room = (MAX_VIDEOS - currentState.videos.size).coerceAtLeast(0)
-            val accepted = loaded.take(room)
+            val room = (MAX_VIDEOS - currentState.clips.size).coerceAtLeast(0)
+            val accepted = loaded.take(room).map { MergeClip(source = it) }
             if (accepted.isNotEmpty()) {
-                updateState { it.copy(videos = it.videos + accepted) }
+                updateState { it.copy(clips = it.clips + accepted) }
             }
             if (accepted.size < loaded.size) {
                 sendEffect(VideoMergeEffect.Message(VideoMergeEffect.MessageKind.TOO_MANY))
@@ -67,21 +69,37 @@ class VideoMergeViewModel(
 
     private fun moveUp(id: String) {
         updateState { state ->
-            val index = state.videos.indexOfFirst { it.id == id }
+            val index = state.clips.indexOfFirst { it.source.id == id }
             if (index <= 0) {
                 state
             } else {
-                val list = state.videos.toMutableList()
+                val list = state.clips.toMutableList()
                 val item = list.removeAt(index)
                 list.add(index - 1, item)
-                state.copy(videos = list)
+                state.copy(clips = list)
             }
+        }
+    }
+
+    /** 逐段裁剪：夹紧到 [0, duration]，且至少保留 [MIN_CLIP_MS]。 */
+    private fun trim(id: String, startMs: Long, endMs: Long) {
+        updateState { state ->
+            val index = state.clips.indexOfFirst { it.source.id == id }
+            if (index < 0) return@updateState state
+            val clip = state.clips[index]
+            val duration = clip.source.durationMs
+            if (duration <= MIN_CLIP_MS) return@updateState state
+
+            val start = startMs.coerceIn(0L, duration - MIN_CLIP_MS)
+            val end = endMs.coerceIn(start + MIN_CLIP_MS, duration)
+            val updated = clip.copy(startMs = start, endMs = end)
+            state.copy(clips = state.clips.toMutableList().also { it[index] = updated })
         }
     }
 
     private fun start() {
         if (currentState.isMerging) return
-        if (currentState.videos.size < 2) {
+        if (currentState.clips.size < 2) {
             sendEffect(VideoMergeEffect.Message(VideoMergeEffect.MessageKind.NEED_TWO))
             return
         }
@@ -92,7 +110,7 @@ class VideoMergeViewModel(
 
         mergeJob = launchJob {
             merger.merge(
-                videos = currentState.videos,
+                clips = currentState.clips,
                 outputPath = path,
                 targetShortSide = TARGET_SHORT_SIDE,
                 frameRate = TARGET_FPS,
@@ -172,6 +190,7 @@ class VideoMergeViewModel(
 
     private companion object {
         const val MAX_VIDEOS = 10
+        const val MIN_CLIP_MS = 500L
         const val TARGET_SHORT_SIDE = 720
         const val TARGET_FPS = 30
         const val TARGET_BITRATE_KBPS = 4_000

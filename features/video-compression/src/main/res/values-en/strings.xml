@@ -61,4 +61,6 @@
     <string name="video_merge_too_many">Up to 10 videos</string>
     <string name="video_merge_failed">Join failed. Try again.</string>
     <string name="video_merge_done">Join complete</string>
-</resources>
+    <string name="video_merge_trim">Trim</string>
+    <string name="video_merge_trim_title">Trim clip</string>
+    <string name="video_merge_confirm">Done</string></resources>

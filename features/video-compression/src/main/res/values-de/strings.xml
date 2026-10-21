@@ -61,4 +61,6 @@
     <string name="video_merge_too_many">Maximal 10 Videos</string>
     <string name="video_merge_failed">Zusammenfügen fehlgeschlagen. Versuche es erneut.</string>
     <string name="video_merge_done">Zusammenfügen fertig</string>
-</resources>
+    <string name="video_merge_trim">Zuschneiden</string>
+    <string name="video_merge_trim_title">Clip zuschneiden</string>
+    <string name="video_merge_confirm">Bestätigen</string></resources>

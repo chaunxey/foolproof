@@ -18,7 +18,7 @@ import androidx.media3.transformer.ProgressHolder
 import androidx.media3.transformer.Transformer
 import androidx.media3.transformer.VideoEncoderSettings
 import com.foolproof.base.log.LogUtil
-import com.foolproof.features.video.domain.SourceVideo
+import com.foolproof.features.video.domain.MergeClip
 import com.foolproof.features.video.domain.VideoFailure
 import com.foolproof.features.video.domain.VideoMerger
 import com.foolproof.features.video.domain.VideoProgress
@@ -48,7 +48,7 @@ class Media3VideoMerger(
     private var activeTransformer: Transformer? = null
 
     override fun merge(
-        videos: List<SourceVideo>,
+        clips: List<MergeClip>,
         outputPath: String,
         targetShortSide: Int,
         frameRate: Int,
@@ -58,8 +58,17 @@ class Media3VideoMerger(
             emptyList(),
             listOf(Presentation.createForShortSide(targetShortSide)),
         )
-        val items = videos.map { video ->
-            EditedMediaItem.Builder(MediaItem.fromUri(Uri.parse(video.id)))
+        val items = clips.map { clip ->
+            val mediaItem = MediaItem.Builder()
+                .setUri(Uri.parse(clip.source.id))
+                .setClippingConfiguration(
+                    MediaItem.ClippingConfiguration.Builder()
+                        .setStartPositionMs(clip.startMs)
+                        .setEndPositionMs(clip.endMs)
+                        .build(),
+                )
+                .build()
+            EditedMediaItem.Builder(mediaItem)
                 .setEffects(effects)
                 .setFrameRate(frameRate)
                 .build()
@@ -116,7 +125,7 @@ class Media3VideoMerger(
 
         activeTransformer = transformer
         logUtil.d {
-            "start merge: clips=${videos.size} shortSide=$targetShortSide " +
+            "start merge: clips=${clips.size} shortSide=$targetShortSide " +
                 "bitrate=${bitrateKbps}kbps fps=$frameRate"
         }
 
