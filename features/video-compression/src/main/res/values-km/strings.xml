@@ -51,7 +51,7 @@
     <!-- ភ្ជាប់វីដេអូ -->
     <string name="video_merge_title">ភ្ជាប់វីដេអូ</string>
     <string name="video_merge_add">បន្ថែមវីដេអូ</string>
-    <string name="video_merge_hint">ជ្រើសរើសវីដេអូ 2–10 ដើម្បីភ្ជាប់តាមលំដាប់</string>
+    <string name="video_merge_hint">ជ្រើសរើសវីដេអូ 2–10 ដើម្បីភ្ជាប់តាមលំដាប់; វីដេអូស្ទួននឹងត្រូវរំលងដោយស្វ័យប្រវត្តិ</string>
     <string name="video_merge_selected">បានជ្រើស %1$d · សរុប %2$s</string>
     <string name="video_merge_start">ចាប់ផ្តើមភ្ជាប់</string>
     <string name="video_merge_merging">កំពុងភ្ជាប់ %1$d%% · ចាកចេញនឹងបោះបង់</string>
@@ -67,4 +67,5 @@
     <string name="video_merge_more">ផ្សេងទៀត</string>    <string name="video_empty_hint">ជ្រើសរើសវីដេអូ កាត់វីដេអូ និងជ្រើសកម្រិត ដើម្បីចាប់ផ្តើមបង្ហាប់</string>
     <string name="video_merge_drag">អូសដើម្បីរៀបចំ</string>
     <string name="video_msg_already_added">មាននៅក្នុងបញ្ជីរួចហើយ</string>
+    <string name="video_msg_duplicates_skipped">វីដេអូស្ទួនត្រូវបានរំលង</string>
 </resources>

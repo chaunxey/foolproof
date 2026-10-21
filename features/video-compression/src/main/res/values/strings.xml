@@ -65,7 +65,7 @@
     <!-- 视频拼接 -->
     <string name="video_merge_title">视频拼接</string>
     <string name="video_merge_add">添加视频</string>
-    <string name="video_merge_hint">选择 2–10 段视频，按顺序首尾拼接</string>
+    <string name="video_merge_hint">选择 2–10 段视频，按顺序首尾拼接；重复视频会自动跳过</string>
     <string name="video_merge_selected">已选 %1$d 段 · 总时长 %2$s</string>
     <string name="video_merge_start">开始拼接</string>
     <string name="video_merge_merging">拼接中 %1$d%% · 离开页面会取消</string>
@@ -81,4 +81,5 @@
     <string name="video_merge_more">更多</string>    <string name="video_empty_hint">选择一个视频，裁剪片段并选择档位后开始压缩</string>
     <string name="video_merge_drag">拖动排序</string>
     <string name="video_msg_already_added">该视频已在列表中</string>
+    <string name="video_msg_duplicates_skipped">已自动跳过重复视频</string>
 </resources>

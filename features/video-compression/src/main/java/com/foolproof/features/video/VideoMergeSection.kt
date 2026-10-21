@@ -426,6 +426,7 @@ private fun VideoMergeEffect.MessageKind.labelRes(): Int = when (this) {
     VideoMergeEffect.MessageKind.NEED_TWO -> R.string.video_merge_need_two
     VideoMergeEffect.MessageKind.TOO_MANY -> R.string.video_merge_too_many
     VideoMergeEffect.MessageKind.ALREADY_ADDED -> R.string.video_msg_already_added
+    VideoMergeEffect.MessageKind.DUPLICATES_SKIPPED -> R.string.video_msg_duplicates_skipped
     VideoMergeEffect.MessageKind.READ_FAILED -> R.string.video_msg_source_unreadable
     VideoMergeEffect.MessageKind.MERGE_FAILED -> R.string.video_merge_failed
     VideoMergeEffect.MessageKind.CANCELLED -> R.string.video_msg_cancelled

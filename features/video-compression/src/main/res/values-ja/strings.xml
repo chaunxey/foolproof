@@ -51,7 +51,7 @@
     <!-- 動画結合 -->
     <string name="video_merge_title">動画結合</string>
     <string name="video_merge_add">動画を追加</string>
-    <string name="video_merge_hint">2〜10 本の動画を選び、順番に結合します</string>
+    <string name="video_merge_hint">2〜10 本の動画を順番に結合します。重複した動画は自動的にスキップされます</string>
     <string name="video_merge_selected">%1$d 本選択 · 合計 %2$s</string>
     <string name="video_merge_start">結合を開始</string>
     <string name="video_merge_merging">結合中 %1$d%% · 離れるとキャンセル</string>
@@ -67,4 +67,5 @@
     <string name="video_merge_more">その他</string>    <string name="video_empty_hint">動画を選び、切り抜きと画質を設定して圧縮を開始します</string>
     <string name="video_merge_drag">ドラッグで並べ替え</string>
     <string name="video_msg_already_added">すでに追加されています</string>
+    <string name="video_msg_duplicates_skipped">重複した動画はスキップされました</string>
 </resources>

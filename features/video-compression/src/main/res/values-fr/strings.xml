@@ -51,7 +51,7 @@
     <!-- Fusion vidéo -->
     <string name="video_merge_title">Fusion vidéo</string>
     <string name="video_merge_add">Ajouter des vidéos</string>
-    <string name="video_merge_hint">Sélectionnez 2 à 10 vidéos à assembler dans l\'ordre</string>
+    <string name="video_merge_hint">Sélectionnez 2 à 10 vidéos à assembler ; les doublons sont ignorés automatiquement</string>
     <string name="video_merge_selected">%1$d sélectionnées · %2$s au total</string>
     <string name="video_merge_start">Assembler</string>
     <string name="video_merge_merging">Assemblage %1$d%% · quitter annule</string>
@@ -67,4 +67,5 @@
     <string name="video_merge_more">Plus</string>    <string name="video_empty_hint">Sélectionnez une vidéo, découpez un clip et choisissez un préréglage</string>
     <string name="video_merge_drag">Glisser pour réorganiser</string>
     <string name="video_msg_already_added">Déjà dans la liste</string>
+    <string name="video_msg_duplicates_skipped">Les doublons ont été ignorés</string>
 </resources>

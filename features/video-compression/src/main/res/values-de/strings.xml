@@ -51,7 +51,7 @@
     <!-- Videos zusammenfügen -->
     <string name="video_merge_title">Videos zusammenfügen</string>
     <string name="video_merge_add">Videos hinzufügen</string>
-    <string name="video_merge_hint">Wähle 2–10 Videos zum Aneinanderhängen</string>
+    <string name="video_merge_hint">Wähle 2–10 Videos zum Aneinanderhängen; Duplikate werden automatisch übersprungen</string>
     <string name="video_merge_selected">%1$d ausgewählt · %2$s gesamt</string>
     <string name="video_merge_start">Zusammenfügen</string>
     <string name="video_merge_merging">Zusammenfügen %1$d%% · Verlassen bricht ab</string>
@@ -67,4 +67,5 @@
     <string name="video_merge_more">Mehr</string>    <string name="video_empty_hint">Wähle ein Video, schneide einen Clip und wähle eine Stufe</string>
     <string name="video_merge_drag">Zum Sortieren ziehen</string>
     <string name="video_msg_already_added">Bereits in der Liste</string>
+    <string name="video_msg_duplicates_skipped">Doppelte Videos wurden übersprungen</string>
 </resources>

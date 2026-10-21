@@ -50,6 +50,7 @@ sealed interface VideoMergeEffect : UiEffect {
         NEED_TWO,
         TOO_MANY,
         ALREADY_ADDED,
+        DUPLICATES_SKIPPED,
         READ_FAILED,
         MERGE_FAILED,
         CANCELLED,

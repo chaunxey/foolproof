@@ -51,7 +51,7 @@
     <!-- Video merge -->
     <string name="video_merge_title">Video merge</string>
     <string name="video_merge_add">Add videos</string>
-    <string name="video_merge_hint">Pick 2–10 videos to join in order</string>
+    <string name="video_merge_hint">Pick 2–10 clips to join in order; duplicates are skipped automatically</string>
     <string name="video_merge_selected">%1$d selected · %2$s total</string>
     <string name="video_merge_start">Join videos</string>
     <string name="video_merge_merging">Joining %1$d%% · leaving cancels</string>
@@ -67,4 +67,5 @@
     <string name="video_merge_more">More</string>    <string name="video_empty_hint">Pick a video, trim a clip and choose a preset to start</string>
     <string name="video_merge_drag">Drag to reorder</string>
     <string name="video_msg_already_added">Already in the list</string>
+    <string name="video_msg_duplicates_skipped">Duplicate videos were skipped</string>
 </resources>
