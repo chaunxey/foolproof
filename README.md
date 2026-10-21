@@ -349,13 +349,13 @@ chore: 构建/依赖/配置调整
 - **导出**：`files/pdf/` + FileProvider（`<包名>.files`）；API ≥ 29 可存「下载/Foolproof」，零写权限
 - **清理**：新任务前删旧产物、失败/取消删半成品、启动清残留（与视频模块同一模式）
 
-## 多语言（已实现，简体中文 / English）
+## 多语言（已实现：简体中文 / English / ខ្មែរ / 日本語 / Français / Deutsch）
 
-- **文案位置**：每个模块自己的 `src/main/res/values/strings.xml`（中文默认）与 `values-en/strings.xml`（英文）；
+- **文案位置**：每个模块的 `values/`（中文默认）与 `values-en` / `values-km` / `values-ja` / `values-fr` / `values-de`；
   Compose 统一用 `stringResource`，代码里不写用户可见字面量；带参数的文案一律位置参数（`%1$s` / `%1$d`）
-- **切换入口**：设置页「语言」= 跟随系统 / 中文 / English，偏好持久化在 `SettingsStore`
-- **生效方式**：
-  - Android 13+：`LocaleManager` + `localeConfig`（`res/xml/locales_config.xml`），与系统「应用语言」双向同步；
-  - Android 12 及以下：`MainActivity.attachBaseContext` 按偏好包一层 locale Context，切换后 `recreate()`
+- **切换入口**：设置页「语言」= 跟随系统 + 5 种语言；选完自动关闭设置、回到首页
+- **无感切换**：`MainActivity` 用 `CompositionLocalProvider` 替换 `LocalContext` / `LocalConfiguration`，
+  语言变化只触发重组，**不重建 Activity、不走系统 per-app locale**（字体大小同理）
 - **新增语言**：在 `app` / `common` / `features/*` 各加一份 `values-xx/strings.xml`（key 与 `values/` 一致），
-  再到 `app/src/main/res/xml/locales_config.xml` 注册；英文资源目前是草拟译文，直接改 `values-en/` 即可
+  在 `AppLanguage` 里加一项，并补 `settings_language_xx` 的母语显示名
+- 英文 / 高棉文 / 日文 / 法文 / 德文为草拟译文，建议母语者校对（尤其高棉文）；改 `values-*/` 即可，不用动代码
