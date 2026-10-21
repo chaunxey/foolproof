@@ -1,4 +1,4 @@
-package com.foolproof.features.video.ui
+﻿package com.foolproof.features.video.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,7 +23,7 @@ import java.util.Locale
  * 纯展示组件（参数由外部传入），便于以后复用与预览。
  */
 @Composable
-fun PresetSelector(
+internal fun PresetSelector(
     preset: CompressionPreset,
     estimatedBytes: Long,
     trimDurationMs: Long,

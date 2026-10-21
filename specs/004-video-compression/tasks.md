@@ -195,19 +195,19 @@ Phase 1 (T001–T007)  ← T007 是信息门槛：先知道设备能编什么
 > 由 `/speckit-converge` 于 2026-10-21 追加：核对 spec/plan/tasks 与当前代码后发现的差距。
 > 完成这些任务后，本 feature 的规格才算真正闭合。
 
-- [ ] T047 按 API 隐藏【存相册】：现状 `VideoCompressionSection.kt` 无条件显示，API ≤ 28 点击只会报错；
+- [x] T047 按 API 隐藏【存相册】：现状 `VideoCompressionSection.kt` 无条件显示，API ≤ 28 点击只会报错；
   对齐图片压缩模块的做法（`UiState.saveSupported` + `if (saveSupported)`）per FR-013 (contradicts)
-- [ ] T048 解决 FR-004 与 plan D4 的冲突：spec 要求「无硬件编码器 MUST 明确报错」，
+- [x] T048 解决 FR-004 与 plan D4 的冲突：spec 要求「无硬件编码器 MUST 明确报错」，
   而实现（plan D4）在只有软编时仅提示、仍允许压缩。二选一并同步文档：
   严格实现需把 `!isHardware` 直接置为 `Failed(NO_ENCODER)`，并给模拟器留一条仅测试用的直连入口；
   若保留现状，则必须修订 spec FR-004 而不是让代码与规格长期不一致 per FR-004 (contradicts)
-- [ ] T049 失败时清理半成品：`VideoProgress.Failed` 分支未调用 `cleanupPartialFile`，
+- [x] T049 失败时清理半成品：`VideoProgress.Failed` 分支未调用 `cleanupPartialFile`，
   只有取消分支调用了；失败后 `files/videos/` 会留下不完整文件 per FR-014 (missing)
-- [ ] T050 离开页面即取消压缩：Section 缺 `DisposableEffect { onDispose { dispatch(Cancel) } }`，
+- [x] T050 离开页面即取消压缩：Section 缺 `DisposableEffect { onDispose { dispatch(Cancel) } }`，
   当前切走 tab 后转码仍在后台继续，与「v1 只在前台压缩」的规格不符 per FR-015 (missing)
-- [ ] T051 超长/超大视频提示：源超过 30 分钟或 2GB 时提示「建议先裁剪」，但仍允许继续
+- [x] T051 超长/超大视频提示：源超过 30 分钟或 2GB 时提示「建议先裁剪」，但仍允许继续
   （规格「边界情况」要求，当前无任何检查）per 边界情况 (missing)
-- [ ] T052 结果区补齐原大小与输出时长：`VideoCompressionSection.kt` 目前只显示「已完成 X（节省 Y）」，
+- [x] T052 结果区补齐原大小与输出时长：`VideoCompressionSection.kt` 目前只显示「已完成 X（节省 Y）」，
   缺「原 Z → 新 X」和输出时长 per US1/AC3 (partial)
-- [ ] T053 收敛模块公开面：`ui.PresetSelector`、`ui.TrimTimeline` 改为 `internal`，
+- [x] T053 收敛模块公开面：`ui.PresetSelector`、`ui.TrimTimeline` 改为 `internal`，
   让模块对外只暴露 `VideoCompressionSection` 与 `VideoCompressionViewModel` per FR-002 (unrequested)

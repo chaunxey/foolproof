@@ -1,4 +1,4 @@
-package com.foolproof.features.video.ui
+﻿package com.foolproof.features.video.ui
 
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -42,7 +42,7 @@ import kotlinx.coroutines.withContext
  * 刻意不引 ExoPlayer：只为播放本地文件不值得多 2–3MB（plan R6）。
  */
 @Composable
-fun TrimTimeline(
+internal fun TrimTimeline(
     videoId: String,
     durationMs: Long,
     startMs: Long,

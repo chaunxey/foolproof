@@ -31,6 +31,8 @@ data class VideoUiState(
     val output: CompressedVideo? = null,
     /** 编码器相关提示（如"无硬件编码器，会很慢"），null 表示无需提示。 */
     val encoderNote: String? = null,
+    /** API ≥ 29 才显示【存相册】（宪法 §8：低版本需要写权限，本应用不申请）。 */
+    val saveSupported: Boolean = false,
 ) : UiState {
 
     val isCompressing: Boolean
@@ -100,5 +102,8 @@ sealed interface VideoEffect : UiEffect {
         SAVED,
         SAVE_FAILED,
         SAVE_UNSUPPORTED,
+
+        /** 源视频过长/过大，建议先裁剪（仍允许继续）。 */
+        LONG_VIDEO,
     }
 }

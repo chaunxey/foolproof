@@ -410,4 +410,61 @@ class VideoCompressionViewModelTest {
         assertTrue(effects.any { it is VideoEffect.Share })
         job.cancel()
     }
+
+    @Test
+    fun `save button support follows exporter capability`() = runTest(dispatcher) {
+        // API < 29：FakeExporter 报不支持 → 状态里 saveSupported 必须为 false（FR-013）
+        val vm = viewModel(exporter = FakeExporter(canSave = false))
+        assertFalse(vm.uiState.value.saveSupported)
+    }
+
+    @Test
+    fun `failure cleans up the partial output`() = runTest(dispatcher) {
+        val compressor = FakeCompressor(failure = VideoFailure.TRANSCODE_FAILED)
+        val vm = viewModel(compressor = compressor)
+
+        vm.dispatch(VideoAction.VideoPicked("content://video/1"))
+        advanceUntilIdle()
+        vm.dispatch(VideoAction.Start)
+        advanceUntilIdle()
+
+        assertNotNull("失败后必须清理半成品（FR-014）", compressor.cleanedPath)
+    }
+
+    @Test
+    fun `long video emits a trim suggestion`() = runTest(dispatcher) {
+        // 31 分钟的视频 → 提示建议先裁剪（规格「边界情况」）
+        val vm = viewModel(reader = FakeReader(sourceVideo(durationMs = 31 * 60 * 1000L)))
+        val effects = mutableListOf<VideoEffect>()
+        val job = launch { vm.effect.collect { effects += it } }
+        advanceUntilIdle()
+
+        vm.dispatch(VideoAction.VideoPicked("content://video/1"))
+        advanceUntilIdle()
+
+        assertTrue(
+            effects.any {
+                it is VideoEffect.Message && it.kind == VideoEffect.MessageKind.LONG_VIDEO
+            },
+        )
+        job.cancel()
+    }
+
+    @Test
+    fun `short video does not emit the trim suggestion`() = runTest(dispatcher) {
+        val vm = viewModel(reader = FakeReader(sourceVideo(durationMs = 20_000)))
+        val effects = mutableListOf<VideoEffect>()
+        val job = launch { vm.effect.collect { effects += it } }
+        advanceUntilIdle()
+
+        vm.dispatch(VideoAction.VideoPicked("content://video/1"))
+        advanceUntilIdle()
+
+        assertTrue(
+            effects.none {
+                it is VideoEffect.Message && it.kind == VideoEffect.MessageKind.LONG_VIDEO
+            },
+        )
+        job.cancel()
+    }
 }

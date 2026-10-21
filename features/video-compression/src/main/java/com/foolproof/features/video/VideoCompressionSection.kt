@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.foolproof.base.util.ByteFormat
+import com.foolproof.features.video.ui.formatDuration
 import com.foolproof.features.video.ui.PresetSelector
 import com.foolproof.features.video.ui.TrimTimeline
 import java.io.File
@@ -53,6 +55,15 @@ fun VideoCompressionSection(
         ActivityResultContracts.PickVisualMedia(),
     ) { uri ->
         uri?.let { viewModel.dispatch(VideoAction.VideoPicked(it.toString())) }
+    }
+
+    // v1 只在前台压缩：离开页面（切 tab / 退出）即取消，避免后台长时间占用编码器（FR-015）
+    DisposableEffect(Unit) {
+        onDispose {
+            if (viewModel.uiState.value.isCompressing) {
+                viewModel.dispatch(VideoAction.Cancel)
+            }
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -177,9 +188,16 @@ fun VideoCompressionSection(
         }
 
         state.output?.let { output ->
+            val original = state.video?.sizeBytes ?: 0L
+            val duration = formatDuration(state.trimDurationMs)
             Text(
-                text = "已完成：" + ByteFormat.formatBytes(output.bytes) +
-                    if (state.savedBytes > 0) "（节省 ${ByteFormat.formatBytes(state.savedBytes)}）" else "",
+                text = buildString {
+                    append("已完成：")
+                    if (original > 0) append("${ByteFormat.formatBytes(original)} → ")
+                    append(ByteFormat.formatBytes(output.bytes))
+                    append(" · 时长 $duration")
+                    if (state.savedBytes > 0) append("（节省 ${ByteFormat.formatBytes(state.savedBytes)}）")
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(top = 8.dp),
             )
@@ -190,8 +208,11 @@ fun VideoCompressionSection(
                 OutlinedButton(onClick = { viewModel.dispatch(VideoAction.Share) }) {
                     Text("分享")
                 }
-                OutlinedButton(onClick = { viewModel.dispatch(VideoAction.SaveToGallery) }) {
-                    Text("存相册")
+                // API ≤ 28 需要写权限才能存相册，本应用不申请 → 不显示该入口（FR-013）
+                if (state.saveSupported) {
+                    OutlinedButton(onClick = { viewModel.dispatch(VideoAction.SaveToGallery) }) {
+                        Text("存相册")
+                    }
                 }
             }
         }
@@ -211,6 +232,7 @@ private fun VideoEffect.MessageKind.label(): String = when (this) {
     VideoEffect.MessageKind.SAVED -> "已保存到相册（Movies/Foolproof）"
     VideoEffect.MessageKind.SAVE_FAILED -> "保存到相册失败"
     VideoEffect.MessageKind.SAVE_UNSUPPORTED -> "当前系统版本不支持直接保存到相册"
+    VideoEffect.MessageKind.LONG_VIDEO -> "视频较长或较大，建议先裁剪片段再压缩"
 }
 
 private fun VideoEffect.MessageKind.isError(): Boolean = when (this) {

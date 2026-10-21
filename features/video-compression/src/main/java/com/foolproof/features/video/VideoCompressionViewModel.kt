@@ -34,6 +34,11 @@ class VideoCompressionViewModel(
     private var compressJob: Job? = null
     private var currentOutputPath: String? = null
 
+    init {
+        // API ≥ 29 才允许无权限写相册（FR-013）：低版本直接不暴露该入口
+        updateState { it.copy(saveSupported = exporter.canSaveToGallery()) }
+    }
+
     override fun onAction(action: UiAction) {
         when (action) {
             is VideoAction.VideoPicked -> loadVideo(action.id)
@@ -117,6 +122,11 @@ class VideoCompressionViewModel(
                     phase = VideoPhase.Ready,
                     encoderNote = if (avc.isHardware) null else "当前设备无硬件编码器，压缩会很慢",
                 )
+            }
+
+            // 超长/超大：提示建议先裁剪，但仍允许继续（规格「边界情况」）
+            if (video.durationMs > LONG_VIDEO_MS || video.sizeBytes > LONG_VIDEO_BYTES) {
+                sendEffect(VideoEffect.Message(VideoEffect.MessageKind.LONG_VIDEO))
             }
         }
     }
@@ -218,6 +228,8 @@ class VideoCompressionViewModel(
                     }
 
                     is VideoProgress.Failed -> {
+                        // 失败也必须清掉半成品，否则 files/videos/ 会留下不完整文件（FR-014）
+                        currentOutputPath?.let { compressor.cleanupPartialFile(it) }
                         updateState { it.copy(phase = VideoPhase.Failed(progress.reason)) }
                         sendEffect(VideoEffect.Message(progress.reason.toMessage()))
                     }
@@ -255,5 +267,11 @@ class VideoCompressionViewModel(
 
     private companion object {
         const val VIDEO_AVC = "video/avc"
+
+        /** 超过 30 分钟建议先裁剪（规格「边界情况」）。 */
+        const val LONG_VIDEO_MS = 30 * 60 * 1000L
+
+        /** 超过 2GB 建议先裁剪。 */
+        const val LONG_VIDEO_BYTES = 2L * 1024 * 1024 * 1024
     }
 }
