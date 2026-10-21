@@ -37,6 +37,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.foolproof.base.ads.AdGateProvider
+import com.foolproof.base.ads.FeatureId
+import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.ByteFormat
 import com.foolproof.features.duplicates.ui.PhotoPreviewDialog
 import kotlinx.coroutines.delay
@@ -152,6 +155,13 @@ fun DuplicateHeader(
         }
     }
 
+    // 每完成一次扫描记一次「成功使用」
+    LaunchedEffect(state.scan) {
+        if (state.scan is ScanState.Done) {
+            AdGateProvider.gate?.onSuccess(FeatureId.DUPLICATE_CLEANUP)
+        }
+    }
+
     Column(modifier = modifier.fillMaxWidth().padding(16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -173,7 +183,11 @@ fun DuplicateHeader(
                         permissionLauncher.launch(permission)
                     }
                 },
-                onScan = { viewModel.dispatch(DuplicateAction.RequestScan) },
+                onScan = {
+                    AdGateProvider.gate.gateOrRun(activity, FeatureId.DUPLICATE_CLEANUP) {
+                        viewModel.dispatch(DuplicateAction.RequestScan)
+                    }
+                },
                 onCancel = { viewModel.dispatch(DuplicateAction.CancelScan) },
             )
         }

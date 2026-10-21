@@ -31,7 +31,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import com.foolproof.base.ads.AdGateProvider
+import com.foolproof.base.ads.FeatureId
+import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.ByteFormat
+import com.foolproof.base.util.findActivity
 import com.foolproof.features.video.domain.CompressionPreset
 import com.foolproof.features.video.ui.PresetSelector
 import com.foolproof.features.video.ui.ResultPreviewDialog
@@ -54,6 +58,14 @@ fun VideoCompressionSection(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val activity = context.findActivity()
+
+    // 每成功压缩完一个视频记一次
+    LaunchedEffect(state.phase) {
+        if (state.phase is VideoPhase.Done) {
+            AdGateProvider.gate?.onSuccess(FeatureId.VIDEO_COMPRESSION)
+        }
+    }
     var message by remember { mutableStateOf<UiMessage?>(null) }
     // 压缩结果改为弹窗预览，主页面不再切换状态
     var showResultDialog by remember { mutableStateOf(false) }
@@ -205,7 +217,11 @@ fun VideoCompressionSection(
 
             else -> {
                 Button(
-                    onClick = { viewModel.dispatch(VideoAction.Start) },
+                    onClick = {
+                        AdGateProvider.gate.gateOrRun(activity, FeatureId.VIDEO_COMPRESSION) {
+                            viewModel.dispatch(VideoAction.Start)
+                        }
+                    },
                     enabled = state.canCompress,
                     modifier = Modifier.padding(top = 12.dp),
                 ) {

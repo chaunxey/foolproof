@@ -25,11 +25,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.foolproof.base.ads.AdGateProvider
+import com.foolproof.base.ads.FeatureId
+import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.ByteFormat
+import com.foolproof.base.util.findActivity
 import com.foolproof.features.compression.domain.CompressionOutcome
 import com.foolproof.features.compression.domain.FailureReason
 import com.foolproof.features.compression.domain.OutcomeStatus
@@ -52,6 +57,8 @@ fun CompressionSection(
     viewModel: CompressionViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val activity = context.findActivity()
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(MAX_PICK_COUNT),
     ) { uris ->
@@ -81,6 +88,15 @@ fun CompressionSection(
             kotlinx.coroutines.delay(2500)
             message = null
         }
+    }
+
+    // 一次批量压缩成功结束（至少一张有结果）记一次「成功使用」
+    var wasRunning by remember { mutableStateOf(false) }
+    androidx.compose.runtime.LaunchedEffect(state.isRunning, state.completedCount) {
+        if (wasRunning && !state.isRunning && state.completedCount > 0) {
+            AdGateProvider.gate?.onSuccess(FeatureId.IMAGE_COMPRESSION)
+        }
+        wasRunning = state.isRunning
     }
 
     Column(modifier = modifier.fillMaxWidth().padding(16.dp)) {
@@ -135,9 +151,14 @@ fun CompressionSection(
             )
             Button(
                 onClick = {
-                    viewModel.dispatch(
-                        if (state.isRunning) CompressionAction.Cancel else CompressionAction.Start,
-                    )
+                    if (state.isRunning) {
+                        viewModel.dispatch(CompressionAction.Cancel)
+                    } else {
+                        // 每成功压缩 5 次，下一次开始前先看插屏
+                        AdGateProvider.gate.gateOrRun(activity, FeatureId.IMAGE_COMPRESSION) {
+                            viewModel.dispatch(CompressionAction.Start)
+                        }
+                    }
                 },
                 enabled = state.isRunning || state.canStart,
             ) {

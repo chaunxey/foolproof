@@ -8,11 +8,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -21,6 +23,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Density
 import androidx.core.view.WindowCompat
+import com.foolproof.ads.SplashAdOverlay
+import com.foolproof.ads.SplashScheduler
 import com.foolproof.ui.FoolproofScreen
 import com.foolproof.ui.settings.SettingsStore
 import com.foolproof.ui.settings.ThemeMode
@@ -28,11 +32,30 @@ import com.foolproof.ui.theme.FoolproofTheme
 
 class MainActivity : ComponentActivity() {
 
+    private var splashChecked = false
+    private val showSplash = mutableStateOf(false)
+
     override fun attachBaseContext(newBase: Context) {
         // 在 super 之前初始化偏好，保证首帧就能读到语言/字体/主题设置
         SettingsStore.init(newBase)
         // Activity 自身 resources 也跟随语言：Dialog 等新窗口不会掉回系统/旧语言
         super.attachBaseContext(SettingsStore.wrapBaseContext(newBase))
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (!splashChecked) {
+            splashChecked = true
+            // 冷启动必看一次；之后只有后台超过 1 小时回来才看
+            showSplash.value = SplashScheduler.shouldShow()
+        }
+    }
+
+    override fun onStop() {
+        if (!isChangingConfigurations) {
+            SplashScheduler.recordBackground()
+        }
+        super.onStop()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,7 +97,12 @@ class MainActivity : ComponentActivity() {
                 LocalDensity provides Density(density = base.density, fontScale = scale),
             ) {
                 FoolproofTheme(darkTheme = darkTheme) {
-                    FoolproofScreen(modifier = Modifier.fillMaxSize())
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        FoolproofScreen(modifier = Modifier.fillMaxSize())
+                        if (showSplash.value) {
+                            SplashAdOverlay(onFinished = { showSplash.value = false })
+                        }
+                    }
                 }
             }
         }

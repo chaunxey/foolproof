@@ -19,6 +19,8 @@ kotlinxCoroutines = "1.11.0"
 exifinterface = "1.4.2"
 coil = "3.6.3"
 media3 = "1.11.1"
+# 广告
+audienceNetwork = "6.22.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -65,6 +67,9 @@ coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref 
 # 视频压缩（Media3）
 media3-transformer = { group = "androidx.media3", name = "media3-transformer", version.ref = "media3" }
 media3-effect = { group = "androidx.media3", name = "media3-effect", version.ref = "media3" }
+
+# 广告
+audience-network = { group = "com.facebook.android", name = "audience-network-sdk", version.ref = "audienceNetwork" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

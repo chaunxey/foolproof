@@ -3,6 +3,7 @@ package com.foolproof.ui.compression
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -12,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.foolproof.ads.BannerAd
 import com.foolproof.features.compression.CompressionSection
 import com.foolproof.features.duplicates.DuplicateAction
 import com.foolproof.features.duplicates.DuplicateHeader
@@ -45,6 +47,11 @@ fun CompressionTabScreen(modifier: Modifier = Modifier) {
     ) {
         item(key = "compression", span = { GridItemSpan(maxLineSpan) }) {
             CompressionSection()
+        }
+
+        // 压缩区与去重区之间的横幅广告
+        item(key = "ad-banner", span = { GridItemSpan(maxLineSpan) }) {
+            BannerAd(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
         }
 
         item(key = "divider", span = { GridItemSpan(maxLineSpan) }) {

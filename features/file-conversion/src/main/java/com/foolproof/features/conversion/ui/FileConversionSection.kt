@@ -46,7 +46,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
+import com.foolproof.base.ads.AdGateProvider
+import com.foolproof.base.ads.FeatureId
+import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.ByteFormat
+import com.foolproof.base.util.findActivity
 import com.foolproof.features.conversion.ConversionAction
 import com.foolproof.features.conversion.ConversionEffect
 import com.foolproof.features.conversion.ConversionMode
@@ -70,7 +74,15 @@ fun FileConversionSection(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val activity = context.findActivity()
     var message by remember { mutableStateOf<Pair<Int, Boolean>?>(null) }
+
+    // 每成功生成一次 PDF 记一次
+    LaunchedEffect(state.phase) {
+        if (state.phase is ConversionPhase.Done) {
+            AdGateProvider.gate?.onSuccess(FeatureId.FILE_CONVERSION)
+        }
+    }
 
     val imagePicker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(),
@@ -309,7 +321,11 @@ fun FileConversionSection(
 
             else -> {
                 Button(
-                    onClick = { viewModel.dispatch(ConversionAction.Start) },
+                    onClick = {
+                        AdGateProvider.gate.gateOrRun(activity, FeatureId.FILE_CONVERSION) {
+                            viewModel.dispatch(ConversionAction.Start)
+                        }
+                    },
                     enabled = state.canConvert,
                     modifier = Modifier.padding(top = 12.dp),
                 ) {

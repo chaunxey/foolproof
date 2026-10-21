@@ -1,4 +1,4 @@
-﻿# 项目宪法（Project Constitution）
+# 项目宪法（Project Constitution）
 
 > 本文档是本项目的最高约束。任何代码、评审、重构都不得违反；如需修改，必须显式更新本文档并说明理由。
 技术栈一旦锁定，禁止替换；新增依赖必须在第 2 节登记。
@@ -42,6 +42,7 @@
 | 图片压缩 | **自研**（`BitmapFactory` + `Bitmap.compress`） | 不引第三方压缩库；`androidx.exifinterface` 仅用于纠正方向 |
 | 视频压缩 | **Media3 Transformer** 1.11.1（+ `media3-effect`） | 官方 AndroidX，Apache-2.0；只做转码/缩放/裁剪，不引 FFmpeg |
 | 图片加载 | **Coil 3** | 业务模块禁止直接 new ImageLoader |
+| 广告 | **Meta Audience Network (FAN) 6.22.0** | 仅 `:app` 直接依赖；feature 只依赖 `:base` 的 `AdGate` 接口 |
 | 本地存储 | **Room** + **EncryptedSharedPreferences** | 会话历史用 Room；API Key 必须用 EncryptedSP |
 | 语音端点 | Silero VAD（ONNX，本地） | 不用服务端 VAD |
 | 语音推理运行时 | **onnxruntime-android** | 仅承载 Silero VAD，版本在引入时确定（v1.4 补登记） |
@@ -279,14 +280,16 @@ AudioRecord(PCM 16k/24k)
 - `RECORD_AUDIO`（仅 voice-chat 运行时申请）
 - `READ_MEDIA_IMAGES` / `READ_MEDIA_VISUAL_USER_SELECTED`（Android 13+）
 - `READ_EXTERNAL_STORAGE`（Android 12 及以下，maxSdk=32）
+- `INTERNET` / `ACCESS_NETWORK_STATE` / `com.google.android.gms.permission.AD_ID`（仅广告 SDK 使用）
 - 不要申请 `WRITE_EXTERNAL_STORAGE`（Scoped Storage）
 - 不要申请无关权限（通讯录、定位、手机状态）
 
 合规要求：
 
 - 隐私政策明确说明：麦克风音频直传 OpenAI，不经过我方服务器
+- 隐私政策必须说明：Meta Audience Network 会联网并可能处理设备标识与广告交互数据；EEA/UK 需提供广告同意入口
 - 首次进入语音聊天前弹同意框
-- 图片压缩、重复照片清理全程本地处理，不联网
+- 图片压缩、重复照片清理的图片处理全程本地完成；仅广告 SDK 联网，且**不上传用户图片/文件内容**
 
 ***
 

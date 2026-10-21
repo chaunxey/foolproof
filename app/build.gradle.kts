@@ -1,4 +1,4 @@
-﻿plugins {
+plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
@@ -54,6 +54,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     // :app 需要直接从 Koin 取 feature 的 ViewModel（页面组装的一部分）
     implementation(libs.koin.compose.viewmodel)
+    // 广告：仅 :app 直接依赖，feature 通过 :base 的 AdGate 接口调用
+    implementation(libs.audience.network)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
