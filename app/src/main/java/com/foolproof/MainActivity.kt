@@ -1,5 +1,6 @@
 package com.foolproof
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,9 +17,15 @@ import com.foolproof.ui.settings.SettingsStore
 import com.foolproof.ui.theme.FoolproofTheme
 
 class MainActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        // 必须在 super 之前读设置：语言要在这里就作用到资源，否则首帧会是系统语言
+        SettingsStore.init(newBase)
+        super.attachBaseContext(SettingsStore.localizedContext(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        SettingsStore.init(this)
         enableEdgeToEdge()
         setContent {
             // 只改 Density.fontScale：文字随之缩放，Activity 不重建，切换无闪烁
