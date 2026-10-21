@@ -47,4 +47,19 @@
     <string name="camera_error">撮影に失敗しました。もう一度お試しください</string>
     <string name="camera_switch">カメラを切り替え</string>
     <string name="conversion_remove_image">この画像を削除</string>
+    <string name="pdf_tools_start">処理開始</string>
+    <string name="pdf_tools_mode_rotate">回転</string>
+    <string name="pdf_tools_invalid_range">ページ範囲が無効です</string>
+    <string name="pdf_tools_need_two">PDF を 2 つ以上選択</string>
+    <string name="pdf_tools_done">完了</string>
+    <string name="conversion_tab_tools">PDF ツール</string>
+    <string name="pdf_tools_mode_split">分割</string>
+    <string name="pdf_tools_failed">PDF 処理に失敗しました</string>
+    <string name="pdf_tools_pick">PDF を選択</string>
+    <string name="pdf_tools_mode_merge">結合</string>
+    <string name="pdf_tools_need_one">先に PDF を 1 つ選択</string>
+    <string name="pdf_tools_remove">削除</string>
+    <string name="pdf_tools_pages">%1$d ページ</string>
+    <string name="pdf_tools_range">ページ範囲（例 1-3,5）</string>
+    <string name="conversion_tab_generate">PDF 作成</string>
 </resources>

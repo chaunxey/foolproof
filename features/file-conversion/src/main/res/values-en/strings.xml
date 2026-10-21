@@ -47,4 +47,19 @@
     <string name="camera_error">Capture failed, try again</string>
     <string name="camera_switch">Switch camera</string>
     <string name="conversion_remove_image">Remove image</string>
+    <string name="pdf_tools_start">Process</string>
+    <string name="pdf_tools_mode_rotate">Rotate</string>
+    <string name="pdf_tools_invalid_range">Invalid page range</string>
+    <string name="pdf_tools_need_two">Pick at least 2 PDFs</string>
+    <string name="pdf_tools_done">Done</string>
+    <string name="conversion_tab_tools">PDF tools</string>
+    <string name="pdf_tools_mode_split">Split</string>
+    <string name="pdf_tools_failed">PDF processing failed</string>
+    <string name="pdf_tools_pick">Pick PDFs</string>
+    <string name="pdf_tools_mode_merge">Merge</string>
+    <string name="pdf_tools_need_one">Pick 1 PDF first</string>
+    <string name="pdf_tools_remove">Remove</string>
+    <string name="pdf_tools_pages">%1$d pages</string>
+    <string name="pdf_tools_range">Page range (e.g. 1-3,5)</string>
+    <string name="conversion_tab_generate">Generate PDF</string>
 </resources>

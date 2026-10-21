@@ -24,6 +24,8 @@ object OutputNaming {
     enum class Action(val token: String) {
         COMPRESS("COMP"),
         MERGE("MERGE"),
+        SPLIT("SPLIT"),
+        ROTATE("ROTATE"),
         CONVERT("CONV"),
     }
 

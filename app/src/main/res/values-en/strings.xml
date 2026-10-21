@@ -25,4 +25,6 @@
     <string name="back_press_again">Press back again to exit</string>
     <string name="video_mode_compress">Compress</string>
     <string name="video_mode_merge">Merge</string>    <string name="ads_skip">Skip</string>
+    <string name="conversion_tab_tools">PDF tools</string>
+    <string name="conversion_tab_generate">Generate PDF</string>
 </resources>

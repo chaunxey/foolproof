@@ -1,15 +1,18 @@
-﻿package com.foolproof.features.conversion.di
+package com.foolproof.features.conversion.di
 
 import android.content.Context
 import com.foolproof.features.conversion.FileConversionViewModel
+import com.foolproof.features.conversion.PdfToolsViewModel
 import com.foolproof.features.conversion.data.BitmapImageLoader
 import com.foolproof.features.conversion.data.ContentUriTextLoader
 import com.foolproof.features.conversion.data.MediaStorePdfExporter
 import com.foolproof.features.conversion.data.NativePdfGenerator
+import com.foolproof.features.conversion.data.PdfBoxToolEngine
 import com.foolproof.features.conversion.data.PdfOutputCleaner
 import com.foolproof.features.conversion.domain.PdfConverter
 import com.foolproof.features.conversion.domain.PdfImageLoader
 import com.foolproof.features.conversion.domain.PdfTextLoader
+import com.foolproof.features.conversion.domain.PdfToolEngine
 import java.io.File
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.module.Module
@@ -22,6 +25,7 @@ val fileConversionModule: Module = module {
     single<PdfConverter> { NativePdfGenerator(get(), get(), get()) }
 
     single<com.foolproof.features.conversion.domain.PdfExporter> { MediaStorePdfExporter(get(), get()) }
+    single<PdfToolEngine> { PdfBoxToolEngine(get(), get()) }
     single { PdfOutputCleaner(File(get<Context>().filesDir, "pdf"), get()) }
 
     viewModel {
@@ -30,6 +34,15 @@ val fileConversionModule: Module = module {
             imageLoader = get(),
             exporter = get(),
             outputDir = File(get<Context>().filesDir, "pdf"),
+            log = get(),
+        )
+    }
+
+    viewModel {
+        PdfToolsViewModel(
+            engine = get(),
+            exporter = get(),
+            outputDir = File(get<Context>().filesDir, "pdf_tools"),
             log = get(),
         )
     }

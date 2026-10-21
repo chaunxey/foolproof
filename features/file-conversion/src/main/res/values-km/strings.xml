@@ -47,4 +47,19 @@
     <string name="camera_error">ការថតបានបរាជ័យ សូមព្យាយាមម្តងទៀត</string>
     <string name="camera_switch">បញ្ច្រាសកាមេរ៉ា</string>
     <string name="conversion_remove_image">លុបរូបភាពនេះ</string>
+    <string name="pdf_tools_start">ចាប់ផ្តើម</string>
+    <string name="pdf_tools_mode_rotate">បង្វិល</string>
+    <string name="pdf_tools_invalid_range">ជួរទំព័រមិនត្រឹមត្រូវ</string>
+    <string name="pdf_tools_need_two">ជ្រើសរើស PDF យ៉ាងតិច 2</string>
+    <string name="pdf_tools_done">រួចរាល់</string>
+    <string name="conversion_tab_tools">ឧបករណ៍ PDF</string>
+    <string name="pdf_tools_mode_split">បំបែក</string>
+    <string name="pdf_tools_failed">ដំណើរការ PDF បរាជ័យ</string>
+    <string name="pdf_tools_pick">ជ្រើសរើស PDF</string>
+    <string name="pdf_tools_mode_merge">បញ្ចូលគ្នា</string>
+    <string name="pdf_tools_need_one">ជ្រើសរើស PDF 1 សិន</string>
+    <string name="pdf_tools_remove">លុប</string>
+    <string name="pdf_tools_pages">%1$d ទំព័រ</string>
+    <string name="pdf_tools_range">ជួរទំព័រ (ឧ. 1-3,5)</string>
+    <string name="conversion_tab_generate">បង្កើត PDF</string>
 </resources>

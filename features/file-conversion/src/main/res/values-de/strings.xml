@@ -47,4 +47,19 @@
     <string name="camera_error">Aufnahme fehlgeschlagen, bitte erneut versuchen</string>
     <string name="camera_switch">Kamera wechseln</string>
     <string name="conversion_remove_image">Bild entfernen</string>
+    <string name="pdf_tools_start">Verarbeiten</string>
+    <string name="pdf_tools_mode_rotate">Drehen</string>
+    <string name="pdf_tools_invalid_range">Ungültiger Seitenbereich</string>
+    <string name="pdf_tools_need_two">Mindestens 2 PDFs wählen</string>
+    <string name="pdf_tools_done">Fertig</string>
+    <string name="conversion_tab_tools">PDF-Werkzeuge</string>
+    <string name="pdf_tools_mode_split">Teilen</string>
+    <string name="pdf_tools_failed">PDF-Verarbeitung fehlgeschlagen</string>
+    <string name="pdf_tools_pick">PDFs wählen</string>
+    <string name="pdf_tools_mode_merge">Zusammenführen</string>
+    <string name="pdf_tools_need_one">Zuerst 1 PDF wählen</string>
+    <string name="pdf_tools_remove">Entfernen</string>
+    <string name="pdf_tools_pages">%1$d Seiten</string>
+    <string name="pdf_tools_range">Seitenbereich (z. B. 1-3,5)</string>
+    <string name="conversion_tab_generate">PDF erstellen</string>
 </resources>
