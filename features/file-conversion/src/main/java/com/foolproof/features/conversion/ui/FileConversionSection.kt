@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.Build
 import android.provider.OpenableColumns
@@ -34,6 +36,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.collectAsState
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.exifinterface.media.ExifInterface
 import android.content.Intent
 import java.io.File
 import androidx.compose.runtime.Composable
@@ -436,20 +439,56 @@ private fun Thumbnail(uri: String, modifier: Modifier = Modifier) {
 
 
 private fun loadThumbnail(context: Context, uri: String): Bitmap? = runCatching {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        context.contentResolver.loadThumbnail(Uri.parse(uri), android.util.Size(200, 200), null)
+    val parsed = Uri.parse(uri)
+    // 拍照产物是 file://，ContentResolver.loadThumbnail 只认 content://
+    if (parsed.scheme == "file") {
+        loadFileThumbnail(File(parsed.path ?: return@runCatching null))
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        context.contentResolver.loadThumbnail(parsed, android.util.Size(200, 200), null)
     } else {
-        context.contentResolver.openInputStream(Uri.parse(uri))?.use { stream ->
-            val bounds = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            android.graphics.BitmapFactory.decodeStream(stream, null, bounds)
+        context.contentResolver.openInputStream(parsed)?.use { stream ->
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeStream(stream, null, bounds)
             val sample = maxOf(1, minOf(bounds.outWidth, bounds.outHeight) / 200)
-            val options = android.graphics.BitmapFactory.Options().apply { inSampleSize = sample }
-            context.contentResolver.openInputStream(Uri.parse(uri))?.use {
-                android.graphics.BitmapFactory.decodeStream(it, null, options)
+            val options = BitmapFactory.Options().apply { inSampleSize = sample }
+            context.contentResolver.openInputStream(parsed)?.use {
+                BitmapFactory.decodeStream(it, null, options)
             }
         }
     }
 }.getOrNull()
+
+private fun loadFileThumbnail(file: File): Bitmap? {
+    if (!file.exists()) return null
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeFile(file.absolutePath, bounds)
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+    val sample = maxOf(1, minOf(bounds.outWidth, bounds.outHeight) / 200)
+    val options = BitmapFactory.Options().apply { inSampleSize = sample }
+    val bitmap = BitmapFactory.decodeFile(file.absolutePath, options) ?: return null
+    return rotateByExif(file, bitmap)
+}
+
+private fun rotateByExif(file: File, bitmap: Bitmap): Bitmap {
+    val orientation = runCatching {
+        ExifInterface(file).getAttributeInt(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_NORMAL,
+        )
+    }.getOrDefault(ExifInterface.ORIENTATION_NORMAL)
+    val matrix = Matrix()
+    when (orientation) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+        ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+        ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+        else -> return bitmap
+    }
+    val rotated = runCatching {
+        Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+    }.getOrDefault(bitmap)
+    if (rotated !== bitmap) bitmap.recycle()
+    return rotated
+}
 
 private fun Context.readFileMeta(uri: Uri): Pair<String, Long> = runCatching {
     contentResolver.query(uri, null, null, null, null)?.use { cursor ->
