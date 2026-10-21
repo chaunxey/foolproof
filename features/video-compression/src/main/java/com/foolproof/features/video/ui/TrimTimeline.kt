@@ -1,10 +1,17 @@
-﻿package com.foolproof.features.video.ui
+package com.foolproof.features.video.ui
 
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.widget.VideoView
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.TextButton
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import com.foolproof.features.video.R
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -66,7 +73,21 @@ internal fun TrimTimeline(
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f)
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                // 点视频任意处切换播放/暂停（与常见播放器一致）
+                .clickable {
+                    val view = videoView
+                    if (view != null) {
+                        if (isPlaying) {
+                            view.pause()
+                            isPlaying = false
+                        } else {
+                            view.seekTo(startMs.toInt())
+                            view.start()
+                            isPlaying = true
+                        }
+                    }
+                },
             contentAlignment = Alignment.Center,
         ) {
             AndroidView(
@@ -84,23 +105,22 @@ internal fun TrimTimeline(
                 modifier = Modifier.fillMaxSize(),
             )
 
-            if (isPlaying) {
-                TextButton(onClick = {
-                    videoView?.pause()
-                    isPlaying = false
-                }) {
-                    Text("暂停")
-                }
-            } else {
-                FilledTonalButton(onClick = {
-                    val view = videoView ?: return@FilledTonalButton
-                    // 从裁剪起点开始播；播到终点前由用户自己暂停
-                    view.seekTo(startMs.toInt())
-                    view.start()
-                    isPlaying = true
-                }) {
-                    Text("播放")
-                }
+            // 中央播放/暂停按钮：图标 + 半透明圆底（纯视觉，点击由外层统一处理）
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(Color.Black.copy(alpha = 0.35f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    painter = painterResource(
+                        if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
+                    ),
+                    contentDescription = if (isPlaying) "暂停" else "播放",
+                    tint = Color.White,
+                    modifier = Modifier.size(26.dp),
+                )
             }
         }
 
