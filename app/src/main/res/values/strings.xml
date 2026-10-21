@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Foolproof</string>
+
+    <!-- 设置页 -->
+    <string name="settings_title">设置</string>
+    <string name="settings_font_size">字体大小：%1$d%%</string>
+    <string name="settings_font_preview">示例：这是一段用于预览大小效果的文字</string>
+    <string name="settings_restore_default">恢复默认</string>
+    <string name="settings_close">关闭</string>
+
+    <!-- 返回键 -->
+    <string name="back_press_again">再按一次退出</string>
 </resources>

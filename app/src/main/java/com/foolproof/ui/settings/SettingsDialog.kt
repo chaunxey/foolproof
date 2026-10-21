@@ -1,4 +1,4 @@
-package com.foolproof.ui.settings
+﻿package com.foolproof.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,8 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.foolproof.R
 import androidx.compose.ui.window.Dialog
 import kotlin.math.roundToInt
 
@@ -28,10 +30,10 @@ fun SettingsDialog(onDismiss: () -> Unit) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(shape = MaterialTheme.shapes.large, tonalElevation = 6.dp) {
             Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
-                Text("设置", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.titleMedium)
 
                 Text(
-                    text = "字体大小：${(scale * 100).roundToInt()}%",
+                    text = stringResource(R.string.settings_font_size, (scale * 100).roundToInt()),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(top = 16.dp),
                 )
@@ -42,7 +44,7 @@ fun SettingsDialog(onDismiss: () -> Unit) {
                 )
 
                 Text(
-                    text = "示例：这是一段用于预览大小效果的文字",
+                    text = stringResource(R.string.settings_font_preview),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(top = 8.dp),
                 )
@@ -53,9 +55,9 @@ fun SettingsDialog(onDismiss: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     OutlinedButton(onClick = { SettingsStore.setFontScale(1.0f) }) {
-                        Text("恢复默认")
+                        Text(stringResource(R.string.settings_restore_default))
                     }
-                    TextButton(onClick = onDismiss) { Text("关闭") }
+                    TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_close)) }
                 }
             }
         }
