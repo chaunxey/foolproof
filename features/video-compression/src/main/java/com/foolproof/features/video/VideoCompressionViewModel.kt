@@ -212,6 +212,16 @@ class VideoCompressionViewModel(
         val targetShortSide = state.preset.targetShortSide(video, maxSize)
         val frameRate = minOf(video.frameRate, CompressionPreset.MAX_FRAME_RATE)
 
+        // 新压缩会替换上一个结果（output 随即置空），旧产物从此不可达 → 先删掉，
+        // 避免同一会话里反复压缩把 files/videos/ 撑满（FR-014：不得留下孤立文件）
+        runCatching {
+            outputDir.listFiles()?.forEach { file ->
+                if (file.isFile && file.delete()) {
+                    log.d { "removed previous output: ${file.name}" }
+                }
+            }
+        }
+
         val outputPath = File(outputDir, "compressed_${System.currentTimeMillis()}.mp4").absolutePath
         currentOutputPath = outputPath
 

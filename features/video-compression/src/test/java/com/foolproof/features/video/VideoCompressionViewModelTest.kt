@@ -413,6 +413,20 @@ class VideoCompressionViewModelTest {
     }
 
     @Test
+    fun `starting a new compression removes the previous output`() = runTest(dispatcher) {
+        val dir = tempFolder.newFolder("videos-replace")
+        val previous = File(dir, "compressed_old.mp4").apply { writeText("previous") }
+
+        val vm = viewModel(outputDir = dir)
+        vm.dispatch(VideoAction.VideoPicked("content://video/1"))
+        advanceUntilIdle()
+        vm.dispatch(VideoAction.Start)
+        advanceUntilIdle()
+
+        assertFalse("上一次的产物应被清掉（FR-014）", previous.exists())
+    }
+
+    @Test
     fun `share emits the output path`() = runTest(dispatcher) {
         val vm = viewModel()
         val effects = mutableListOf<VideoEffect>()
