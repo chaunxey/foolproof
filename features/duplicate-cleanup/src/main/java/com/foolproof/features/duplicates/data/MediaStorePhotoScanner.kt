@@ -2,6 +2,7 @@ package com.foolproof.features.duplicates.data
 
 import android.content.ContentUris
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -117,12 +118,27 @@ class MediaStorePhotoScanner(
 
             while (cursor.moveToNext() && result.size < MAX_PHOTOS) {
                 val id = cursor.getLong(idIndex)
-                val width = cursor.getInt(widthIndex)
-                val height = cursor.getInt(heightIndex)
+                var width = cursor.getInt(widthIndex)
+                var height = cursor.getInt(heightIndex)
+                val uri = ContentUris.withAppendedId(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                    id,
+                )
+                // 新保存的图有时宽高还没写进 MediaStore，回退解码一次，避免整张漏扫
+                if (width <= 0 || height <= 0) {
+                    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                    runCatching {
+                        context.contentResolver.openInputStream(uri)?.use {
+                            BitmapFactory.decodeStream(it, null, bounds)
+                        }
+                    }
+                    width = bounds.outWidth
+                    height = bounds.outHeight
+                }
                 if (width <= 0 || height <= 0) continue
 
                 result += RawPhoto(
-                    uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id),
+                    uri = uri,
                     displayName = cursor.getString(nameIndex) ?: "image_$id",
                     sizeBytes = cursor.getLong(sizeIndex),
                     width = width,
