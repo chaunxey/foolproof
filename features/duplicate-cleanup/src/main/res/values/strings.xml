@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        重复照片清理（多语言：本模块所有用户可见文案都放在这里，代码统一用 stringResource 取，
+        不要在 Compose 里再写中文字面量）。带参数的文案一律用位置参数，方便翻译调整语序。
+    -->
+
+    <!-- 标题与操作 -->
+    <string name="duplicates_title">重复照片清理</string>
+    <string name="duplicates_scan_start">查询相同图片</string>
+    <string name="duplicates_scan_again">重新查询</string>
+    <string name="duplicates_cancel">取消</string>
+    <string name="duplicates_grant_and_scan">授权并查询</string>
+    <string name="duplicates_open_settings">去设置授权</string>
+    <string name="duplicates_clear_selection">清空选择</string>
+    <string name="duplicates_delete">删除</string>
+
+    <!-- 扫描状态 -->
+    <string name="duplicates_scanning">扫描中 %1$d/%2$d</string>
+    <string name="duplicates_scan_done">已扫描 %1$d 张，跳过 %2$d 张</string>
+    <string name="duplicates_scan_cancelled">已取消</string>
+    <string name="duplicates_scan_failed">扫描失败</string>
+
+    <!-- 勾选汇总与结果说明 -->
+    <string name="duplicates_selected_summary">已选 %1$d 张 · %2$s</string>
+    <string name="duplicates_results_hint">结果见下方，点击缩略图可放大查看</string>
+
+    <!-- 空结果提示 -->
+    <string name="duplicates_hint_no_duplicates">没有发现重复照片</string>
+    <string name="duplicates_hint_cancelled">已取消，可重新查询</string>
+    <!-- %1$s 为【查询相同图片】按钮文案，避免句子里再硬编码一遍 -->
+    <string name="duplicates_hint_idle">点击「%1$s」扫描相册中的重复照片</string>
+
+    <!-- 删除确认框 -->
+    <string name="duplicates_delete_title">删除确认</string>
+    <string name="duplicates_delete_message">将删除 %1$d 张，约 %2$s</string>
+    <string name="duplicates_delete_irreversible">当前系统版本删除后无法恢复</string>
+
+    <!-- 结果网格 -->
+    <string name="duplicates_group_summary">%1$d 张 · 可释放 %2$s</string>
+    <string name="duplicates_limit_hint">结果较多，仅显示前 %1$d 张；删除后可重新查询继续</string>
+
+    <!-- 全屏预览 -->
+    <string name="duplicates_preview_close_hint">点击任意处关闭</string>
+
+    <!-- 一次性提示 -->
+    <string name="duplicates_msg_empty_gallery">相册里没有可读取的图片</string>
+    <string name="duplicates_msg_no_duplicates">没有发现重复照片</string>
+    <string name="duplicates_msg_scan_failed">扫描失败，请重试</string>
+    <string name="duplicates_msg_permission_denied">需要相册读取权限才能扫描</string>
+    <string name="duplicates_msg_permission_denied_forever">权限已被永久拒绝，请到系统设置中开启</string>
+    <string name="duplicates_msg_saf_required">当前系统需先授权一个目录才能删除</string>
+    <string name="duplicates_msg_deleted">已删除</string>
+    <string name="duplicates_msg_delete_failed">部分图片删除失败</string>
+    <string name="duplicates_msg_system_delete_unavailable">系统删除请求不可用</string>
+</resources>
