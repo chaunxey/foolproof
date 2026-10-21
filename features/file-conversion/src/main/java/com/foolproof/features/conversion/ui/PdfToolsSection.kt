@@ -2,15 +2,25 @@ package com.foolproof.features.conversion.ui
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.pdf.PdfRenderer
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -25,6 +35,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -39,11 +52,15 @@ import com.foolproof.features.conversion.PdfToolsAction
 import com.foolproof.features.conversion.PdfToolsEffect
 import com.foolproof.features.conversion.PdfToolsViewModel
 import com.foolproof.features.conversion.R
+import com.foolproof.features.conversion.domain.PdfCompressQuality
 import com.foolproof.features.conversion.domain.PdfToolMode
 import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.koin.compose.viewmodel.koinViewModel
 
-/** 离线 PDF 工具：合并 / 按范围拆分 / 旋转。 */
+/** 离线 PDF 工具：合并 / 按范围拆分 / 旋转 / 页面重排 / 压缩。 */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PdfToolsSection(
     modifier: Modifier = Modifier,
@@ -82,7 +99,7 @@ fun PdfToolsSection(
     }
 
     Column(modifier = modifier.fillMaxWidth().padding(16.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             PdfToolMode.entries.forEach { mode ->
                 FilterChip(
                     selected = state.mode == mode,
@@ -161,6 +178,60 @@ fun PdfToolsSection(
                 }
             }
 
+            PdfToolMode.PAGES -> {
+                val file = state.files.firstOrNull()
+                if (file != null) {
+                    state.pageOrder.forEachIndexed { index, pageNumber ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            PdfPageThumb(
+                                uri = file.uri,
+                                pageIndex = pageNumber - 1,
+                                modifier = Modifier.size(56.dp),
+                            )
+                            Text(
+                                text = stringResource(R.string.pdf_tools_pages, pageNumber),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f).padding(start = 12.dp),
+                            )
+                            TextButton(
+                                onClick = { viewModel.dispatch(PdfToolsAction.PageMove(index, -1)) },
+                                enabled = !working && index > 0,
+                            ) { Text("←") }
+                            TextButton(
+                                onClick = { viewModel.dispatch(PdfToolsAction.PageMove(index, 1)) },
+                                enabled = !working && index < state.pageOrder.lastIndex,
+                            ) { Text("→") }
+                            TextButton(
+                                onClick = { viewModel.dispatch(PdfToolsAction.PageRemove(index)) },
+                                enabled = !working,
+                            ) { Text(stringResource(R.string.pdf_tools_remove)) }
+                        }
+                    }
+                }
+            }
+
+            PdfToolMode.COMPRESS -> {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(top = 12.dp),
+                ) {
+                    com.foolproof.features.conversion.domain.PdfCompressQuality.entries
+                        .forEach { quality ->
+                            FilterChip(
+                                selected = state.quality == quality,
+                                onClick = {
+                                    viewModel.dispatch(PdfToolsAction.QualityChanged(quality))
+                                },
+                                enabled = !working,
+                                label = { Text(stringResource(quality.labelRes())) },
+                            )
+                        }
+                }
+            }
+
             PdfToolMode.MERGE -> Unit
         }
 
@@ -216,11 +287,20 @@ private fun PdfToolMode.labelRes(): Int = when (this) {
     PdfToolMode.MERGE -> R.string.pdf_tools_mode_merge
     PdfToolMode.SPLIT -> R.string.pdf_tools_mode_split
     PdfToolMode.ROTATE -> R.string.pdf_tools_mode_rotate
+    PdfToolMode.PAGES -> R.string.pdf_tools_mode_pages
+    PdfToolMode.COMPRESS -> R.string.pdf_tools_mode_compress
+}
+
+private fun PdfCompressQuality.labelRes(): Int = when (this) {
+    PdfCompressQuality.HIGH -> R.string.pdf_tools_quality_high
+    PdfCompressQuality.MEDIUM -> R.string.pdf_tools_quality_medium
+    PdfCompressQuality.LOW -> R.string.pdf_tools_quality_low
 }
 
 private fun PdfToolsEffect.MessageKind.labelRes(): Int = when (this) {
     PdfToolsEffect.MessageKind.NEED_ONE -> R.string.pdf_tools_need_one
     PdfToolsEffect.MessageKind.NEED_TWO -> R.string.pdf_tools_need_two
+    PdfToolsEffect.MessageKind.NEED_PAGES -> R.string.pdf_tools_need_pages
     PdfToolsEffect.MessageKind.INVALID_RANGE -> R.string.pdf_tools_invalid_range
     PdfToolsEffect.MessageKind.FAILED -> R.string.pdf_tools_failed
     PdfToolsEffect.MessageKind.DONE -> R.string.pdf_tools_done
@@ -231,6 +311,7 @@ private fun PdfToolsEffect.MessageKind.labelRes(): Int = when (this) {
 private fun PdfToolsEffect.MessageKind.isError(): Boolean = when (this) {
     PdfToolsEffect.MessageKind.NEED_ONE,
     PdfToolsEffect.MessageKind.NEED_TWO,
+    PdfToolsEffect.MessageKind.NEED_PAGES,
     PdfToolsEffect.MessageKind.INVALID_RANGE,
     PdfToolsEffect.MessageKind.FAILED,
     PdfToolsEffect.MessageKind.SAVE_FAILED,
@@ -259,6 +340,58 @@ private fun Context.pdfDisplayName(uri: Uri): String {
     }
     return uri.lastPathSegment?.substringAfterLast('/') ?: "document.pdf"
 }
+
+@Composable
+private fun PdfPageThumb(uri: String, pageIndex: Int, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    var bitmap by remember(uri, pageIndex) { mutableStateOf<Bitmap?>(null) }
+    LaunchedEffect(uri, pageIndex) {
+        bitmap = withContext(Dispatchers.IO) {
+            renderPdfPage(context, uri, pageIndex)
+        }
+    }
+    val image = bitmap
+    if (image != null) {
+        Image(
+            bitmap = image.asImageBitmap(),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = modifier.clip(RoundedCornerShape(6.dp)),
+        )
+    } else {
+        Box(
+            modifier = modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+        )
+    }
+}
+
+private fun renderPdfPage(context: Context, uri: String, index: Int): Bitmap? = runCatching {
+    val descriptor = context.contentResolver.openFileDescriptor(Uri.parse(uri), "r")
+        ?: return@runCatching null
+    try {
+        val renderer = PdfRenderer(descriptor)
+        try {
+            if (index !in 0 until renderer.pageCount) return@runCatching null
+            val page = renderer.openPage(index)
+            try {
+                val width = 160
+                val height = (width * page.height.toFloat() / page.width).toInt().coerceAtLeast(1)
+                Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also { bitmap ->
+                    bitmap.eraseColor(android.graphics.Color.WHITE)
+                    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                }
+            } finally {
+                page.close()
+            }
+        } finally {
+            renderer.close()
+        }
+    } finally {
+        descriptor.close()
+    }
+}.getOrNull()
 
 private fun Context.sharePdfFile(path: String): Boolean {
     val uri = runCatching {

@@ -26,6 +26,7 @@ object OutputNaming {
         MERGE("MERGE"),
         SPLIT("SPLIT"),
         ROTATE("ROTATE"),
+        REORDER("REORDER"),
         CONVERT("CONV"),
     }
 

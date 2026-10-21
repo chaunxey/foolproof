@@ -72,4 +72,10 @@
     <string name="pdf_tools_pages">%1$d 页</string>
     <string name="pdf_tools_range">页码范围（如 1-3,5）</string>
     <string name="conversion_tab_generate">生成 PDF</string>
+    <string name="pdf_tools_need_pages">至少保留 1 页</string>
+    <string name="pdf_tools_quality_high">高</string>
+    <string name="pdf_tools_quality_low">低</string>
+    <string name="pdf_tools_quality_medium">中</string>
+    <string name="pdf_tools_mode_compress">压缩</string>
+    <string name="pdf_tools_mode_pages">页面</string>
 </resources>

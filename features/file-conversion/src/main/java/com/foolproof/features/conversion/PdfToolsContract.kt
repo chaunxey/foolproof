@@ -3,6 +3,7 @@ package com.foolproof.features.conversion
 import com.foolproof.base.mvi.UiAction
 import com.foolproof.base.mvi.UiEffect
 import com.foolproof.base.mvi.UiState
+import com.foolproof.features.conversion.domain.PdfCompressQuality
 import com.foolproof.features.conversion.domain.PdfToolFile
 import com.foolproof.features.conversion.domain.PdfToolMode
 import com.foolproof.features.conversion.domain.PdfToolResult
@@ -14,6 +15,8 @@ data class PdfToolsUiState(
     val files: List<PdfToolFile> = emptyList(),
     val range: String = "",
     val rotateDegrees: Int = 90,
+    val pageOrder: List<Int> = emptyList(),
+    val quality: PdfCompressQuality = PdfCompressQuality.MEDIUM,
     val phase: PdfToolPhase = PdfToolPhase.IDLE,
     val output: PdfToolResult? = null,
     val canSaveToDownloads: Boolean = false,
@@ -26,6 +29,8 @@ data class PdfToolsUiState(
                 PdfToolMode.MERGE -> files.size >= 2
                 PdfToolMode.SPLIT -> files.size == 1 && range.isNotBlank()
                 PdfToolMode.ROTATE -> files.size == 1
+                PdfToolMode.PAGES -> files.size == 1 && pageOrder.isNotEmpty()
+                PdfToolMode.COMPRESS -> files.size == 1
             }
         }
 }
@@ -39,6 +44,9 @@ sealed interface PdfToolsAction : UiAction {
     data class MoveUp(val uri: String) : PdfToolsAction
     data class RangeChanged(val range: String) : PdfToolsAction
     data class RotateChanged(val degrees: Int) : PdfToolsAction
+    data class PageMove(val index: Int, val delta: Int) : PdfToolsAction
+    data class PageRemove(val index: Int) : PdfToolsAction
+    data class QualityChanged(val quality: PdfCompressQuality) : PdfToolsAction
 
     data object Start : PdfToolsAction
     data object Reset : PdfToolsAction
@@ -53,6 +61,7 @@ sealed interface PdfToolsEffect : UiEffect {
     enum class MessageKind {
         NEED_ONE,
         NEED_TWO,
+        NEED_PAGES,
         INVALID_RANGE,
         FAILED,
         DONE,

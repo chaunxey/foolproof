@@ -62,4 +62,10 @@
     <string name="pdf_tools_pages">%1$d pages</string>
     <string name="pdf_tools_range">Page range (e.g. 1-3,5)</string>
     <string name="conversion_tab_generate">Generate PDF</string>
+    <string name="pdf_tools_need_pages">Keep at least 1 page</string>
+    <string name="pdf_tools_quality_high">High</string>
+    <string name="pdf_tools_quality_low">Low</string>
+    <string name="pdf_tools_quality_medium">Medium</string>
+    <string name="pdf_tools_mode_compress">Compress</string>
+    <string name="pdf_tools_mode_pages">Pages</string>
 </resources>

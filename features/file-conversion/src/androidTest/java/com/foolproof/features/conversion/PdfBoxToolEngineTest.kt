@@ -51,5 +51,20 @@ class PdfBoxToolEngineTest {
         )
         assertTrue(File(rotated.path).length() > 0)
         assertEquals(1, engine.pageCount(rotated.path))
+
+        val rewritten = engine.rewrite(
+            Uri.fromFile(three).toString(),
+            listOf(3, 1),
+            File(context.cacheDir, "rewritten.pdf").absolutePath,
+        )
+        assertEquals(2, engine.pageCount(rewritten.path))
+
+        val compressed = engine.compress(
+            Uri.fromFile(three).toString(),
+            com.foolproof.features.conversion.domain.PdfCompressQuality.LOW,
+            File(context.cacheDir, "compressed.pdf").absolutePath,
+        )
+        assertTrue(File(compressed.path).length() > 0)
+        assertEquals(3, engine.pageCount(compressed.path))
     }
 }

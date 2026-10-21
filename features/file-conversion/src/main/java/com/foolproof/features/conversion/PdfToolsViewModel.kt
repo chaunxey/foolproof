@@ -28,8 +28,20 @@ class PdfToolsViewModel(
 
     override fun onAction(action: UiAction) {
         when (action) {
-            is PdfToolsAction.ModeChanged -> updateState {
-                it.copy(mode = action.mode, output = null, phase = PdfToolPhase.IDLE)
+            is PdfToolsAction.ModeChanged -> updateState { state ->
+                val needsPages = action.mode == PdfToolMode.PAGES ||
+                    action.mode == PdfToolMode.COMPRESS
+                val order = if (needsPages) {
+                    state.files.firstOrNull()?.let { (1..it.pages).toList() } ?: emptyList()
+                } else {
+                    state.pageOrder
+                }
+                state.copy(
+                    mode = action.mode,
+                    pageOrder = order,
+                    output = null,
+                    phase = PdfToolPhase.IDLE,
+                )
             }
 
             is PdfToolsAction.PdfsPicked -> addFiles(action.picks)
@@ -53,6 +65,29 @@ class PdfToolsViewModel(
 
             is PdfToolsAction.RangeChanged -> updateState { it.copy(range = action.range) }
             is PdfToolsAction.RotateChanged -> updateState { it.copy(rotateDegrees = action.degrees) }
+            is PdfToolsAction.QualityChanged -> updateState { it.copy(quality = action.quality) }
+
+            is PdfToolsAction.PageMove -> updateState { state ->
+                val from = action.index
+                val to = (from + action.delta).coerceIn(0, state.pageOrder.lastIndex)
+                if (from !in state.pageOrder.indices || from == to) {
+                    state
+                } else {
+                    val pages = state.pageOrder.toMutableList()
+                    pages.add(to, pages.removeAt(from))
+                    state.copy(pageOrder = pages, output = null, phase = PdfToolPhase.IDLE)
+                }
+            }
+
+            is PdfToolsAction.PageRemove -> updateState { state ->
+                if (action.index !in state.pageOrder.indices) {
+                    state
+                } else {
+                    val pages = state.pageOrder.toMutableList()
+                    pages.removeAt(action.index)
+                    state.copy(pageOrder = pages, output = null, phase = PdfToolPhase.IDLE)
+                }
+            }
 
             PdfToolsAction.Start -> start()
             PdfToolsAction.Reset -> reset()
@@ -83,8 +118,16 @@ class PdfToolsViewModel(
             if (added.isNotEmpty()) {
                 updateState { state ->
                     val files = state.files + added
+                    val order = if (state.mode == PdfToolMode.PAGES ||
+                        state.mode == PdfToolMode.COMPRESS
+                    ) {
+                        files.firstOrNull()?.let { (1..it.pages).toList() } ?: emptyList()
+                    } else {
+                        state.pageOrder
+                    }
                     state.copy(
                         files = files,
+                        pageOrder = order,
                         range = state.range.ifBlank { "1-${files.first().pages}" },
                         output = null,
                         phase = PdfToolPhase.IDLE,
@@ -142,6 +185,31 @@ class PdfToolsViewModel(
                         }
                         engine.rotate(file.uri, state.rotateDegrees, outputPath)
                     }
+
+                    PdfToolMode.PAGES -> {
+                        val file = state.files.firstOrNull()
+                        if (file == null) {
+                            updateState { it.copy(phase = PdfToolPhase.IDLE) }
+                            sendEffect(PdfToolsEffect.Message(PdfToolsEffect.MessageKind.NEED_ONE))
+                            return@launchJob
+                        }
+                        if (state.pageOrder.isEmpty()) {
+                            updateState { it.copy(phase = PdfToolPhase.IDLE) }
+                            sendEffect(PdfToolsEffect.Message(PdfToolsEffect.MessageKind.NEED_PAGES))
+                            return@launchJob
+                        }
+                        engine.rewrite(file.uri, state.pageOrder, outputPath)
+                    }
+
+                    PdfToolMode.COMPRESS -> {
+                        val file = state.files.firstOrNull()
+                        if (file == null) {
+                            updateState { it.copy(phase = PdfToolPhase.IDLE) }
+                            sendEffect(PdfToolsEffect.Message(PdfToolsEffect.MessageKind.NEED_ONE))
+                            return@launchJob
+                        }
+                        engine.compress(file.uri, state.quality, outputPath)
+                    }
                 }
                 updateState { it.copy(phase = PdfToolPhase.DONE, output = result) }
                 sendEffect(PdfToolsEffect.Message(PdfToolsEffect.MessageKind.DONE))
@@ -181,6 +249,8 @@ class PdfToolsViewModel(
             PdfToolMode.MERGE -> OutputNaming.Action.MERGE
             PdfToolMode.SPLIT -> OutputNaming.Action.SPLIT
             PdfToolMode.ROTATE -> OutputNaming.Action.ROTATE
+            PdfToolMode.PAGES -> OutputNaming.Action.REORDER
+            PdfToolMode.COMPRESS -> OutputNaming.Action.COMPRESS
         }
         return File(
             outputDir,

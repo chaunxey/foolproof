@@ -62,4 +62,10 @@
     <string name="pdf_tools_pages">%1$d ទំព័រ</string>
     <string name="pdf_tools_range">ជួរទំព័រ (ឧ. 1-3,5)</string>
     <string name="conversion_tab_generate">បង្កើត PDF</string>
+    <string name="pdf_tools_need_pages">រក្សាទំព័រយ៉ាងតិច 1</string>
+    <string name="pdf_tools_quality_high">ខ្ពស់</string>
+    <string name="pdf_tools_quality_low">ទាប</string>
+    <string name="pdf_tools_quality_medium">មធ្យម</string>
+    <string name="pdf_tools_mode_compress">បង្ហាប់</string>
+    <string name="pdf_tools_mode_pages">ទំព័រ</string>
 </resources>

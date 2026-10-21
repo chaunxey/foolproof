@@ -1,7 +1,14 @@
 package com.foolproof.features.conversion.domain
 
 /** PDF 工具模式。 */
-enum class PdfToolMode { MERGE, SPLIT, ROTATE }
+enum class PdfToolMode { MERGE, SPLIT, ROTATE, PAGES, COMPRESS }
+
+/** 压缩档：JPEG 质量 + 渲染 DPI（越低越小）。 */
+enum class PdfCompressQuality(val jpegQuality: Int, val dpi: Int) {
+    HIGH(85, 200),
+    MEDIUM(70, 150),
+    LOW(50, 110),
+}
 
 data class PdfToolFile(
     val uri: String,
@@ -27,6 +34,16 @@ interface PdfToolEngine {
     suspend fun merge(uris: List<String>, outputPath: String): PdfToolResult
     suspend fun split(uri: String, range: String, outputPath: String): PdfToolResult
     suspend fun rotate(uri: String, degrees: Int, outputPath: String): PdfToolResult
+
+    /** 按给定页序（1-based）重写：用于页面重排/删除。 */
+    suspend fun rewrite(uri: String, pages: List<Int>, outputPath: String): PdfToolResult
+
+    /** 栅格化压缩：页面渲染成 JPEG 后重建 PDF（会丢失文字层）。 */
+    suspend fun compress(
+        uri: String,
+        quality: PdfCompressQuality,
+        outputPath: String,
+    ): PdfToolResult
 }
 
 /**
