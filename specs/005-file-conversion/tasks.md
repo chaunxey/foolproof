@@ -105,6 +105,6 @@ T026/T027 可与 US1–US3 并行
 
 > 由 `/speckit-converge`（2026-10-21）追加：31 项验收任务全部完成，仅发现 1 处规格外实现。
 
-- [ ] T032 把「返回键二次确认退出」写进规格：`:app` 的 `FoolproofScreen` 已实现
+- [x] T032 把「返回键二次确认退出」写进规格：`:app` 的 `FoolproofScreen` 已实现
   「首次返回只提示、2 秒内再按才退出」，但 001/005 的 spec 都没有这条需求描述，
   下次收敛会把它报成 unrequested。应补到 001（`:app` 行为）或 005 的交互章节 per 无 (unrequested)
