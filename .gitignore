@@ -14,3 +14,6 @@
 .cxx
 .kotlin
 local.properties
+
+/keystore/
+/keystore.properties

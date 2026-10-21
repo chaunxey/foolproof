@@ -38,15 +38,38 @@
 
 ## 签名
 
-release 尚未配置签名。本地测试可用 debug keystore：
+release 已配置签名，密钥与密码放在项目根目录：
 
-```bash
-apksigner sign --ks ~/.android/debug.keystore \
-  --ks-pass pass:android --key-pass pass:android \
-  --out app-release-signed.apk app-release-unsigned.apk
+- `keystore/foolproof-release.jks`
+- `keystore.properties`（**已 gitignore，不要提交**）
+
+`keystore.properties` 格式见 `keystore.properties.example`：
+
+```properties
+storeFile=keystore/foolproof-release.jks
+storePassword=...
+keyAlias=foolproof
+keyPassword=...
 ```
 
-正式发布请配置自己的 keystore，不要提交到仓库。
+- 丢失 keystore 将无法更新已上架应用，务必备份到密码管理器/离线介质；
+- 首次上传 Play 后，这个 keystore 就是上传密钥；启用 Play App Signing 后由 Google 保管发布密钥；
+- CI 环境不要把密码写进仓库，可用环境变量/Secrets 生成 `keystore.properties`。
+
+构建：
+
+```bash
+./gradlew :app:assembleRelease   # 已签名 APK
+./gradlew :app:bundleRelease     # 已签名 AAB（Play 用）
+```
+
+校验：
+
+```bash
+apksigner verify --print-certs app/build/outputs/apk/release/app-release.apk
+```
+
+证书 SHA-256 会随构建固定；更换 keystore 会导致老用户无法覆盖安装。
 
 ## 测试
 
