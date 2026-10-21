@@ -1,4 +1,4 @@
-﻿package com.foolproof.features.compression.data
+package com.foolproof.features.compression.data
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -43,7 +43,7 @@ class AndroidImageCompressor(
         withContext(Dispatchers.IO) {
             try {
                 val outputDir = File(context.filesDir, OUTPUT_DIR).apply { mkdirs() }
-                val target = ExportNaming.uniqueFile(outputDir, image.displayName, option)
+                val target = ExportNaming.uniqueFile(outputDir, option)
 
                 val decoded = decodeSampled(image)
                 val oriented = applyOrientation(decoded, image.id)

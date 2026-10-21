@@ -3,6 +3,7 @@ package com.foolproof.features.video
 import com.foolproof.base.log.LogUtil
 import com.foolproof.base.mvi.BaseViewModel
 import com.foolproof.base.mvi.UiAction
+import com.foolproof.base.util.OutputNaming
 import com.foolproof.features.video.domain.MergeClip
 import com.foolproof.features.video.domain.VideoExporter
 import com.foolproof.features.video.domain.VideoMerger
@@ -141,7 +142,10 @@ class VideoMergeViewModel(
             return
         }
 
-        val path = File(outputDir, "merge_${System.currentTimeMillis()}.mp4").absolutePath
+        val path = File(
+            outputDir,
+            OutputNaming.fileName(OutputNaming.MediaType.VIDEO, OutputNaming.Action.MERGE, "mp4"),
+        ).absolutePath
         outputPath = path
         updateState { it.copy(isMerging = true, progress = 0, output = null) }
 

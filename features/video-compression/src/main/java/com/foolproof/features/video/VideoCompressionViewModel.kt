@@ -3,6 +3,7 @@ package com.foolproof.features.video
 import com.foolproof.base.log.LogUtil
 import com.foolproof.base.mvi.BaseViewModel
 import com.foolproof.base.mvi.UiAction
+import com.foolproof.base.util.OutputNaming
 import com.foolproof.features.video.domain.CompressionPreset
 import com.foolproof.features.video.domain.EncoderCatalog
 import com.foolproof.features.video.domain.ResolutionTier
@@ -167,7 +168,7 @@ class VideoCompressionViewModel(
         }
 
         launch {
-            val name = currentState.video?.displayName?.substringBeforeLast('.') ?: "video"
+            val name = File(output.path).nameWithoutExtension
             val ok = exporter.saveToGallery(output.path, name)
             sendEffect(
                 VideoEffect.Message(
@@ -224,7 +225,14 @@ class VideoCompressionViewModel(
             }
         }
 
-        val outputPath = File(outputDir, "compressed_${System.currentTimeMillis()}.mp4").absolutePath
+        val outputPath = File(
+            outputDir,
+            OutputNaming.fileName(
+                OutputNaming.MediaType.VIDEO,
+                OutputNaming.Action.COMPRESS,
+                "mp4",
+            ),
+        ).absolutePath
         currentOutputPath = outputPath
 
         val request = VideoCompressRequest(

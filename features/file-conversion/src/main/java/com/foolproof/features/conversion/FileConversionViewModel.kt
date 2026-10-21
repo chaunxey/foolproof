@@ -1,8 +1,9 @@
-﻿package com.foolproof.features.conversion
+package com.foolproof.features.conversion
 
 import com.foolproof.base.log.LogUtil
 import com.foolproof.base.mvi.BaseViewModel
 import com.foolproof.base.mvi.UiAction
+import com.foolproof.base.util.OutputNaming
 import com.foolproof.features.conversion.domain.PdfConvertRequest
 import com.foolproof.features.conversion.domain.PdfConverter
 import com.foolproof.features.conversion.domain.PdfFailure
@@ -215,7 +216,10 @@ class FileConversionViewModel(
         if (!outputDir.exists()) outputDir.mkdirs()
         // 新文件会取代上一个结果，旧产物从此不可达 → 先清掉（spec FR-014）
         outputDir.listFiles()?.forEach { if (it.isFile) it.delete() }
-        return File(outputDir, "foolproof_${System.currentTimeMillis()}.pdf").absolutePath
+        return File(
+            outputDir,
+            OutputNaming.fileName(OutputNaming.MediaType.PDF, OutputNaming.Action.CONVERT, "pdf"),
+        ).absolutePath
     }
 
     private fun PdfFailure.toMessage(): ConversionEffect.MessageKind = when (this) {

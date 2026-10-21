@@ -1,11 +1,11 @@
 package com.foolproof.features.compression
 
+import com.foolproof.base.util.OutputNaming
 import com.foolproof.features.compression.data.ExportNaming
 import com.foolproof.features.compression.domain.CompressionOption
 import com.foolproof.features.compression.domain.OutputFormat
-import java.io.File
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -16,45 +16,33 @@ class ExportNamingTest {
     val tempFolder = TemporaryFolder()
 
     @Test
-    fun `file name uses base name quality and extension`() {
-        val name = ExportNaming.fileName("photo.png", CompressionOption(OutputFormat.JPEG, 80))
+    fun `file name follows the standard format`() {
+        val name = ExportNaming.fileName(CompressionOption(OutputFormat.JPEG, 80), timestampMs = 0L)
 
-        assertEquals("photo_q80.jpg", name)
+        assertTrue(name.matches(Regex("Foolproof_IMG_COMP_\\d{8}_\\d{6}\\.jpg")))
     }
 
     @Test
     fun `webp extension is used for webp`() {
-        val name = ExportNaming.fileName("photo.png", CompressionOption(OutputFormat.WEBP, 60))
+        val name = ExportNaming.fileName(CompressionOption(OutputFormat.WEBP, 60), timestampMs = 0L)
 
-        assertEquals("photo_q60.webp", name)
+        assertTrue(name.endsWith(".webp"))
     }
 
     @Test
-    fun `path separators and illegal characters are stripped`() {
-        assertEquals("a_b_q80.jpg", ExportNaming.fileName("a:b.jpg", CompressionOption()))
-        assertEquals("evil_q80.jpg", ExportNaming.fileName("../evil.jpg", CompressionOption()))
-    }
-
-    @Test
-    fun `blank name falls back to image`() {
-        assertEquals("image_q80.jpg", ExportNaming.fileName(".jpg", CompressionOption()))
-        assertEquals("image_q80.jpg", ExportNaming.fileName("", CompressionOption()))
-    }
-
-    @Test
-    fun `unique file appends index on conflict`() {
+    fun `unique file appends zero padded index on conflict`() {
         val dir = tempFolder.newFolder("compressed")
         val option = CompressionOption()
-        val first = ExportNaming.uniqueFile(dir, "photo.jpg", option)
+        val base = ExportNaming.fileName(option, timestampMs = 0L)
+
+        val first = ExportNaming.uniqueFile(dir, option, timestampMs = 0L)
         first.createNewFile()
+        val second = ExportNaming.uniqueFile(dir, option, timestampMs = 0L)
+        second.createNewFile()
+        val third = ExportNaming.uniqueFile(dir, option, timestampMs = 0L)
 
-        val second = ExportNaming.uniqueFile(dir, "photo.jpg", option)
-        val secondFile = File(dir, second.name)
-        secondFile.createNewFile()
-        val third = ExportNaming.uniqueFile(dir, "photo.jpg", option)
-
-        assertNotEquals(first.name, second.name)
-        assertEquals("photo_q80_1.jpg", second.name)
-        assertEquals("photo_q80_2.jpg", third.name)
+        assertEquals(base, first.name)
+        assertEquals(OutputNaming.numbered(base, 2), second.name)
+        assertEquals(OutputNaming.numbered(base, 3), third.name)
     }
 }

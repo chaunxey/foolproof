@@ -373,3 +373,23 @@ chore: 构建/依赖/配置调整
 - **合规**：广告 SDK 会联网并可能处理设备标识与广告交互数据；EEA/UK 需广告同意入口，
   隐私政策与 Play Data Safety 必须同步说明（宪法 §8）。
 
+## 产物命名（已实现）
+
+保存到相册 / 下载的文件统一为：
+
+```
+Foolproof_{TYPE}_{ACTION}_{yyyyMMdd_HHmmss}[_{NN}].{ext}
+```
+
+| 功能 | 示例 |
+| --- | --- |
+| 图片压缩 | `Foolproof_IMG_COMP_20261021_161500.jpg` |
+| 视频压缩 | `Foolproof_VID_COMP_20261021_161500.mp4` |
+| 视频拼接 | `Foolproof_VID_MERGE_20261021_161500.mp4` |
+| 文件转 PDF | `Foolproof_PDF_CONV_20261021_161500.pdf` |
+
+- 类型 `IMG` / `VID` / `PDF`，动作 `COMP` / `MERGE` / `CONV`；
+- 同目录重名追加 `_02`、`_03`；
+- 只用 ASCII，不携带原文件名；目录分别为 `Pictures/Foolproof`、`Movies/Foolproof`、`Download/Foolproof`；
+- 实现集中在 `base/.../util/OutputNaming.kt`，单测 `OutputNamingTest`。
+
