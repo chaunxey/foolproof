@@ -34,6 +34,20 @@ android {
     buildFeatures {
         compose = true
     }
+    androidResources {
+        localeFilters += listOf("zh", "en", "ja", "fr", "de", "km")
+    }
+    packaging {
+        resources {
+            // BouncyCastle 的后量子算法参数文件约 4MB，普通 TLS 用不到
+            excludes += setOf(
+                "org/bouncycastle/pqc/**",
+                "META-INF/*.version",
+                "META-INF/*.kotlin_module",
+                "DebugProbesKt.bin",
+            )
+        }
+    }
 }
 
 dependencies {
