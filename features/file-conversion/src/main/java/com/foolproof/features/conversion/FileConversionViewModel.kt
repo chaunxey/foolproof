@@ -45,7 +45,7 @@ class FileConversionViewModel(
             }
 
             is ConversionAction.PerPageChanged -> updateState {
-                it.copy(perPage = action.perPage.coerceIn(1, 4), phase = ConversionPhase.Idle)
+                it.copy(perPage = action.perPage.coerceIn(1, 6), phase = ConversionPhase.Idle)
             }
 
             is ConversionAction.MoveImage -> updateState { state ->

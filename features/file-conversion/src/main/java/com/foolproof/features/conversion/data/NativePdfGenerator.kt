@@ -86,7 +86,7 @@ class NativePdfGenerator(
         document: PdfDocument,
         request: PdfConvertRequest.FromImages,
     ): Int {
-        val perPage = request.perPage.coerceIn(1, 4)
+        val perPage = request.perPage.coerceIn(1, 6)
         var page = 0
         request.images.chunked(perPage).forEachIndexed { pageIndex, group ->
             if (cancelled) throw ConversionCancelled()
@@ -118,7 +118,7 @@ class NativePdfGenerator(
         val height = PdfPageSpec.HEIGHT_PT - top * 2
         val gap = 6f
         // 只做上下排列：竖排更符合"阅读顺序"，左右并排会让人不知道先看哪张
-        val rows = perPage.coerceIn(1, 4)
+        val rows = perPage.coerceIn(1, 6)
         val cellHeight = (height - gap * (rows - 1)) / rows
         return (0 until rows).map { i ->
             val y = top + i * (cellHeight + gap)
