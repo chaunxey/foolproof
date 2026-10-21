@@ -1,4 +1,4 @@
-package com.foolproof.features.video.ui
+﻿package com.foolproof.features.video.ui
 
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -71,9 +71,11 @@ internal fun TrimTimeline(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(16f / 9f)
+                // 固定高度 + 黑底：VideoView 自身按视频比例缩放并居中（letterbox），
+                // 竖屏视频两侧留黑边，不会把整个页面撑高
+                .height(PREVIEW_HEIGHT)
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(Color.Black)
                 // 点视频任意处切换播放/暂停（与常见播放器一致）
                 .clickable {
                     val view = videoView
@@ -105,22 +107,23 @@ internal fun TrimTimeline(
                 modifier = Modifier.fillMaxSize(),
             )
 
-            // 中央播放/暂停按钮：图标 + 半透明圆底（纯视觉，点击由外层统一处理）
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.35f)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painter = painterResource(
-                        if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
-                    ),
-                    contentDescription = if (isPlaying) "暂停" else "播放",
-                    tint = Color.White,
-                    modifier = Modifier.size(26.dp),
-                )
+            // 播放中不显示任何按钮（跟常见播放器一致：播放时控件隐藏，点画面即暂停）；
+            // 暂停/未开始时显示播放三角。点击由外层统一处理。
+            if (!isPlaying) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.35f)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_play),
+                        contentDescription = "播放",
+                        tint = Color.White,
+                        modifier = Modifier.size(26.dp),
+                    )
+                }
             }
         }
 
@@ -217,3 +220,6 @@ private fun rememberVideoFrames(videoId: String, frameCount: Int): List<ImageBit
 
     return frames
 }
+
+/** 预览区固定高度：避免竖屏视频把页面撑得过高。 */
+private val PREVIEW_HEIGHT = 240.dp

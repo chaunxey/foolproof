@@ -30,9 +30,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.foolproof.base.util.ByteFormat
-import com.foolproof.features.video.ui.formatDuration
+import com.foolproof.features.video.domain.CompressionPreset
 import com.foolproof.features.video.ui.PresetSelector
 import com.foolproof.features.video.ui.TrimTimeline
+import com.foolproof.features.video.ui.formatDuration
 import java.io.File
 import kotlinx.coroutines.delay
 import org.koin.compose.viewmodel.koinViewModel
@@ -40,7 +41,7 @@ import org.koin.compose.viewmodel.koinViewModel
 /**
  * 视频压缩的对外入口（宪法 §3：只提供 Section，页面由 `:app` 组装为独立 tab）。
  *
- * 本组件自身**不滚动**（宪法 §3.2 v1.11 的"整页单一滚动容器"），滚动由 `:app` 的页面容器负责。
+ * 本组件自身**不滚动**（宪法 §3.2 v1.11 的「整页单一滚动容器」），滚动由 `:app` 的页面容器负责。
  */
 @Composable
 fun VideoCompressionSection(
@@ -132,7 +133,7 @@ fun VideoCompressionSection(
                 preset = state.preset,
                 estimatedBytes = state.estimatedBytes,
                 trimDurationMs = state.trimDurationMs,
-                frameRate = minOf(video.frameRate, com.foolproof.features.video.domain.CompressionPreset.MAX_FRAME_RATE),
+                frameRate = minOf(video.frameRate, CompressionPreset.MAX_FRAME_RATE),
                 onResolutionChange = { viewModel.dispatch(VideoAction.ResolutionChanged(it)) },
                 onBitrateChange = { viewModel.dispatch(VideoAction.BitrateChanged(it)) },
                 enabled = !state.isCompressing,
