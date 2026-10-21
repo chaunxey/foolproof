@@ -33,6 +33,7 @@ import com.foolproof.base.util.ByteFormat
 import com.foolproof.features.video.domain.CompressionPreset
 import com.foolproof.features.video.ui.PresetSelector
 import com.foolproof.features.video.ui.TrimTimeline
+import com.foolproof.features.video.ui.VideoPreview
 import com.foolproof.features.video.ui.formatDuration
 import java.io.File
 import kotlinx.coroutines.delay
@@ -51,6 +52,8 @@ fun VideoCompressionSection(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var message by remember { mutableStateOf<UiMessage?>(null) }
+    // 压缩完成后可在同一位置切换预览「压缩结果」与「原视频」，便于对比
+    var showResult by remember(state.output?.path) { mutableStateOf(false) }
 
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia(),
@@ -117,29 +120,48 @@ fun VideoCompressionSection(
                 modifier = Modifier.padding(top = 4.dp),
             )
 
-            TrimTimeline(
-                videoId = video.id,
-                durationMs = video.durationMs,
-                startMs = state.trim.startMs,
-                endMs = state.trim.endMs,
-                onRangeChange = { start, end ->
-                    viewModel.dispatch(VideoAction.TrimChanged(start, end))
-                },
-                enabled = !state.isCompressing,
-                videoAspect = video.width.toFloat() / video.height.toFloat(),
-                modifier = Modifier.padding(top = 8.dp),
-            )
+            val aspect = video.width.toFloat() / video.height.toFloat()
+            val output = state.output
+            if (showResult && output != null) {
+                // 预览压缩结果：同一个位置切换，便于和原视频对比
+                VideoPreview(
+                    uri = "file://" + output.path,
+                    startMs = 0L,
+                    endMs = state.trimDurationMs,
+                    videoAspect = aspect,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+                Text(
+                    text = "正在预览压缩结果 · ${ByteFormat.formatBytes(output.bytes)}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            } else {
+                TrimTimeline(
+                    videoId = video.id,
+                    durationMs = video.durationMs,
+                    startMs = state.trim.startMs,
+                    endMs = state.trim.endMs,
+                    onRangeChange = { start, end ->
+                        viewModel.dispatch(VideoAction.TrimChanged(start, end))
+                    },
+                    enabled = !state.isCompressing,
+                    videoAspect = aspect,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
 
-            PresetSelector(
-                preset = state.preset,
-                estimatedBytes = state.estimatedBytes,
-                trimDurationMs = state.trimDurationMs,
-                frameRate = minOf(video.frameRate, CompressionPreset.MAX_FRAME_RATE),
-                onResolutionChange = { viewModel.dispatch(VideoAction.ResolutionChanged(it)) },
-                onBitrateChange = { viewModel.dispatch(VideoAction.BitrateChanged(it)) },
-                enabled = !state.isCompressing,
-                modifier = Modifier.padding(top = 8.dp),
-            )
+                PresetSelector(
+                    preset = state.preset,
+                    estimatedBytes = state.estimatedBytes,
+                    trimDurationMs = state.trimDurationMs,
+                    frameRate = minOf(video.frameRate, CompressionPreset.MAX_FRAME_RATE),
+                    onResolutionChange = { viewModel.dispatch(VideoAction.ResolutionChanged(it)) },
+                    onBitrateChange = { viewModel.dispatch(VideoAction.BitrateChanged(it)) },
+                    enabled = !state.isCompressing,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
         }
 
         state.encoderNote?.let { note ->
@@ -208,6 +230,9 @@ fun VideoCompressionSection(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(top = 4.dp),
             ) {
+                OutlinedButton(onClick = { showResult = !showResult }) {
+                    Text(if (showResult) "返回原视频" else "预览结果")
+                }
                 OutlinedButton(onClick = { viewModel.dispatch(VideoAction.Share) }) {
                     Text("分享")
                 }
