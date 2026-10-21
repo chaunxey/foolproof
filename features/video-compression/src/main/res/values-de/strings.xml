@@ -66,4 +66,5 @@
     <string name="video_merge_confirm">Bestätigen</string>
     <string name="video_merge_more">Mehr</string>    <string name="video_empty_hint">Wähle ein Video, schneide einen Clip und wähle eine Stufe</string>
     <string name="video_merge_drag">Zum Sortieren ziehen</string>
+    <string name="video_msg_already_added">Bereits in der Liste</string>
 </resources>

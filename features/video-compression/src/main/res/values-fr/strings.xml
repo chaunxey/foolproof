@@ -66,4 +66,5 @@
     <string name="video_merge_confirm">Valider</string>
     <string name="video_merge_more">Plus</string>    <string name="video_empty_hint">Sélectionnez une vidéo, découpez un clip et choisissez un préréglage</string>
     <string name="video_merge_drag">Glisser pour réorganiser</string>
+    <string name="video_msg_already_added">Déjà dans la liste</string>
 </resources>

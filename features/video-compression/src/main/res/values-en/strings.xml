@@ -66,4 +66,5 @@
     <string name="video_merge_confirm">Done</string>
     <string name="video_merge_more">More</string>    <string name="video_empty_hint">Pick a video, trim a clip and choose a preset to start</string>
     <string name="video_merge_drag">Drag to reorder</string>
+    <string name="video_msg_already_added">Already in the list</string>
 </resources>

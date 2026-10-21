@@ -67,6 +67,11 @@ class VideoMergeViewModel(
             }
             if (accepted.isNotEmpty()) {
                 updateState { it.copy(clips = it.clips + accepted) }
+            } else if (fresh.isEmpty() && loaded.isNotEmpty()) {
+                // 选中的都是列表里已有的视频，给个明确提示，避免“选了没反应”
+                sendEffect(
+                    VideoMergeEffect.Message(VideoMergeEffect.MessageKind.ALREADY_ADDED),
+                )
             }
             if (accepted.size < fresh.size) {
                 sendEffect(VideoMergeEffect.Message(VideoMergeEffect.MessageKind.TOO_MANY))

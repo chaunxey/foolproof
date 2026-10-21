@@ -49,6 +49,7 @@ sealed interface VideoMergeEffect : UiEffect {
     enum class MessageKind {
         NEED_TWO,
         TOO_MANY,
+        ALREADY_ADDED,
         READ_FAILED,
         MERGE_FAILED,
         CANCELLED,
