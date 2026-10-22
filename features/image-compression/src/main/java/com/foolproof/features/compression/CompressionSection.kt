@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
@@ -69,6 +71,8 @@ import org.koin.compose.viewmodel.koinViewModel
 fun CompressionSection(
     modifier: Modifier = Modifier,
     viewModel: CompressionViewModel = koinViewModel(),
+    /** 首页把结果行拆成独立 lazy item 时传 false，避免整个列表塞进一个 item。 */
+    renderResults: Boolean = true,
 ) {
     val state by viewModel.uiState.collectAsState()
     var showSuccess by remember { mutableStateOf(false) }
@@ -286,19 +290,21 @@ fun CompressionSection(
             )
         }
 
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            state.images.forEach { image ->
-                ImageRow(
-                    image = image,
-                    outcome = state.outcomeOf(image.id),
-                    saveSupported = state.saveSupported,
-                    onRetry = { viewModel.dispatch(CompressionAction.Retry(image.id)) },
-                    onShare = { viewModel.dispatch(CompressionAction.Share(image.id)) },
-                    onSave = { viewModel.dispatch(CompressionAction.SaveToGallery(image.id)) },
-                )
+        if (renderResults) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                state.images.forEach { image ->
+                    ImageRow(
+                        image = image,
+                        outcome = state.outcomeOf(image.id),
+                        saveSupported = state.saveSupported,
+                        onRetry = { viewModel.dispatch(CompressionAction.Retry(image.id)) },
+                        onShare = { viewModel.dispatch(CompressionAction.Share(image.id)) },
+                        onSave = { viewModel.dispatch(CompressionAction.SaveToGallery(image.id)) },
+                    )
+                }
             }
         }
         if (showSuccess) {
@@ -557,6 +563,29 @@ private fun OptionRow(
             valueRange = 0f..100f,
             enabled = enabled,
         )
+    }
+}
+
+/** 首页专用：把压缩结果行逐条塞进 LazyGrid，避免整段结果挤在一个 item 里。 */
+fun LazyGridScope.compressionResultRows(
+    state: CompressionUiState,
+    viewModel: CompressionViewModel,
+) {
+    state.images.forEach { image ->
+        item(
+            key = "compression-${image.id}",
+            contentType = "compression-result",
+            span = { GridItemSpan(maxLineSpan) },
+        ) {
+            ImageRow(
+                image = image,
+                outcome = state.outcomeOf(image.id),
+                saveSupported = state.saveSupported,
+                onRetry = { viewModel.dispatch(CompressionAction.Retry(image.id)) },
+                onShare = { viewModel.dispatch(CompressionAction.Share(image.id)) },
+                onSave = { viewModel.dispatch(CompressionAction.SaveToGallery(image.id)) },
+            )
+        }
     }
 }
 

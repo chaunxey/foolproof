@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.foolproof.ads.SectionBannerAd
 import com.foolproof.features.compression.CompressionSection
+import com.foolproof.features.compression.CompressionViewModel
+import com.foolproof.features.compression.compressionResultRows
 import com.foolproof.features.duplicates.DuplicateAction
 import com.foolproof.features.duplicates.DuplicateHeader
 import com.foolproof.features.duplicates.DuplicateViewModel
@@ -35,6 +37,8 @@ import org.koin.compose.viewmodel.koinViewModel
  */
 @Composable
 fun CompressionTabScreen(modifier: Modifier = Modifier) {
+    val compressionViewModel: CompressionViewModel = koinViewModel()
+    val compressionState by compressionViewModel.uiState.collectAsState()
     val duplicateViewModel: DuplicateViewModel = koinViewModel()
     val duplicateState by duplicateViewModel.uiState.collectAsState()
 
@@ -45,20 +49,44 @@ fun CompressionTabScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.spacedBy(6.dp),
         contentPadding = PaddingValues(bottom = 24.dp),
     ) {
-        item(key = "compression", span = { GridItemSpan(maxLineSpan) }) {
-            CompressionSection()
+        item(
+            key = "compression",
+            contentType = "compression-header",
+            span = { GridItemSpan(maxLineSpan) },
+        ) {
+            CompressionSection(
+                viewModel = compressionViewModel,
+                renderResults = false,
+            )
         }
 
+        compressionResultRows(
+            state = compressionState,
+            viewModel = compressionViewModel,
+        )
+
         // 压缩区与去重区之间的横幅广告
-        item(key = "ad-banner", span = { GridItemSpan(maxLineSpan) }) {
+        item(
+            key = "ad-banner",
+            contentType = "ad-banner",
+            span = { GridItemSpan(maxLineSpan) },
+        ) {
             SectionBannerAd()
         }
 
-        item(key = "divider", span = { GridItemSpan(maxLineSpan) }) {
+        item(
+            key = "divider",
+            contentType = "divider",
+            span = { GridItemSpan(maxLineSpan) },
+        ) {
             HorizontalDivider()
         }
 
-        item(key = "duplicate-header", span = { GridItemSpan(maxLineSpan) }) {
+        item(
+            key = "duplicate-header",
+            contentType = "duplicate-header",
+            span = { GridItemSpan(maxLineSpan) },
+        ) {
             DuplicateHeader(viewModel = duplicateViewModel)
         }
 
