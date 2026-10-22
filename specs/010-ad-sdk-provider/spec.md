@@ -3,7 +3,7 @@
 **Feature Branch**: `feature_foundation1`
 **Directory**: `specs/010-ad-sdk-provider`
 **Created**: 2026-10-22
-**Status**: Draft（等 plan review）
+**Status**: Implemented（`feature/ad-sdk-provider`）
 **Input**: “加一个国内的 ad sdk module，可以由开发者自由切换，选取的是穿山甲广告 sdk。”
 
 > 级别：L3（新增依赖 + 新模块）。按宪法 §13：spec → plan → tasks → implement → verify。
@@ -215,9 +215,9 @@
 
 ## 假设
 
-- 穿山甲国内 SDK 以 **AAR** 形式由开发者从平台下载后入库（无公开 Maven 坐标，已核对：
-  `artifact.bytedance.com/repository/pangle` 仅有 GroMore 的 `com.pangle.cn:mediation-sdk`，
-  Maven Central 无 `open_ad_sdk`）；仓库默认不带真实 appId / 代码位。
+- 穿山甲国内 SDK 通过**官方 Maven** 接入：仓库 `https://artifact.bytedance.com/repository/pangle`，
+  坐标 `com.pangle.cn:ads-sdk-pro:7.8.1.5`（已核实 POM/metadata 可访问，无需下载 AAR）；
+  仓库默认不带真实 appId / 代码位。
 - 版本在 plan 中锁定，且需满足 `minSdk 24`。
 - 构建开关是**开发者构建期**行为，不进入设置页、不随用户切换。
 - **开屏形态已拍板（2026-10-22）**：穿山甲走原生 `TTSplashAd`；Meta 保持自绘 5 秒壳；

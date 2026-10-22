@@ -19,14 +19,22 @@
 | `./gradlew :app:assembleRelease` | release APK（未签名） |
 | `./gradlew :app:bundleRelease` | release AAB |
 
+广告 SDK 默认打包 Meta；出穿山甲（国内）包时追加属性（PowerShell 需要引号）：
+
+```powershell
+.\gradlew.bat :app:assembleRelease "-Pfoolproof.adSdk=pangle"
+```
+
+属性只影响 `:app` 依赖的那一个 provider，命令与产物路径不变。
+
 仪器化测试只跑单个设备时设置 `ANDROID_SERIAL=emulator-5554`。
 
 ## 体积
 
 | 包 | 大小 |
 | --- | --- |
-| debug APK | ~33 MB（含 Compose tooling） |
-| release APK | ~13.3 MB |
+| debug APK | ~33 MB（含 Compose tooling；pangle 构建约 35 MB） |
+| release APK | ~13.3 MB（meta；pangle 发布前重新记录） |
 
 已做的优化：
 

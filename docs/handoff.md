@@ -16,7 +16,7 @@ H:\AndroidDevelop\workplace\Foolproof
 按顺序：
 
 1. [.specify/memory/constitution.md](../.specify/memory/constitution.md)（v1.18：本地优先、权限、模块、MVI、spec 治理）
-2. [specs/README.md](../specs/README.md)（001–009 规格索引）
+2. [specs/README.md](../specs/README.md)（001–010 规格索引）
 3. [docs/architecture.md](architecture.md)（模块、数据流、依赖选择）
 4. [docs/features.md](features.md)（已上线行为与已知限制）
 5. 当前需求对应的 `specs/00x-*/spec.md`
@@ -25,7 +25,7 @@ H:\AndroidDevelop\workplace\Foolproof
 
 ## 3. 当前状态（2026-10-22）
 
-- 分支：`main`
+- 分支：`feature/ad-sdk-provider`（广告 provider 可切换；合回 `main` 后改回 `main`）
 - 最新提交：以 `git log -1 main` 为准（本文档会随提交更新）
 - 最新 Release：`v1.1.0`（Release 源提交 `29916fb`）
   - APK：`Foolproof-v1.1.0.apk`（14,261,641 bytes）
@@ -43,13 +43,17 @@ H:\AndroidDevelop\workplace\Foolproof
 - 转换：图片/文本→PDF、PDF 合并/拆分/旋转/页面/压缩/转图片；
 - 系统分享入口：图片/视频/PDF；
 - 本地模拟登录（验证码 `0000`、密码 `admin`，无后端）、抽屉、设置、DataStore；
-- 6 语言、深色模式、广告占位/接入。
+- 6 语言、深色模式、广告占位/接入；
+- 广告 provider 可切换：`meta`（Meta Audience Network，默认）/ `pangle`（穿山甲 7.8.1.5，官方 Maven），
+  单个产物只含一套 SDK；feature 仍只依赖 `:base` 的 `AdGate`。
 
 ### 已知边界
 
 - 登录是本地模拟，不发真实短信，没有服务端账号；
 - PDF 压缩有损，文字层会丢失；加密 PDF 不支持；
 - 未配置 FAN placement ID 时横幅是占位块；
+- 穿山甲 appId/代码位默认空：未配置时不初始化 SDK、横幅占位、门控放行；
+  原生开屏与真实填充需填入后台参数后验证（arm64-only，32 位设备无填充但会降级）。
 - Play Console、关闭测试、正式广告 ID、隐私政策尚未完成（如需上架再单独排期）。
 
 ## 4. 开发流程（必须遵守）
@@ -79,6 +83,8 @@ H:\AndroidDevelop\workplace\Foolproof
 - 不改无关文件；`.dsh/`、`.idea/`、`.specify/presets/` 是本地工具/IDE 变更，默认不提交；
 - 提交前确认 `git status`，只 add 本次相关文件；
 - 构建：`.\gradlew.bat :app:assembleDebug`；
+- 广告 SDK 切换：改 `gradle.properties` 的 `foolproof.adSdk=meta|pangle`（默认 `meta`），
+  构建命令不变；单个产物只含选中的一套 SDK；
 - 发布：`.\gradlew.bat :app:assembleRelease :app:bundleRelease`（需 `keystore.properties`）；
 - 真机序列号：`10AG9C079Y001L0`；模拟器：`emulator-5554`；
 - GitHub 推送网络不稳定时，先试代理；失败后 unset 代理并 `git -c http.version=HTTP/1.1 push`，完成后恢复代理。

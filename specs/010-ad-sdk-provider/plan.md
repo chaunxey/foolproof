@@ -3,7 +3,7 @@
 **Feature**: `specs/010-ad-sdk-provider/spec.md`
 **Created**: 2026-10-22
 **Constitution**: v1.18（§2 技术栈、§3 模块边界、§11 权限与广告）→ 本次需升 **v1.19**
-**Status**: 待 plan review，review 通过前不写代码
+**Status**: 已实施（Phase 0 / Phase 1 完成，待设备验收与合并）
 
 ## 1. 技术上下文
 
@@ -160,23 +160,24 @@ object AdSdkRegistry {
 两个 provider 只提供“怎么加载和展示一个全屏广告”：
 
 ```kotlin
-interface FullscreenAd { fun show(activity: Activity, onClosed: () -> Unit); fun destroy() }
+interface FullscreenAd { fun show(onClosed: () -> Unit); fun destroy() }
 interface FullscreenAdLoader {
     val isConfigured: Boolean
-    fun load(activity: Activity, onLoaded: (FullscreenAd) -> Unit, onFailed: () -> Unit)
+    fun load(onLoaded: (FullscreenAd) -> Unit, onFailed: () -> Unit)
 }
 interface DelayScheduler { fun postDelayed(delayMs: Long, block: () -> Unit); fun cancel() }
 
 class CountingAdGate(
     private val usage: AdUsage,
-    private val loader: FullscreenAdLoader,
     private val config: AdGateConfig = AdGateConfig(),
-    private val scheduler: DelayScheduler,     // 默认 Handler 实现；测试注入 Fake
+    private val schedulerFactory: () -> DelayScheduler,   // 默认 Handler 实现；测试注入 Fake
 ) {
-    fun maybeGate(activity: Activity, feature: FeatureId, onAllow: () -> Unit)
+    fun maybeGate(feature: FeatureId, onAllow: () -> Unit, loader: FullscreenAdLoader)
     fun onSuccess(feature: FeatureId) = usage.increment(feature)
 }
 ```
+
+`loader` 在调用点按当前 Activity 创建，`CountingAdGate` 本身不依赖 Android，可直接 JVM 单测。
 
 规则与现状一致，只多一条**超时兜底**（spec FR-014）：
 
@@ -236,38 +237,35 @@ SplashAdOverlay(onFinished)
 - 2 秒后即使 SDK 迟到的成功回调也忽略（避免“进入应用后又弹开屏”）；
 - 预加载：`PangleAdSdk.init` 时后台预热一次 `loadSplashAd`，命中则冷启动直接原生。
 
-### D8. 依赖落地：本地 Maven 仓库（绕过 AGP 对 library 模块本地 AAR 的限制）
+### D8. 依赖落地：官方 Maven 仓库（已核实）
 
-- 已验证：穿山甲**没有公开 Maven 坐标**（`artifact.bytedance.com/repository/pangle` 只有
-  GroMore 的 `com.pangle.cn:mediation-sdk`；Maven Central 搜 `open_ad_sdk` 无结果），
-  官方分发是 AAR/ZIP；
-- `:ads:pangle` 是 Android Library，AGP 不允许 library 直接 `implementation(files("*.aar"))`
-  （会报 “Direct local .aar file dependencies are not supported when building an AAR”）；
-- 方案：把 AAR 放进本地 Maven 仓库，由 `settings.gradle.kts` 注册（项目启用了
-  `FAIL_ON_PROJECT_REPOS`，仓库只能声明在 settings）：
+官方集成文档 [SDK接入配置](https://www.csjplatform.com/supportcenter/5397) 的「方式一：maven 集成」给出：
 
-```
-ads/pangle/repo/com/pangle/open_ad_sdk/7.8.1.5/open_ad_sdk-7.8.1.5.aar
-ads/pangle/repo/com/pangle/open_ad_sdk/7.8.1.5/open_ad_sdk-7.8.1.5.pom   # 手写，声明外部依赖（若有）
-```
+- 仓库：`https://artifact.bytedance.com/repository/pangle`
+- 坐标：`com.pangle.cn:ads-sdk-pro:7.8.1.5`（`packaging=aar`，POM 未声明外部依赖）
+
+已验证 `maven-metadata.xml` 的 latest/release = **7.8.1.5**（lastUpdated 2026-10-10），
+对应 POM 可访问；不需要下载/入库 AAR。项目启用了 `FAIL_ON_PROJECT_REPOS`，
+仓库只能声明在 `settings.gradle.kts`：
 
 ```kotlin
-// settings.gradle.kts
-dependencyResolutionManagement {
-    repositories {
-        google(); mavenCentral()
-        maven {
-            url = uri("ads/pangle/repo")
-            content { includeGroup("com.pangle") }
-        }
-    }
+maven {
+    url = uri("https://artifact.bytedance.com/repository/pangle")
+    content { includeGroup("com.pangle.cn") }
 }
 ```
 
-- `ads/pangle/build.gradle.kts`：`implementation("com.pangle:open_ad_sdk:7.8.1.5")`；
-- 若 AAR 无外部依赖，可退化为 `flatDir { dirs("ads/pangle/libs") }` +
-  `implementation(name = "open_ad_sdk-7.8.1.5", ext = "aar")`（实现时以 AAR 内容为准）；
-- AAR 是否入库（约 10 MB 二进制）在 plan review 决定；不入库则 `docs/development.md` 写清本地放置步骤。
+版本登记在 `gradle/libs.versions.toml`：
+
+```toml
+pangle = "7.8.1.5"
+pangle-ads = { group = "com.pangle.cn", name = "ads-sdk-pro", version.ref = "pangle" }
+```
+
+`:ads:pangle` 只写 `implementation(libs.pangle.ads)`，仓库里不落任何二进制。
+
+官方文档还要求手动集成时补 `com.squareup.okhttp3:okhttp:3.12.1`（AAR 不带网络库）；
+本项目 `:base` 的 Ktor 已经带 okhttp，先不降级重复引入，运行期初始化失败再对齐版本。
 
 ### D9. 权限、合规、R8
 
@@ -299,7 +297,7 @@ object PangleAdsConfig {
     const val APP_ID = ""                  // 穿山甲应用 ID
     const val BANNER_CODE_ID = ""          // 横幅代码位
     const val INTERSTITIAL_CODE_ID = ""    // 全屏/插屏代码位
-    const val SPLASH_CODE_ID = ""          // 预留（本次不用）
+    const val SPLASH_CODE_ID = ""          // 原生开屏代码位（为空则回退自绘壳）
     val configured get() = APP_ID.isNotBlank() &&
         BANNER_CODE_ID.isNotBlank() && INTERSTITIAL_CODE_ID.isNotBlank()
 }
@@ -329,9 +327,9 @@ ads/meta/src/main/java/com/foolproof/ads/meta/MetaFullscreenLoader.kt
 ads/meta/src/main/java/com/foolproof/ads/meta/MetaBannerSlot.kt
 
 ads/pangle/build.gradle.kts
-ads/pangle/repo/com/pangle/open_ad_sdk/7.8.1.5/…                // AAR + POM（待确认是否入库）
 ads/pangle/src/main/AndroidManifest.xml
 ads/pangle/src/main/java/com/foolproof/ads/pangle/PangleAdsConfig.kt
+ads/pangle/src/main/java/com/foolproof/ads/pangle/PanglePrivacyController.kt
 ads/pangle/src/main/java/com/foolproof/ads/pangle/PangleAdSdk.kt
 ads/pangle/src/main/java/com/foolproof/ads/pangle/PangleFullscreenLoader.kt
 ads/pangle/src/main/java/com/foolproof/ads/pangle/PangleBannerSlot.kt
@@ -345,7 +343,8 @@ app/src/ad/pangle/kotlin/com/foolproof/ads/AdSdkFactory.kt
 ### 修改
 
 ```
-settings.gradle.kts                          + include 三个模块、本地 maven 仓库
+settings.gradle.kts                          + include 三个模块、穿山甲官方 Maven 仓库
+gradle/libs.versions.toml                    + pangle 7.8.1.5 / com.pangle.cn:ads-sdk-pro
 gradle.properties                            + foolproof.adSdk=meta
 app/build.gradle.kts                         + 开关校验、源集、条件依赖
 app/src/main/java/com/foolproof/FoolproofApp.kt        setupAds 改为 createAdSdk()
@@ -377,7 +376,8 @@ app/src/main/java/com/foolproof/ads/AdsConfig.kt     → MetaAdsConfig / AdGateC
   4. `:app` 接入 registry/factory/源集，`SplashAdOverlay` 改为“加载→原生/回退”结构；
   5. 验证 `:app:assembleDebug` 成功、Meta 行为不变。
 - **Phase 1 — 穿山甲接入**
-  1. `settings.gradle.kts` 注册 `:ads:pangle` + 本地 Maven 仓库；放入 AAR + POM，模块编译通过；
+  1. `settings.gradle.kts` 注册 `:ads:pangle` + 官方 Maven 仓库；`libs.versions.toml` 登记
+     `com.pangle.cn:ads-sdk-pro:7.8.1.5`，模块编译通过；
   2. 初始化、横幅、全屏门控、原生开屏实现，空配置全降级；
   3. `:app` 补 pangle 源集工厂与 Manifest 权限剔除；
   4. `-Pfoolproof.adSdk=pangle` 构建通过。
@@ -408,8 +408,8 @@ app/src/main/java/com/foolproof/ads/AdsConfig.kt     → MetaAdsConfig / AdGateC
 
 | 风险 | 缓解 |
 |---|---|
-| **AAR 未提供 → `:ads:pangle` 无法编译** | Phase 0（api + meta + 开关）可独立完成；AAR 到位后再做 Phase 1。开工前确认 AAR 来源 |
-| AGP library 模块不能直连本地 AAR | 用本地 Maven 仓库 + 手写 POM（D8），仓库在 settings 注册 |
+| **`ads-sdk-pro` POM 无传递依赖** | 项目已有 okhttp（Ktor）；如初始化失败再按官方文档补 `okhttp:3.12.1` |
+| 官方 Maven 仓库不可达（网络/CI） | 仓库集中声明在 settings；必要时加代理或公司镜像，仍不需要落 AAR |
 | 穿山甲 7.6.1.2+ **仅 arm64**（7.8.1.5 下线 32 位 so） | 32 位设备无填充但降级为占位；若必须覆盖 32 位，退到 7.5.1.7（plan review 决策） |
 | 包体增加（SDK 数 MB） | 只打包选中 provider；发布前记录体积；必要时按 ABI 拆包 |
 | SDK 带入敏感权限 | `tools:node="remove"` + `apkanalyzer` 对比 v1.1.0 |
@@ -425,15 +425,15 @@ app/src/main/java/com/foolproof/ads/AdsConfig.kt     → MetaAdsConfig / AdGateC
 | # | 议题 | 决定 |
 |---|---|---|
 | 1 | 切换方式 | Gradle 属性 `foolproof.adSdk`（默认 `meta`），`assembleDebug` 等命令不变 |
-| 2 | SDK 版本/入库 | 穿山甲 **7.8.1.5**（arm64-only），AAR + POM **入库** `ads/pangle/repo/` |
+| 2 | SDK 版本/接入 | 穿山甲 **7.8.1.5**（arm64-only），走官方 Maven `com.pangle.cn:ads-sdk-pro`，**不落 AAR** |
 | 3 | 权限 | **剔除全部敏感权限**（`READ_PHONE_STATE` / `REQUEST_INSTALL_PACKAGES` / `QUERY_ALL_PACKAGES` / 定位 / 通讯录 / 短信 / 写存储） |
 | 4 | 开屏 | 穿山甲接 **原生 TTSplashAd**；Meta 保持自绘壳；不可用时回退自绘壳 |
 | 5 | 默认 provider | `meta` |
 | 6 | 执行 | 直接进入 implement：先写 `tasks.md`，再做 Phase 0 |
 
-**开工前提（Phase 1）**：需要把穿山甲后台下载的 `open_ad_sdk` 7.8.1.5 AAR 放到
-`ads/pangle/repo/com/pangle/open_ad_sdk/7.8.1.5/`（含手写 POM）。没有 AAR 时 Phase 1
-无法编译；Phase 0（`:ads:api` + `:ads:meta` + 开关）不受影响，可先交付。
+**接入方式修订（2026-10-22）**：穿山甲提供官方 Maven 集成
+（`https://artifact.bytedance.com/repository/pangle` + `com.pangle.cn:ads-sdk-pro:7.8.1.5`），
+已核实 POM 与 metadata 可访问，因此不再需要下载 AAR/入库二进制，Phase 1 可直接开始。
 
 ## 9. 完成定义
 

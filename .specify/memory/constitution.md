@@ -3,8 +3,9 @@
 > 本文档是本项目的最高约束。代码、规格、评审与发布说明都不得与本文档冲突。
 > 如需变更，必须先修改本文档并递增版本号、写明理由；不能先改代码再补文档。
 >
-> 当前版本：**v1.18（2026-10-22，追溯校准）**
-> 校准目标：让宪法与已上线代码一致，并明确“新功能走 spec-kit，bugfix/样式可快修”的边界。
+> 当前版本：**v1.19（2026-10-22，广告 provider 可切换）**
+> 校准目标：把广告从单一 Meta SDK 收敛为「`:ads:api` 抽象 + 按构建开关二选一」，
+> 并登记国内穿山甲（Pangle）依赖与敏感权限剔除规则。
 
 ***
 
@@ -24,7 +25,7 @@
 
 - **系统分享入口**：其他 App 分享图片/视频/PDF 后可直达对应能力；
 - **本地账号与设置**：手机号验证码登录、密码登录、语言/主题设置、退出登录；
-- **广告**：Meta Audience Network 横幅/插屏/开屏，按产品配置启用。
+- **广告**：Meta Audience Network 与穿山甲（Pangle）二选一，按构建开关 `foolproof.adSdk` 打包；
 
 ### 1.2 不做什么（红线）
 
@@ -54,7 +55,7 @@
 | 视频 | Media3 Transformer 1.11.1 + media3-effect | 转码/缩放/裁剪/拼接，不引 FFmpeg |
 | PDF 能力 | **PDFBox-Android 2.0.27.0** | PDF 合并/拆分/旋转/页面/压缩/转图片；生成 PDF 仍用原生 `PdfDocument` |
 | 相机 | CameraX 1.4.2 | 拍照转 PDF |
-| 广告 | Meta Audience Network 6.22.0 | 仅 `:app` 直接依赖；feature 只依赖 `:base` 的 `AdGate` |
+| 广告 | Meta Audience Network 6.22.0（海外）<br>穿山甲 Pangle 7.8.1.5（国内） | 分别封装在 `:ads:meta` / `:ads:pangle`；构建开关 `foolproof.adSdk` 二选一，单个产物只含一个 SDK；feature 只依赖 `:base` 的 `AdGate` |
 | 网络 | Ktor Client（base 封装） | 当前无业务网络功能；为将来保留，禁止 feature 自建客户端 |
 | 异步 | Coroutine + Flow | 禁止 RxJava |
 | 测试 | JUnit4 + coroutines-test + koin-test | 仅 test 配置 |
@@ -68,6 +69,9 @@
 :app                         // 导航、tab、抽屉、登录/设置页、依赖组装；不写业务状态机
 :base                        // MVI 基类、Koin、日志、AdGate 接口
 :common                      // 通用导航、LocalStore、SuccessDialog、通用工具
+:ads:api                     // 广告抽象：AdSdk、横幅/开屏槽、门控策略（无具体 SDK）
+:ads:meta                    // Meta Audience Network 实现
+:ads:pangle                  // 穿山甲（国内）实现
 :features:image-compression  // 图片压缩
 :features:duplicate-cleanup  // 重复照片扫描/分组/删除
 :features:video-compression  // 视频压缩/拼接/裁剪
@@ -77,8 +81,9 @@
 依赖方向：
 
 ```
-app → base, common, features/*
+app → base, common, features/*, ads:api + 选中的一个 ads provider
 feature → base, common
+ads → base
 common → base
 base → 无业务依赖
 feature 之间禁止互相依赖
@@ -96,7 +101,7 @@ feature 之间禁止互相依赖
 - 3 个 tab 的组装与切换；
 - 左侧用户抽屉、设置全屏页、登录页；
 - 分享入口分发；
-- 广告初始化与展示；
+- 广告初始化与展示（只依赖 `foolproof.adSdk` 选中的那一个 provider）；
 - **不写**压缩/分组/PDF 转换等业务规则。
 
 ***
@@ -234,6 +239,11 @@ feature 之间禁止互相依赖
 - `READ_MEDIA_IMAGES` / `READ_MEDIA_VISUAL_USER_SELECTED`（Android 13+）、旧版 `READ_EXTERNAL_STORAGE`（maxSdk 32）；
 - `INTERNET` / `ACCESS_NETWORK_STATE` / `AD_ID` 仅供广告；
 - 不申请 `WRITE_EXTERNAL_STORAGE`、定位、通讯录、短信；
+- 广告 SDK 的 AAR 会带入 `WRITE_EXTERNAL_STORAGE`、`READ_PHONE_STATE`、定位、通讯录、短信、
+  `REQUEST_INSTALL_PACKAGES`、`QUERY_ALL_PACKAGES` 等权限，MUST 在 `:app` 清单用
+  `tools:node="remove"` 剔除，不得随依赖悄悄进入产物；
+- 穿山甲在未配置 appId/代码位、或未获得隐私同意前 MUST NOT 初始化（当前实现：未配置即不 init，
+  且初始化时关闭位置/电话状态/应用列表/写外部存储采集）；
 - 图片/视频/PDF 处理全程本地；广告 SDK 可能联网，但**不上传用户文件内容**；
 - 隐私政策必须说明广告 SDK 的数据处理与本地登录的模拟性质；
 - 分享入口的临时读权限只用于当次处理。
@@ -277,3 +287,10 @@ feature 之间禁止互相依赖
   - 重复清理补充灰度相关性兜底、分组卡片、3 列正方形与 `ContentScale.Fit`；
   - 新增 §13 spec-kit 治理边界；
   - 修正旧版“4 tab / 语音聊天”等与代码不一致的描述。
+- **v1.19（2026-10-22，广告 provider 可切换）**：
+  - 新增 `:ads:api`（广告抽象）、`:ads:meta`、`:ads:pangle` 三个模块，广告实现从 `:app` 迁出；
+  - 登记穿山甲 Pangle 7.8.1.5（官方 Maven `com.pangle.cn:ads-sdk-pro`），由构建开关
+    `foolproof.adSdk`（默认 `meta`）决定单个产物只含一个广告 SDK；
+  - `AdGate` 接口保持不变，feature 模块零改动；门控策略下沉到 `:ads:api` 的 `CountingAdGate`，
+    新增 5 秒超时兜底；
+  - 补充广告 SDK 敏感权限剔除与穿山甲初始化合规约束。

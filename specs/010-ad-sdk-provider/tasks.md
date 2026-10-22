@@ -1,19 +1,17 @@
 # Tasks: 可切换广告 SDK（新增穿山甲模块）
 
 **Feature**: `specs/010-ad-sdk-provider/spec.md` · **Plan**: `specs/010-ad-sdk-provider/plan.md`
-**Constitution**: v1.18 → 本 feature 完成后升 v1.19
+**Constitution**: v1.19（广告 provider 可切换）
 **分支**: `feature/ad-sdk-provider`
-**测试**：`./gradlew :ads:api:testDebugUnitTest`、`:app:assembleDebug`
-**组织方式**：先做不依赖 AAR 的抽象层与 Meta 迁移（Phase 0），再接入穿山甲（Phase 1），
-最后补治理文档与全量验收。
+**测试**：`./gradlew :ads:api:testDebugUnitTest`、`:ads:pangle:testDebugUnitTest`、`:app:assembleDebug`
 
-> **进度（2026-10-22）**：Phase 0 已完成并验证——`:ads:api` 7 个单测通过、
-> `:app:assembleDebug` 成功、`emulator-5554` 安装启动无崩溃、横幅占位与自绘开屏正常、
-> 运行时依赖树只有 FAN。
-> **阻塞项**：Phase 1 需要 `open_ad_sdk` 7.8.1.5 AAR。AAR 未就位前 `foolproof.adSdk`
-> 只接受 `meta`（传 `pangle` 会在配置期报错）。
+> **进度（2026-10-22）**：Phase 0 / Phase 1 / Phase 2 已完成并验证——
+> `:ads:api` 7 个单测、`:ads:pangle` 5 个单测通过；`meta` / `pangle` 两种构建均成功；
+> pangle 依赖树只有 `com.pangle.cn:ads-sdk-pro:7.8.1.5`，meta 构建只有 FAN；
+> emulator-5554 安装启动无崩溃（参数为空 → 占位/放行）。
+> **待办**：填入穿山甲后台的 appId/代码位后验证真实填充、原生开屏与门控（Phase 3）。
 
-## Phase 0: Setup + Foundational（不依赖 AAR）✅
+## Phase 0: Setup + Foundational（不依赖 SDK）✅
 
 - [x] T001 新建 `:ads:api`：`ads/api/build.gradle.kts`（android library、`api(project(":base"))`、
   minSdk 24、Java 11）、`AndroidManifest.xml`、`settings.gradle.kts` 注册
@@ -28,7 +26,7 @@
 - [x] T006 Meta 迁移：`MetaAdsConfig`、`MetaBannerSlot`（320×50、60s 刷新、destroy）、
   `MetaFullscreenLoader`、`MetaAdSdk`（初始化、门控、`loadSplash` → `onUnavailable`）
 - [x] T007 `:app` 开关：`gradle.properties` 加 `foolproof.adSdk=meta`；`app/build.gradle.kts`
-  校验取值、按开关挂 `src/ad/<provider>/kotlin` 与条件依赖（pangle 分支 Phase 1 加）
+  校验取值、按开关挂 `src/ad/<provider>/kotlin` 与条件依赖
 - [x] T008 `app/src/ad/meta/kotlin/com/foolproof/ads/AdSdkFactory.kt`：`createAdSdk(usage)`
 - [x] T009 `FoolproofApp.setupAds` 改用 `createAdSdk`，同时设置 `AdSdkRegistry.sdk` 与
   `AdGateProvider.gate`（feature 模块零改动）
@@ -39,37 +37,39 @@
 - [x] T012 删除 `MetaAdGate.kt` / `AdsConfig.kt`；`UsageStore` 实现 `AdUsage`；
   `AdGate` 注释更新实现位置
 - [x] T013 Phase 0 验证：`:ads:api:testDebugUnitTest` 7/7 通过；`:app:assembleDebug` 成功；
-  emulator-5554 启动无崩溃、横幅占位、自绘开屏正常；依赖树只有 FAN。
-  （门控的分支逻辑由单测覆盖；真机 5 次门控与 pangle 三路径留 Phase 3）
+  emulator-5554 启动无崩溃、横幅占位、自绘开屏正常；依赖树只有 FAN
 
-## Phase 1: 穿山甲接入（需 AAR）
+## Phase 1: 穿山甲接入（官方 Maven）✅
 
-- [ ] T014 `settings.gradle.kts` 注册 `:ads:pangle` + 本地 Maven 仓库（`ads/pangle/repo`）；
-  放入 `open_ad_sdk-7.8.1.5.aar` + 手写 POM；`ads/pangle/build.gradle.kts` 编译通过
-- [ ] T015 `PangleAdsConfig`（APP_ID / BANNER_CODE_ID / INTERSTITIAL_CODE_ID / SPLASH_CODE_ID，
+- [x] T014 `settings.gradle.kts` 注册 `:ads:pangle` + 官方 Maven
+  （`https://artifact.bytedance.com/repository/pangle`）；`libs.versions.toml` 登记
+  `com.pangle.cn:ads-sdk-pro:7.8.1.5`；模块编译通过
+- [x] T015 `PangleAdsConfig`（APP_ID / BANNER_CODE_ID / INTERSTITIAL_CODE_ID / SPLASH_CODE_ID，
   空串 = 未配置）
-- [ ] T016 `PangleBannerSlot`：`loadBannerExpressAd` + `TTNativeExpressAd.render()`，
-  换新前 `destroy()`，60s 刷新
-- [ ] T017 `PangleFullscreenLoader`：`loadFullScreenVideoAd` + `setFullScreenVideoAdInteractionListener`，
+- [x] T016 `PangleBannerSlot`：`loadBannerExpressAd` + `TTNativeExpressAd.render()`，
+  换新前 `destroy()`，60s 刷新，SDK 未就绪时短轮询
+- [x] T017 `PangleFullscreenLoader`：`loadFullScreenVideoAd` + `setFullScreenVideoAdInteractionListener`，
   `onAdClose`/`onError` 收口到 `CountingAdGate`
-- [ ] T018 `PangleSplashSlot`：`loadSplashAd` + `getSplashView()` + `setSplashInteractionListener`
-  （`onAdSkip`/`onAdTimeOver` → 关闭），`init` 后台预热一次
-- [ ] T019 `PangleAdSdk`：`TTAdSdk.init` + `TTAdSdk.start`、debug 模式、未配置全降级
-- [ ] T020 `app/src/ad/pangle/kotlin/.../AdSdkFactory.kt`；`:app` Manifest 用
-  `tools:node="remove"` 剔除敏感权限
-- [ ] T021 `PangleAdsConfigTest`；`.\gradlew.bat :app:assembleDebug "-Pfoolproof.adSdk=pangle"` 成功
+- [x] T018 `PangleSplashSlot`：`loadSplashAd` + `getSplashView/showSplashView` +
+  `setSplashAdListener`（`onSplashAdClose` → 关闭），`init` 成功后预热一次
+- [x] T019 `PangleAdSdk`：`TTAdSdk.init` + `TTAdSdk.start`、debug 模式、
+  `TTCustomController` 关闭位置/电话状态/应用列表采集，未配置全降级
+- [x] T020 `app/src/ad/pangle/kotlin/.../AdSdkFactory.kt`；`:app` Manifest 用
+  `tools:node="remove"` 剔除 `WRITE_EXTERNAL_STORAGE` 与 ASUS 设备权限
+- [x] T021 `PangleAdsConfigTest`（5/5）；`.\gradlew.bat :app:assembleDebug "-Pfoolproof.adSdk=pangle"` 成功
 
-## Phase 2: 治理与文档
+## Phase 2: 治理与文档 ✅
 
-- [ ] T022 宪法升 v1.19：§2 广告依赖、§3 模块结构与依赖方向、§11 权限、§14 changelog
-- [ ] T023 文档同步：`docs/architecture.md`、`features.md`、`localization-and-ads.md`
-  （切换与配置方法）、`handoff.md`、`development.md`
-- [ ] T024 `specs/README.md` 增加 010 索引
+- [x] T022 宪法升 v1.19：§2 广告依赖、§3 模块结构与依赖方向、§11 权限、§14 changelog
+- [x] T023 文档同步：`docs/architecture.md`、`features.md`、`localization-and-ads.md`、
+  `build-and-release.md`、`handoff.md`
+- [x] T024 `specs/README.md` 增加 010 索引
 
 ## Phase 3: 验证与收尾
 
-- [ ] T025 双构建 + 依赖互斥：`meta` / `pangle` 各构建一次，
-  `:app:dependencies` 与 APK 中 SDK 类互斥；非法开关值构建失败
+- [x] T025 双构建 + 依赖互斥：`meta` / `pangle` 各构建成功；
+  pangle 依赖树只有 `com.pangle.cn:ads-sdk-pro`，meta 只有 FAN；非法开关值构建失败
 - [ ] T026 设备验收（`10AG9C079Y001L0` 或 `emulator-5554`）：
-  meta 三路径回归；pangle 有代码位/空配置两种降级；门控 5 次；开屏
-- [ ] T027 体积与 Manifest 对比（相对 v1.1.0）；release `assembleRelease` 通过
+  meta 三路径回归；pangle **填入真实 appId/代码位**后验证横幅/门控/原生开屏与空配置降级
+- [ ] T027 体积与 Manifest 对比收尾：release `assembleRelease` / `bundleRelease` 各跑一次，
+  记录 pangle 体积；发布前再核对一次权限清单
