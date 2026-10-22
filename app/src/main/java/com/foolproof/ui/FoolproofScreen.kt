@@ -108,10 +108,11 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
         null -> null
     }
 
+    Box(modifier = Modifier.fillMaxSize()) {
     ModalNavigationDrawer(
         modifier = modifier.fillMaxSize(),
         drawerState = drawerState,
-        // 视频页的横向手势归 Pager；压缩页额外提供 24dp 边缘手势开抽屉
+        // 视频页交给 Pager；压缩页由 24dp 自定义边缘手势开抽屉
         gesturesEnabled = currentTab != FoolproofDestination.Videos,
         drawerContent = {
             ModalDrawerSheet {
@@ -188,20 +189,23 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
             if (currentTab == FoolproofDestination.Videos && videoPage == 0) {
                 EdgeDrawerHandle(onOpen = { scope.launch { drawerState.open() } })
             }
-            if (drawerState.isOpen) {
-                // 抽屉打开时，内容区盖一层透明遮罩：点任意位置关闭，避免看起来卡死
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                        ) {
-                            scope.launch { drawerState.close() }
-                        },
-                )
-            }
         }
+    }
+
+    // 视频页关闭了抽屉内置手势，遮罩点击也失效；这里补一层右侧透明遮罩负责关闭
+    if (drawerState.isOpen && currentTab == FoolproofDestination.Videos) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 360.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                ) {
+                    scope.launch { drawerState.close() }
+                },
+        )
+    }
     }
 
     if (drawerState.isOpen) {
