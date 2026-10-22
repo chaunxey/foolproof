@@ -10,14 +10,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -32,6 +36,7 @@ import com.foolproof.ads.SectionBannerAd
 import com.foolproof.features.video.VideoCompressionSection
 import com.foolproof.features.video.VideoMergeSection
 import com.foolproof.features.video.VideoTrimSection
+import kotlinx.coroutines.launch
 
 private enum class VideoTabMode { COMPRESS, MERGE, TRIM }
 
@@ -42,15 +47,39 @@ private enum class VideoTabMode { COMPRESS, MERGE, TRIM }
 @Composable
 fun VideoTabScreen(modifier: Modifier = Modifier) {
     var mode by rememberSaveable { mutableStateOf(VideoTabMode.COMPRESS) }
+    val pagerState = rememberPagerState(initialPage = mode.ordinal) {
+        VideoTabMode.entries.size
+    }
+    val scope = rememberCoroutineScope()
 
-    Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        ModeSwitch(mode = mode, onModeChange = { mode = it })
+    LaunchedEffect(pagerState.currentPage) {
+        mode = VideoTabMode.entries[pagerState.currentPage]
+    }
+
+    Column(modifier = modifier.fillMaxSize()) {
+        ModeSwitch(
+            mode = mode,
+            onModeChange = { next ->
+                scope.launch { pagerState.animateScrollToPage(next.ordinal) }
+            },
+        )
         SectionBannerAd()
 
-        when (mode) {
-            VideoTabMode.COMPRESS -> VideoCompressionSection()
-            VideoTabMode.MERGE -> VideoMergeSection()
-            VideoTabMode.TRIM -> VideoTrimSection()
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.weight(1f),
+        ) { page ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                when (VideoTabMode.entries[page]) {
+                    VideoTabMode.COMPRESS -> VideoCompressionSection()
+                    VideoTabMode.MERGE -> VideoMergeSection()
+                    VideoTabMode.TRIM -> VideoTrimSection()
+                }
+            }
         }
     }
 }
