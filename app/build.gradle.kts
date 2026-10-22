@@ -10,10 +10,10 @@ val keystoreProperties = Properties().apply {
     if (file.exists()) file.inputStream().use { load(it) }
 }
 
-// 广告 provider：meta（默认）/ pangle（穿山甲，Phase 1 接入后开放）。
+// 广告 provider：meta（默认）/ pangle（穿山甲）。
 // 只把选中的 provider 挂到 :app，保证单个产物里只有一套广告 SDK。
 val adSdk = providers.gradleProperty("foolproof.adSdk").getOrElse("meta").trim().lowercase()
-val availableAdSdks = setOf("meta")
+val availableAdSdks = setOf("meta", "pangle")
 check(adSdk in availableAdSdks) {
     "foolproof.adSdk=$adSdk 不可用；当前可选：${availableAdSdks.joinToString()}"
 }
@@ -101,8 +101,9 @@ dependencies {
     implementation(libs.koin.compose.viewmodel)
     // 广告：抽象 + 当前选中的 provider（feature 仍只依赖 :base 的 AdGate）
     implementation(project(":ads:api"))
-    if (adSdk == "meta") {
-        implementation(project(":ads:meta"))
+    when (adSdk) {
+        "meta" -> implementation(project(":ads:meta"))
+        "pangle" -> implementation(project(":ads:pangle"))
     }
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

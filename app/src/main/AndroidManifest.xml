@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!--
-      广告（Meta Audience Network）需要联网与广告 ID；图片/文件处理仍全程本地，
+      广告 SDK（Meta / 穿山甲）需要联网与广告 ID；图片/文件处理仍全程本地，
       不上传用户内容。Media3 带进来的 WAKE_LOCK 仍然移除。
     -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -17,6 +17,14 @@
 
     <uses-permission
         android:name="android.permission.WAKE_LOCK"
+        tools:node="remove" />
+
+    <!-- 穿山甲 AAR 带入的敏感权限：按宪法 §11 剔除（广告不依赖写存储/设备序列号） -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:node="remove" />
+    <uses-permission
+        android:name="com.asus.msa.SupplementaryDID.ACCESS"
         tools:node="remove" />
 
     <!-- Android 11+ 包可见性：打开/分享 PDF 需要能看到处理 application/pdf 的应用 -->

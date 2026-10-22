@@ -19,6 +19,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // 穿山甲官方 Maven（只提供 com.pangle.cn 的广告 SDK）
+        maven {
+            url = uri("https://artifact.bytedance.com/repository/pangle")
+            content { includeGroup("com.pangle.cn") }
+        }
     }
 }
 
@@ -28,6 +33,7 @@ include(":base")
 include(":common")
 include(":ads:api")
 include(":ads:meta")
+include(":ads:pangle")
 include(":features:image-compression")
 include(":features:duplicate-cleanup")
 include(":features:video-compression")
