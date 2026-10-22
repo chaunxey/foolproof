@@ -76,11 +76,6 @@ fun CompressionSection(
 ) {
     val state by viewModel.uiState.collectAsState()
     var showSuccess by remember { mutableStateOf(false) }
-    LaunchedEffect(state.isRunning) {
-        if (!state.isRunning && state.completedCount > 0) {
-            showSuccess = true
-        }
-    }
     val shared by SharedContentStore.content.collectAsState()
     var quickStart by remember { mutableStateOf(false) }
     LaunchedEffect(shared) {
@@ -136,6 +131,7 @@ fun CompressionSection(
     androidx.compose.runtime.LaunchedEffect(state.isRunning, state.completedCount) {
         if (wasRunning && !state.isRunning && state.completedCount > 0) {
             AdGateProvider.gate?.onSuccess(FeatureId.IMAGE_COMPRESSION)
+            showSuccess = true
         }
         wasRunning = state.isRunning
     }
