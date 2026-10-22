@@ -6,4 +6,5 @@
     <string name="tab_converter">转换</string>
     <!-- 右上角设置按钮的无障碍描述 -->
     <string name="tab_settings">设置</string>
+    <string name="tab_menu">菜单</string>
 </resources>

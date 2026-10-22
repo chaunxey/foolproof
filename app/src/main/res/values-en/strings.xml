@@ -28,4 +28,6 @@
     <string name="conversion_tab_tools">PDF tools</string>
     <string name="conversion_tab_generate">Generate PDF</string>
     <string name="video_mode_trim">Trim</string>
+    <string name="drawer_user_subtitle">On-device · no account</string>
+    <string name="drawer_version">Version %1$s</string>
 </resources>

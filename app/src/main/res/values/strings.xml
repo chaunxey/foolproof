@@ -27,4 +27,6 @@
     <string name="conversion_tab_tools">PDF 工具</string>
     <string name="conversion_tab_generate">生成 PDF</string>
     <string name="video_mode_trim">裁剪</string>
+    <string name="drawer_user_subtitle">本地处理 · 无需账号</string>
+    <string name="drawer_version">版本 %1$s</string>
 </resources>

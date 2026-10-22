@@ -28,4 +28,6 @@
     <string name="conversion_tab_tools">PDF ツール</string>
     <string name="conversion_tab_generate">PDF 作成</string>
     <string name="video_mode_trim">トリミング</string>
+    <string name="drawer_user_subtitle">端末処理・アカウント不要</string>
+    <string name="drawer_version">バージョン %1$s</string>
 </resources>

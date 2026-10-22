@@ -28,4 +28,6 @@
     <string name="conversion_tab_tools">PDF-Werkzeuge</string>
     <string name="conversion_tab_generate">PDF erstellen</string>
     <string name="video_mode_trim">Zuschneiden</string>
+    <string name="drawer_user_subtitle">Lokal verarbeitet · kein Konto</string>
+    <string name="drawer_version">Version %1$s</string>
 </resources>

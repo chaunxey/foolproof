@@ -1,49 +1,62 @@
 package com.foolproof.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.activity.compose.BackHandler
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.foolproof.R
 import com.foolproof.base.share.SharedContentStore
 import com.foolproof.base.util.findActivity
-import com.foolproof.ui.settings.SettingsDialog
 import com.foolproof.common.navigation.FoolproofDestination
 import com.foolproof.common.navigation.FoolproofTabHost
-import com.foolproof.features.conversion.ui.FileConversionSection
-import com.foolproof.features.video.VideoCompressionSection
-import com.foolproof.features.video.VideoMergeSection
 import com.foolproof.ui.compression.CompressionTabScreen
 import com.foolproof.ui.conversion.ConversionTabScreen
+import com.foolproof.ui.settings.SettingsScreen
 import com.foolproof.ui.video.VideoTabScreen
+import kotlinx.coroutines.launch
 
 /**
- * 应用主界面：底部三个 tab（图片 / 视频 / 转换）。
+ * 应用主界面：左侧抽屉 + 底部三个 tab（图片 / 视频 / 转换）。
  *
- * 宪法 §9：`:app` 只做布局与组合，不写业务逻辑与导航状态机——
- * tab 切换由 `:common` 的 [FoolproofTabHost] 负责（宪法 §2 v1.17）。
- *
- * 宪法 §3.2：每个 tab 内部**只有一个滚动容器**——图片 tab 由 `CompressionTabScreen`
- * 持有网格，视频与转换 tab 由这里的 `verticalScroll` 持有。
+ * 抽屉只放静态用户信息与设置入口；设置本身是全屏页面，不再是 Dialog。
  */
 @Composable
 fun FoolproofScreen(modifier: Modifier = Modifier) {
-    // 防误触：返回键第一次只提示，2 秒内再按才退出
     val context = LocalContext.current
     val backPressAgain = stringResource(R.string.back_press_again)
     var lastBackAt by remember { mutableStateOf(0L) }
-    BackHandler {
+    var showSettings by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = !showSettings) {
         val now = android.os.SystemClock.elapsedRealtime()
         if (now - lastBackAt <= 2_000L) {
             // LocalContext 被语言设置包装成 ContextWrapper，不能直接 as Activity
@@ -54,8 +67,18 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
         }
     }
 
-    var showSettings by remember { mutableStateOf(false) }
-    if (showSettings) SettingsDialog(onDismiss = { showSettings = false })
+    if (showSettings) {
+        SettingsScreen(onBack = { showSettings = false })
+        return
+    }
+
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    val versionName = remember {
+        runCatching {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName
+        }.getOrNull() ?: "1.0"
+    }
 
     val shared by SharedContentStore.content.collectAsState()
     val requestedDestination = when (shared?.kind) {
@@ -65,15 +88,69 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
         null -> null
     }
 
-    FoolproofTabHost(
+    ModalNavigationDrawer(
         modifier = modifier.fillMaxSize(),
-        onSettingsClick = { showSettings = true },
-        requestedDestination = requestedDestination,
-    ) { destination ->
-        when (destination) {
-            FoolproofDestination.Images -> CompressionTabScreen()
-            FoolproofDestination.Videos -> VideoTabScreen()
-            FoolproofDestination.Converter -> ConversionTabScreen()
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Row(
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_account_circle),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(56.dp),
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = stringResource(R.string.app_name),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Text(
+                            text = stringResource(R.string.drawer_user_subtitle),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                HorizontalDivider()
+
+                NavigationDrawerItem(
+                    label = { Text(stringResource(R.string.settings_title)) },
+                    icon = { Icon(painterResource(R.drawable.ic_settings), contentDescription = null) },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        showSettings = true
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                )
+
+                Spacer(Modifier.weight(1f))
+
+                Text(
+                    text = stringResource(R.string.drawer_version, versionName),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(20.dp),
+                )
+            }
+        },
+    ) {
+        FoolproofTabHost(
+            modifier = Modifier.fillMaxSize(),
+            onMenuClick = { scope.launch { drawerState.open() } },
+            requestedDestination = requestedDestination,
+        ) { destination ->
+            when (destination) {
+                FoolproofDestination.Images -> CompressionTabScreen()
+                FoolproofDestination.Videos -> VideoTabScreen()
+                FoolproofDestination.Converter -> ConversionTabScreen()
+            }
         }
     }
 }

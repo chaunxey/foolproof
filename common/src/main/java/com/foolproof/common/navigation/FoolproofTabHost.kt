@@ -50,7 +50,7 @@ enum class FoolproofDestination(val labelRes: Int, val iconRes: Int) {
 fun FoolproofTabHost(
     modifier: Modifier = Modifier,
     destinations: List<FoolproofDestination> = FoolproofDestination.entries,
-    onSettingsClick: (() -> Unit)? = null,
+    onMenuClick: (() -> Unit)? = null,
     requestedDestination: FoolproofDestination? = null,
     content: @Composable (FoolproofDestination) -> Unit,
 ) {
@@ -63,17 +63,17 @@ fun FoolproofTabHost(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            if (onSettingsClick != null) {
+            if (onMenuClick != null) {
                 Row(
                     // 应用是 edge-to-edge（MainActivity 调了 enableEdgeToEdge），
-                    // 顶栏必须自己避开状态栏，否则齿轮会压在状态栏图标上。
+                    // 顶栏必须自己避开状态栏，否则菜单键会压在状态栏图标上。
                     modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.End,
+                    horizontalArrangement = Arrangement.Start,
                 ) {
-                    IconButton(onClick = onSettingsClick) {
+                    IconButton(onClick = onMenuClick) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_settings),
-                            contentDescription = stringResource(R.string.tab_settings),
+                            painter = painterResource(R.drawable.ic_menu),
+                            contentDescription = stringResource(R.string.tab_menu),
                             modifier = Modifier.size(24.dp),
                         )
                     }

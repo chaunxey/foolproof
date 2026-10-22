@@ -28,4 +28,6 @@
     <string name="conversion_tab_tools">Outils PDF</string>
     <string name="conversion_tab_generate">Créer un PDF</string>
     <string name="video_mode_trim">Découper</string>
+    <string name="drawer_user_subtitle">Traitement local · sans compte</string>
+    <string name="drawer_version">Version %1$s</string>
 </resources>

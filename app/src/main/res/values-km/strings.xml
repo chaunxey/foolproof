@@ -28,4 +28,6 @@
     <string name="conversion_tab_tools">ឧបករណ៍ PDF</string>
     <string name="conversion_tab_generate">បង្កើត PDF</string>
     <string name="video_mode_trim">កាត់</string>
+    <string name="drawer_user_subtitle">ដំណើរការក្នុងឧបករណ៍ · គ្មានគណនី</string>
+    <string name="drawer_version">កំណែ %1$s</string>
 </resources>
