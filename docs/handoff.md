@@ -26,7 +26,7 @@ H:\AndroidDevelop\workplace\Foolproof
 ## 3. 当前状态（2026-10-22）
 
 - 分支：`main`
-- 最新提交：`b50d075 docs: 添加开发交接说明`
+- 最新提交：以 `git log -1 main` 为准（本文档会随提交更新）
 - 最新 Release：`v1.1.0`（Release 源提交 `29916fb`）
   - APK：`Foolproof-v1.1.0.apk`（14,261,641 bytes）
   - AAB：`Foolproof-v1.1.0.aab`（18,330,097 bytes）
