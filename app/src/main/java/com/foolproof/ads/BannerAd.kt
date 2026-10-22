@@ -92,10 +92,10 @@ private fun PlaceholderBanner(modifier: Modifier = Modifier) {
     }
 }
 
-/** 功能分割处的横幅：左右留 16dp、上下 8dp。新增功能分段时直接复用。 */
+/** 功能分割处的横幅：全局内容区已有 16dp 横向 padding，这里只留上下 8dp。 */
 @Composable
 fun SectionBannerAd(modifier: Modifier = Modifier) {
-    BannerAd(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp))
+    BannerAd(modifier = modifier.fillMaxWidth().padding(vertical = 8.dp))
 }
 
 /** 启动/唤醒时的 5 秒全屏广告层：3 秒后右上角可跳过。 */

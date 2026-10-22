@@ -130,7 +130,7 @@ fun PdfToolsSection(
         }
     }
 
-    Column(modifier = modifier.fillMaxWidth().padding(16.dp)) {
+    Column(modifier = modifier.fillMaxWidth().padding(vertical = 16.dp)) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             PdfToolMode.entries.forEach { mode ->
                 FilterChip(

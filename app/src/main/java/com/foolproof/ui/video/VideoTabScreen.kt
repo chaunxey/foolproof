@@ -94,7 +94,7 @@ private fun ModeSwitch(mode: VideoTabMode, onModeChange: (VideoTabMode) -> Unit)
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(vertical = 8.dp)
             .clip(RoundedCornerShape(28.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(4.dp),
