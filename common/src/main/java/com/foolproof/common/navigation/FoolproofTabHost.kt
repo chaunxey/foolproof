@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +26,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.foolproof.common.R
 
 /**
@@ -85,17 +88,30 @@ fun FoolproofTabHost(
         bottomBar = {
             NavigationBar {
                 destinations.forEach { destination ->
+                    val selectedItem = destination == current
                     NavigationBarItem(
-                        selected = destination == current,
+                        selected = selectedItem,
                         onClick = { selected = destination.name },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
                         icon = {
                             Icon(
                                 painter = painterResource(destination.iconRes),
                                 contentDescription = null,
-                                modifier = Modifier.size(24.dp),
+                                modifier = Modifier.size(if (selectedItem) 26.dp else 24.dp),
                             )
                         },
-                        label = { Text(stringResource(destination.labelRes)) },
+                        label = {
+                            Text(
+                                text = stringResource(destination.labelRes),
+                                fontWeight = if (selectedItem) FontWeight.Bold else FontWeight.Normal,
+                            )
+                        },
                     )
                 }
             }
