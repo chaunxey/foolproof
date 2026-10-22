@@ -49,7 +49,7 @@ base → 无业务依赖
 - `readString/Int/Long/Float/Boolean`：启动阶段同步读一次；
 - `writeString/Int/Long/Float/Boolean`：异步落盘；
 - `remove`：删除某个 key；
-- 设置、登录态、广告计数、开屏时间都走这一套，不再直接使用 SharedPreferences。
+- 设置、登录态、广告计数、开屏时间都走这一套，不再维护第二套键值存储。
 
 ## AGP 9 约定
 

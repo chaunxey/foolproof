@@ -33,6 +33,7 @@ class FoolproofApp : BaseApplication() {
 
     override fun onCreate() {
         super.onCreate()
+        clearLegacyPreferences()
         AuthStore.init(this)
         setupAds()
         // 启动清理上个进程可能残留的半成品（FR-014：不得留下孤立文件）。
@@ -40,6 +41,13 @@ class FoolproofApp : BaseApplication() {
         thread(name = "output-cleanup", isDaemon = true) {
             runCatching { GlobalContext.get().get<VideoOutputCleaner>().cleanAll() }
             runCatching { GlobalContext.get().get<PdfOutputCleaner>().cleanAll() }
+        }
+    }
+
+    /** 旧版 SharedPreferences 数据不再保留，升级后直接删除。 */
+    private fun clearLegacyPreferences() {
+        listOf("app_settings", "auth", "ad_usage", "ad_splash").forEach {
+            deleteSharedPreferences(it)
         }
     }
 
