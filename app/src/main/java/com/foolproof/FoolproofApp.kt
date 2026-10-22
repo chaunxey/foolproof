@@ -1,11 +1,10 @@
 package com.foolproof
 
 import android.content.pm.ApplicationInfo
-import com.facebook.ads.AdSettings
-import com.facebook.ads.AudienceNetworkAds
-import com.foolproof.ads.MetaAdGate
 import com.foolproof.ads.SplashScheduler
 import com.foolproof.ads.UsageStore
+import com.foolproof.ads.api.AdSdkRegistry
+import com.foolproof.ads.createAdSdk
 import com.foolproof.base.BaseApplication
 import com.foolproof.base.ads.AdGateProvider
 import com.foolproof.features.compression.di.imageCompressionModule
@@ -51,16 +50,20 @@ class FoolproofApp : BaseApplication() {
         }
     }
 
+    /**
+     * 广告初始化：provider 由构建开关 `foolproof.adSdk` 决定（默认 Meta）。
+     * feature 模块只依赖 `:base` 的 `AdGate`，这里把同一个实例交给 AdGateProvider。
+     */
     private fun setupAds() {
         UsageStore.init(this)
         SplashScheduler.init(this)
-        AdGateProvider.gate = MetaAdGate()
 
-        runCatching {
-            val debuggable = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
-            // debug 包走 Meta 测试广告；release 包不要开
-            AdSettings.setDebugBuild(debuggable)
-            AudienceNetworkAds.initialize(this)
-        }
+        val sdk = createAdSdk(UsageStore)
+        AdSdkRegistry.sdk = sdk
+        AdGateProvider.gate = sdk
+
+        val debuggable = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        // SDK 初始化失败不能让应用起不来：广告降级，核心功能照常用。
+        runCatching { sdk.init(this, debuggable) }
     }
 }

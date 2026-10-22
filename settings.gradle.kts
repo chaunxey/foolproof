@@ -1,4 +1,4 @@
-﻿pluginManagement {
+pluginManagement {
     repositories {
         google {
             content {
@@ -26,6 +26,8 @@ rootProject.name = "Foolproof"
 include(":app")
 include(":base")
 include(":common")
+include(":ads:api")
+include(":ads:meta")
 include(":features:image-compression")
 include(":features:duplicate-cleanup")
 include(":features:video-compression")

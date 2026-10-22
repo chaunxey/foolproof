@@ -1,11 +1,12 @@
 package com.foolproof.ads
 
 import android.content.Context
+import com.foolproof.ads.api.AdUsage
 import com.foolproof.base.ads.FeatureId
 import com.foolproof.common.storage.LocalStore
 
 /** 每个功能「成功使用次数」的持久化计数，内存缓存 + DataStore 异步落盘。 */
-object UsageStore {
+object UsageStore : AdUsage {
 
     private val counts = mutableMapOf<FeatureId, Int>()
 
@@ -16,15 +17,15 @@ object UsageStore {
         }
     }
 
-    fun uses(feature: FeatureId): Int = counts[feature] ?: 0
+    override fun uses(feature: FeatureId): Int = counts[feature] ?: 0
 
-    fun increment(feature: FeatureId) {
+    override fun increment(feature: FeatureId) {
         val next = uses(feature) + 1
         counts[feature] = next
         LocalStore.writeInt(key(feature), next)
     }
 
-    fun reset(feature: FeatureId) {
+    override fun reset(feature: FeatureId) {
         counts[feature] = 0
         LocalStore.remove(key(feature))
     }

@@ -10,6 +10,14 @@ val keystoreProperties = Properties().apply {
     if (file.exists()) file.inputStream().use { load(it) }
 }
 
+// 广告 provider：meta（默认）/ pangle（穿山甲，Phase 1 接入后开放）。
+// 只把选中的 provider 挂到 :app，保证单个产物里只有一套广告 SDK。
+val adSdk = providers.gradleProperty("foolproof.adSdk").getOrElse("meta").trim().lowercase()
+val availableAdSdks = setOf("meta")
+check(adSdk in availableAdSdks) {
+    "foolproof.adSdk=$adSdk 不可用；当前可选：${availableAdSdks.joinToString()}"
+}
+
 android {
     namespace = "com.foolproof"
     compileSdk {
@@ -55,6 +63,8 @@ android {
     buildFeatures {
         compose = true
     }
+    // 只编译当前 provider 的工厂文件，另一个 provider 的源码不参与构建
+    sourceSets.getByName("main").kotlin.srcDir("src/ad/$adSdk/kotlin")
     androidResources {
         localeFilters += listOf("zh", "en", "ja", "fr", "de", "km")
     }
@@ -89,8 +99,11 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     // :app 需要直接从 Koin 取 feature 的 ViewModel（页面组装的一部分）
     implementation(libs.koin.compose.viewmodel)
-    // 广告：仅 :app 直接依赖，feature 通过 :base 的 AdGate 接口调用
-    implementation(libs.audience.network)
+    // 广告：抽象 + 当前选中的 provider（feature 仍只依赖 :base 的 AdGate）
+    implementation(project(":ads:api"))
+    if (adSdk == "meta") {
+        implementation(project(":ads:meta"))
+    }
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

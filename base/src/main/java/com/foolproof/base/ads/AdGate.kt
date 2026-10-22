@@ -14,7 +14,8 @@ enum class FeatureId {
 /**
  * 广告门控接口。
  *
- * feature 只依赖本接口；具体实现（Meta Audience Network）放在 `:app`。
+ * feature 只依赖本接口；具体实现放在 `:ads:meta`（Meta Audience Network）
+ * 或 `:ads:pangle`（穿山甲），由构建开关 `foolproof.adSdk` 二选一。
  * 实现方必须遵守：**广告加载失败要放行**，不能把核心功能卡死。
  */
 interface AdGate {
