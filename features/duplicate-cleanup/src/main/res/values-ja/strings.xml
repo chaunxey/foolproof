@@ -40,4 +40,5 @@
     <string name="duplicates_msg_delete_failed">一部の写真を削除できませんでした</string>
     <string name="duplicates_msg_system_delete_unavailable">システムの削除リクエストを利用できません</string>
     <string name="duplicates_empty_title">ギャラリーの重複写真をスキャン</string>
+    <string name="duplicates_group_title">グループ %1$d · %2$d 枚 · 解放可能 %3$s</string>
 </resources>

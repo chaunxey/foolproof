@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.util.Size
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -66,12 +67,13 @@ fun LazyGridScope.duplicatePhotoRows(
 ) {
     var remaining = MAX_PHOTOS
 
-    state.groups.forEach { group ->
+    state.groups.forEachIndexed { index, group ->
         val visible = group.items.take(remaining.coerceAtLeast(0))
         remaining -= visible.size
         if (visible.isNotEmpty()) {
             item(key = "group-${group.id}", span = { GridItemSpan(maxLineSpan) }) {
                 PhotoGroupCard(
+                    index = index + 1,
                     group = group,
                     photos = visible,
                     selected = state.selected,
@@ -97,6 +99,7 @@ fun LazyGridScope.duplicatePhotoRows(
 /** 同一组照片放在一个圆角卡片里，3 列等宽正方形，最后一行不拉伸。 */
 @Composable
 private fun PhotoGroupCard(
+    index: Int,
     group: PhotoGroup,
     photos: List<PhotoItem>,
     selected: Set<String>,
@@ -104,18 +107,25 @@ private fun PhotoGroupCard(
     onOpen: (String) -> Unit,
 ) {
     Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(14.dp),
+        tonalElevation = 2.dp,
+        shadowElevation = 1.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp, vertical = 6.dp),
     ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
             Text(
                 text = stringResource(
-                    R.string.duplicates_group_summary,
+                    R.string.duplicates_group_title,
+                    index,
                     group.count,
                     ByteFormat.formatBytes(group.reclaimableBytes),
                 ),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
             )
 
             photos.chunked(COLUMNS).forEach { row ->

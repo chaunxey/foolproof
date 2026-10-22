@@ -40,4 +40,5 @@
     <string name="duplicates_msg_delete_failed">Some photos could not be deleted</string>
     <string name="duplicates_msg_system_delete_unavailable">System delete request unavailable</string>
     <string name="duplicates_empty_title">Scan your gallery for duplicates</string>
+    <string name="duplicates_group_title">Group %1$d · %2$d photos · %3$s reclaimable</string>
 </resources>
