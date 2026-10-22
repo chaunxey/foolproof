@@ -21,7 +21,6 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -150,15 +149,6 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
                     },
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                 )
-
-                if (userPhone != null) {
-                    TextButton(
-                        onClick = { AuthStore.logout() },
-                        modifier = Modifier.padding(horizontal = 12.dp),
-                    ) {
-                        Text(stringResource(R.string.auth_logout))
-                    }
-                }
 
                 Spacer(Modifier.weight(1f))
 

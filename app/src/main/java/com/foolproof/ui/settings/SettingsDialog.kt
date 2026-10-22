@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.foolproof.R
+import com.foolproof.ui.auth.AuthStore
 import kotlin.math.roundToInt
 
 /**
@@ -61,10 +62,29 @@ fun SettingsScreen(onBack: () -> Unit) {
             )
         },
     ) { padding ->
-        SettingsContent(
-            modifier = Modifier.padding(padding),
-            onClose = onBack,
-        )
+        val phone by AuthStore.phone.collectAsState()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+        ) {
+            SettingsContent(
+                modifier = Modifier.weight(1f),
+                onClose = onBack,
+            )
+            if (phone != null) {
+                HorizontalDivider()
+                TextButton(
+                    onClick = { AuthStore.logout() },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.auth_logout),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -79,7 +99,6 @@ private fun SettingsContent(
 
     Column(
         modifier = modifier
-            .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(20.dp),
     ) {
