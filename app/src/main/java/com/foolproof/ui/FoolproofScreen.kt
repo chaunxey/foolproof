@@ -2,6 +2,7 @@ package com.foolproof.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
@@ -187,7 +188,24 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
             if (currentTab == FoolproofDestination.Videos && videoPage == 0) {
                 EdgeDrawerHandle(onOpen = { scope.launch { drawerState.open() } })
             }
+            if (drawerState.isOpen) {
+                // 抽屉打开时，内容区盖一层透明遮罩：点任意位置关闭，避免看起来卡死
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                        ) {
+                            scope.launch { drawerState.close() }
+                        },
+                )
+            }
         }
+    }
+
+    if (drawerState.isOpen) {
+        BackHandler { scope.launch { drawerState.close() } }
     }
 }
 
