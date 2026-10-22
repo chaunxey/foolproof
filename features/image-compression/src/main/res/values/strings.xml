@@ -66,4 +66,5 @@
     <string name="compression_strip_hint">移除 GPS、设备型号等元数据</string>
     <string name="compression_strip_off_hint">将保留原始 EXIF（可能包含位置）</string>
     <string name="compression_success_title">压缩完成</string>
+    <string name="compression_saved">已保存</string>
 </resources>

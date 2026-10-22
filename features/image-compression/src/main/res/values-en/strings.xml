@@ -53,4 +53,5 @@
     <string name="compression_strip_hint">Removes GPS, device model and other metadata</string>
     <string name="compression_strip_off_hint">Original EXIF is kept (may include location)</string>
     <string name="compression_success_title">Compression complete</string>
+    <string name="compression_saved">Saved</string>
 </resources>

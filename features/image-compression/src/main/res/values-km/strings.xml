@@ -53,4 +53,5 @@
     <string name="compression_strip_hint">លុប GPS ម៉ូដែលឧបករណ៍ និងទិន្នន័យមេតាផ្សេងទៀត</string>
     <string name="compression_strip_off_hint">រក្សា EXIF ដើម (អាចរួមមានទីតាំង)</string>
     <string name="compression_success_title">បង្ហាប់រួចរាល់</string>
+    <string name="compression_saved">បានរក្សាទុក</string>
 </resources>

@@ -19,7 +19,11 @@ data class CompressionUiState(
     val estimateLoading: Boolean = false,
     /** 当前系统能否直接保存到相册（API ≥ 29） */
     val saveSupported: Boolean = false,
+    /** 已成功写入系统相册的图片 id，避免重复保存。 */
+    val savedIds: Set<String> = emptySet(),
 ) : UiState {
+
+    fun isSaved(id: String): Boolean = id in savedIds
 
     val canStart: Boolean
         get() = images.isNotEmpty() && !isRunning

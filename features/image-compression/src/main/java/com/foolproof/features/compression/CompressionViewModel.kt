@@ -91,6 +91,7 @@ class CompressionViewModel(
                     outcomes = images.associate { image ->
                         image.id to CompressionOutcome(id = image.id, originalBytes = image.sizeBytes)
                     },
+                    savedIds = emptySet(),
                 )
             }
         }
@@ -109,7 +110,13 @@ class CompressionViewModel(
             return
         }
 
-        updateState { it.copy(isRunning = true) }
+        updateState {
+            it.copy(
+                isRunning = true,
+                // 重新压缩会生成新文件，旧“已保存”标记必须失效
+                savedIds = it.savedIds - targets.map { image -> image.id }.toSet(),
+            )
+        }
         batchJob = launchJob {
             val option = currentState.option
             for (image in targets) {
@@ -234,6 +241,11 @@ class CompressionViewModel(
             sendFailed(CompressionEffect.MessageKind.SAVE_UNSUPPORTED)
             return
         }
+        if (currentState.isSaved(id)) {
+            // 已经存过就不再生成第二份，避免相册里出现重复文件
+            sendEffect(CompressionEffect.Message(CompressionEffect.MessageKind.SAVED))
+            return
+        }
         val path = currentState.outcomeOf(id).outputPath
         if (path == null) {
             sendFailed(CompressionEffect.MessageKind.SAVE_FAILED)
@@ -241,6 +253,7 @@ class CompressionViewModel(
         }
         launch {
             if (exporter.saveToGallery(path)) {
+                updateState { it.copy(savedIds = it.savedIds + id) }
                 sendEffect(CompressionEffect.Message(CompressionEffect.MessageKind.SAVED))
             } else {
                 sendFailed(CompressionEffect.MessageKind.SAVE_FAILED)

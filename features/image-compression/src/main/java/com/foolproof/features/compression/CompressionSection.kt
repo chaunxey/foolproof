@@ -296,6 +296,7 @@ fun CompressionSection(
                         image = image,
                         outcome = state.outcomeOf(image.id),
                         saveSupported = state.saveSupported,
+                        saved = state.isSaved(image.id),
                         onRetry = { viewModel.dispatch(CompressionAction.Retry(image.id)) },
                         onShare = { viewModel.dispatch(CompressionAction.Share(image.id)) },
                         onSave = { viewModel.dispatch(CompressionAction.SaveToGallery(image.id)) },
@@ -344,13 +345,20 @@ fun CompressionSection(
                             Text(stringResource(R.string.compression_share))
                         }
                         if (state.saveSupported) {
+                            val saved = state.isSaved(first.id)
                             TextButton(
                                 onClick = {
                                     viewModel.dispatch(CompressionAction.SaveToGallery(first.id))
                                     showSuccess = false
                                 },
+                                enabled = !saved,
                             ) {
-                                Text(stringResource(R.string.compression_save_to_gallery))
+                                Text(
+                                    stringResource(
+                                        if (saved) R.string.compression_saved
+                                        else R.string.compression_save_to_gallery,
+                                    ),
+                                )
                             }
                         }
                     },
@@ -577,6 +585,7 @@ fun LazyGridScope.compressionResultRows(
                 image = image,
                 outcome = state.outcomeOf(image.id),
                 saveSupported = state.saveSupported,
+                saved = state.isSaved(image.id),
                 onRetry = { viewModel.dispatch(CompressionAction.Retry(image.id)) },
                 onShare = { viewModel.dispatch(CompressionAction.Share(image.id)) },
                 onSave = { viewModel.dispatch(CompressionAction.SaveToGallery(image.id)) },
@@ -590,6 +599,7 @@ private fun ImageRow(
     image: SourceImage,
     outcome: CompressionOutcome,
     saveSupported: Boolean,
+    saved: Boolean,
     onRetry: () -> Unit,
     onShare: () -> Unit,
     onSave: () -> Unit,
@@ -630,8 +640,13 @@ private fun ImageRow(
                         Text(stringResource(R.string.compression_share))
                     }
                     if (saveSupported) {
-                        TextButton(onClick = onSave) {
-                            Text(stringResource(R.string.compression_save_to_gallery))
+                        TextButton(onClick = onSave, enabled = !saved) {
+                            Text(
+                                stringResource(
+                                    if (saved) R.string.compression_saved
+                                    else R.string.compression_save_to_gallery,
+                                ),
+                            )
                         }
                     }
                 }
