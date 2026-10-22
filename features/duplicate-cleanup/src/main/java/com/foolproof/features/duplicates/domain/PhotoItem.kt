@@ -14,6 +14,8 @@ data class PhotoItem(
     val height: Int,
     val hash: Long,
     val lowInformation: Boolean = false,
+    /** 9×8 灰度，用于 dHash 距离略大时做二次结构校验。 */
+    val luma: List<Int> = emptyList(),
 ) {
     /** 宽高比；高度非法时返回 0，调用方据此走保守分支。 */
     val aspectRatio: Float

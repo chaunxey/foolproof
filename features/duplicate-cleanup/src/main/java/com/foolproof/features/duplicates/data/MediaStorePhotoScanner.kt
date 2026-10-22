@@ -66,6 +66,7 @@ class MediaStorePhotoScanner(
                     height = pixels.sourceHeight,
                     hash = PerceptualHash.dHash(pixels.gray),
                     lowInformation = PerceptualHash.isLowInformation(pixels.gray),
+                    luma = pixels.gray.toList(),
                 )
                 emit(ScanEvent.Found(item))
             } catch (cancellation: CancellationException) {

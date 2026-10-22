@@ -12,6 +12,10 @@ object DuplicateGrouper {
     /** 汉明距离阈值（宪法 §3.2 写死为 ≤5）。 */
     const val DEFAULT_THRESHOLD = 5
 
+    /** dHash 距离放宽上限；超过 5 时必须通过灰度相关性校验。 */
+    private const val EXTENDED_THRESHOLD = 12
+    private const val CORRELATION_THRESHOLD = 0.92
+
     /** 低信息量图片的补充条件：宽高比差与体积差的容忍度。 */
     private const val ASPECT_TOLERANCE = 0.02f
     private const val SIZE_TOLERANCE = 0.02
@@ -105,8 +109,11 @@ object DuplicateGrouper {
          */
         fun acceptDistance(candidate: PhotoItem, threshold: Int): Int? {
             val distance = PerceptualHash.hamming(representative.hash, candidate.hash)
-            if (distance > threshold) return null
-            return if (isAcceptable(representative, candidate)) distance else null
+            if (distance > maxOf(threshold, EXTENDED_THRESHOLD)) return null
+            if (!isAcceptable(representative, candidate)) return null
+            if (distance <= threshold) return distance
+            val similarity = PerceptualHash.correlation(representative.luma, candidate.luma)
+            return if (similarity >= CORRELATION_THRESHOLD) distance else null
         }
     }
 }

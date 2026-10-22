@@ -15,6 +15,7 @@ class DuplicateGrouperTest {
         width: Int = 4000,
         height: Int = 3000,
         lowInformation: Boolean = false,
+        luma: List<Int> = emptyList(),
     ) = PhotoItem(
         id = id,
         displayName = "$id.jpg",
@@ -23,6 +24,7 @@ class DuplicateGrouperTest {
         height = height,
         hash = hash,
         lowInformation = lowInformation,
+        luma = luma,
     )
 
     /** 构造与基准哈希距离恰好为 [bits] 的哈希。 */
@@ -50,7 +52,37 @@ class DuplicateGrouperTest {
             threshold = 5,
         )
 
-        assertTrue("距离 6 不应合并", groups.isEmpty())
+        assertTrue("距离 6 且没有灰度签名时不应合并", groups.isEmpty())
+    }
+
+    @Test
+    fun `recompressed copy with slightly different hash groups by luma correlation`() {
+        val luma = (0 until 72).map { (it * 7) % 256 }
+        val groups = DuplicateGrouper.group(
+            listOf(
+                item("original", hash = 0L, luma = luma),
+                item("compressed", hash = hashWithDistance(8), luma = luma),
+            ),
+            threshold = 5,
+        )
+
+        assertEquals(1, groups.size)
+        assertEquals(2, groups.single().count)
+    }
+
+    @Test
+    fun `different images with close hash but different luma stay separate`() {
+        val a = (0 until 72).map { it % 32 }
+        val b = (0 until 72).map { 255 - (it % 32) }
+        val groups = DuplicateGrouper.group(
+            listOf(
+                item("a", hash = 0L, luma = a),
+                item("b", hash = hashWithDistance(8), luma = b),
+            ),
+            threshold = 5,
+        )
+
+        assertTrue("灰度结构不同不能合并", groups.isEmpty())
     }
 
     @Test

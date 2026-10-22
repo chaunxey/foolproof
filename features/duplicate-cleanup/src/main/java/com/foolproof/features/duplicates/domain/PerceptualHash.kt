@@ -61,6 +61,37 @@ object PerceptualHash {
     /** 汉明距离：不同位的个数。 */
     fun hamming(a: Long, b: Long): Int = java.lang.Long.bitCount(a xor b)
 
+    /**
+     * 两个 9×8 灰度图的归一化相关性（-1..1）。
+     *
+     * 用于 dHash 距离落在放宽区间时做二次确认：重编码/缩放的同一张图通常 > 0.98，
+     * 不同照片很难稳定超过 0.92。
+     */
+    fun correlation(a: List<Int>, b: List<Int>): Double {
+        if (a.size != b.size || a.isEmpty()) return 0.0
+        var meanA = 0.0
+        var meanB = 0.0
+        for (i in a.indices) {
+            meanA += a[i]
+            meanB += b[i]
+        }
+        meanA /= a.size
+        meanB /= b.size
+
+        var numerator = 0.0
+        var varA = 0.0
+        var varB = 0.0
+        for (i in a.indices) {
+            val da = a[i] - meanA
+            val db = b[i] - meanB
+            numerator += da * db
+            varA += da * da
+            varB += db * db
+        }
+        if (varA <= 0.0 || varB <= 0.0) return 0.0
+        return numerator / kotlin.math.sqrt(varA * varB)
+    }
+
     /** 灰度方差。 */
     fun variance(gray: IntArray): Double {
         if (gray.isEmpty()) return 0.0
