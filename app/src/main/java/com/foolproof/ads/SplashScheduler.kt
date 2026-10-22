@@ -1,6 +1,7 @@
 package com.foolproof.ads
 
 import android.content.Context
+import com.foolproof.common.storage.LocalStore
 
 /**
  * 启动/唤醒广告的时机判断：
@@ -9,15 +10,15 @@ import android.content.Context
  */
 object SplashScheduler {
 
-    private const val PREFS = "ad_splash"
     private const val KEY_LAST_BG = "last_background_at"
     private const val ONE_HOUR_MS = 60 * 60 * 1000L
 
-    private lateinit var prefs: android.content.SharedPreferences
     private var coldStartPending = true
+    private var lastBackgroundAt = 0L
 
     fun init(context: Context) {
-        prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        LocalStore.init(context.applicationContext)
+        lastBackgroundAt = LocalStore.readLong(KEY_LAST_BG, 0L)
     }
 
     fun shouldShow(): Boolean {
@@ -25,11 +26,13 @@ object SplashScheduler {
             coldStartPending = false
             return true
         }
-        val last = prefs.getLong(KEY_LAST_BG, 0L)
-        return last > 0L && System.currentTimeMillis() - last >= ONE_HOUR_MS
+        return lastBackgroundAt > 0L &&
+            System.currentTimeMillis() - lastBackgroundAt >= ONE_HOUR_MS
     }
 
     fun recordBackground() {
-        prefs.edit().putLong(KEY_LAST_BG, System.currentTimeMillis()).apply()
+        val now = System.currentTimeMillis()
+        lastBackgroundAt = now
+        LocalStore.writeLong(KEY_LAST_BG, now)
     }
 }

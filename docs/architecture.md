@@ -42,13 +42,22 @@ base → 无业务依赖
 
 约定：`:base` 不含 UI、不申请权限、不直接发起请求。
 
+## 本地存储
+
+统一使用 `:common` 的 `LocalStore`（DataStore Preferences，文件 `app_data.preferences_pb`）：
+
+- `readString/Int/Long/Float/Boolean`：启动阶段同步读一次；
+- `writeString/Int/Long/Float/Boolean`：异步落盘；
+- `remove`：删除某个 key；
+- 设置、登录态、广告计数、开屏时间都走这一套，不再直接使用 SharedPreferences。
+
 ## AGP 9 约定
 
 1. 不引入 `org.jetbrains.kotlin.android`，AGP 9 内置 Kotlin；
 2. `compileSdk { version = release(37) }`；
 3. R8 规则放 `app/src/main/keepRules/`，没有 `proguard-rules.pro`；
 4. release 优化用 `optimization { enable = true; packageScope = ... }`；
-5. release 尚未配置签名，发布前补 `signingConfig`。
+5. release 使用 `keystore.properties` 中的签名配置；文件缺失时输出 unsigned。
 
 ## 依赖选择说明
 

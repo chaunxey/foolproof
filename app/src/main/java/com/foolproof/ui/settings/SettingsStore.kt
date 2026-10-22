@@ -5,6 +5,7 @@ import android.content.ContextWrapper
 import android.content.res.Configuration
 import android.content.res.Resources
 import com.foolproof.R
+import com.foolproof.common.storage.LocalStore
 import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,12 +40,11 @@ enum class ThemeMode(val labelRes: Int) {
 /**
  * 应用内设置（字体大小、语言、明暗主题）。
  *
- * 用 SharedPreferences 而非 DataStore：只存几个小值，不值得为此加依赖。
+ * 统一走 `:common` 的 [LocalStore]（DataStore Preferences），
  * 都通过 StateFlow 暴露，由 Compose 层直接消费——**切换不重建 Activity**。
  */
 object SettingsStore {
 
-    private const val PREFS = "app_settings"
     private const val KEY_SCALE = "font_scale"
     private const val KEY_LANGUAGE = "language"
     private const val KEY_THEME = "theme"
@@ -52,7 +52,6 @@ object SettingsStore {
     /** 上限对齐系统无障碍「超大字体」（约 200%），方便当老人模式用。 */
     const val MAX_SCALE = 2.0f
 
-    private lateinit var prefs: android.content.SharedPreferences
     private lateinit var appContext: Context
 
     private val _fontScale = MutableStateFlow(1.0f)
@@ -66,14 +65,16 @@ object SettingsStore {
 
     fun init(context: Context) {
         appContext = context.applicationContext
-        prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        LocalStore.init(appContext)
         // 默认跟随系统字号：系统开了「大字体 / 老人模式」时，首次进入不会比别的 App 小
         val systemScale = appContext.resources.configuration.fontScale
-        _fontScale.value = prefs.getFloat(KEY_SCALE, systemScale).coerceIn(MIN_SCALE, MAX_SCALE)
-        _language.value = prefs.getString(KEY_LANGUAGE, null)
+        _fontScale.value = LocalStore
+            .readFloat(KEY_SCALE, systemScale)
+            .coerceIn(MIN_SCALE, MAX_SCALE)
+        _language.value = LocalStore.readStringOrNull(KEY_LANGUAGE)
             ?.let { tag -> AppLanguage.entries.firstOrNull { it.tag == tag } }
             ?: AppLanguage.SYSTEM
-        _themeMode.value = prefs.getString(KEY_THEME, null)
+        _themeMode.value = LocalStore.readStringOrNull(KEY_THEME)
             ?.let { name -> ThemeMode.entries.firstOrNull { it.name == name } }
             ?: ThemeMode.SYSTEM
     }
@@ -81,8 +82,8 @@ object SettingsStore {
     fun setFontScale(scale: Float) {
         val clamped = scale.coerceIn(MIN_SCALE, MAX_SCALE)
         _fontScale.value = clamped
-        if (this::prefs.isInitialized) {
-            prefs.edit().putFloat(KEY_SCALE, clamped).apply()
+        if (this::appContext.isInitialized) {
+            LocalStore.writeFloat(KEY_SCALE, clamped)
         }
     }
 
@@ -95,16 +96,20 @@ object SettingsStore {
     /** 只写偏好；界面由 CompositionLocal 立即重组，不重建 Activity。 */
     fun setLanguage(language: AppLanguage) {
         _language.value = language
-        if (this::prefs.isInitialized) {
-            // putString(key, null) 等价于 remove，SYSTEM 不落盘覆盖值
-            prefs.edit().putString(KEY_LANGUAGE, language.tag).apply()
+        if (this::appContext.isInitialized) {
+            val tag = language.tag
+            if (tag == null) {
+                LocalStore.remove(KEY_LANGUAGE)
+            } else {
+                LocalStore.writeString(KEY_LANGUAGE, tag)
+            }
         }
     }
 
     fun setThemeMode(mode: ThemeMode) {
         _themeMode.value = mode
-        if (this::prefs.isInitialized) {
-            prefs.edit().putString(KEY_THEME, mode.name).apply()
+        if (this::appContext.isInitialized) {
+            LocalStore.writeString(KEY_THEME, mode.name)
         }
     }
 

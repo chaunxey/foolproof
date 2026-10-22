@@ -1,6 +1,7 @@
 package com.foolproof.ui.auth
 
 import android.content.Context
+import com.foolproof.common.storage.LocalStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,26 +12,23 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 object AuthStore {
 
-    private const val PREFS = "auth"
-    private const val KEY_PHONE = "phone"
+    private const val KEY_PHONE = "auth_phone"
 
-    private var prefs: android.content.SharedPreferences? = null
     private val _phone = MutableStateFlow<String?>(null)
     val phone: StateFlow<String?> = _phone.asStateFlow()
 
     fun init(context: Context) {
-        if (prefs != null) return
-        prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        _phone.value = prefs?.getString(KEY_PHONE, null)
+        LocalStore.init(context.applicationContext)
+        _phone.value = LocalStore.readStringOrNull(KEY_PHONE)
     }
 
     fun login(phone: String) {
         _phone.value = phone
-        prefs?.edit()?.putString(KEY_PHONE, phone)?.apply()
+        LocalStore.writeString(KEY_PHONE, phone)
     }
 
     fun logout() {
         _phone.value = null
-        prefs?.edit()?.remove(KEY_PHONE)?.apply()
+        LocalStore.remove(KEY_PHONE)
     }
 }

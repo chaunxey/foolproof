@@ -62,7 +62,7 @@
 ## 技术栈
 
 Kotlin 2.4 · Jetpack Compose（Material 3）· AGP 9 · Koin · Media3 Transformer ·
-CameraX · PDFBox-Android · Meta Audience Network。版本统一在
+CameraX · PDFBox-Android · DataStore · Meta Audience Network。版本统一在
 [`gradle/libs.versions.toml`](gradle/libs.versions.toml) 管理。
 
 ## 文档
