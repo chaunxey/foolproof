@@ -37,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -503,9 +504,11 @@ private fun Context.saveImagesToDownloads(paths: List<String>): Boolean {
 
 @Composable
 private fun ImageThumb(path: String) {
-    val bitmap = remember(path) {
-        val options = BitmapFactory.Options().apply { inSampleSize = 4 }
-        runCatching { BitmapFactory.decodeFile(path, options) }.getOrNull()
+    val bitmap by produceState<Bitmap?>(initialValue = null, path) {
+        value = withContext(Dispatchers.IO) {
+            val options = BitmapFactory.Options().apply { inSampleSize = 4 }
+            runCatching { BitmapFactory.decodeFile(path, options) }.getOrNull()
+        }
     }
     bitmap?.let {
         Image(

@@ -26,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -303,8 +304,14 @@ fun CompressionSection(
         if (showSuccess) {
             val first = state.outcomes.values.firstOrNull { it.outputPath != null }
             if (first?.outputPath != null) {
-                val bitmap = remember(first.outputPath) {
-                    BitmapFactory.decodeFile(first.outputPath)
+                val bitmap by produceState<android.graphics.Bitmap?>(
+                    initialValue = null,
+                    first.outputPath,
+                ) {
+                    value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        val options = BitmapFactory.Options().apply { inSampleSize = 2 }
+                        BitmapFactory.decodeFile(first.outputPath, options)
+                    }
                 }
                 SuccessDialog(
                     title = stringResource(R.string.compression_success_title),
