@@ -1,6 +1,7 @@
 package com.foolproof.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +21,7 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -40,6 +42,9 @@ import com.foolproof.common.navigation.FoolproofDestination
 import com.foolproof.common.navigation.FoolproofTabHost
 import com.foolproof.ui.compression.CompressionTabScreen
 import com.foolproof.ui.conversion.ConversionTabScreen
+import com.foolproof.ui.auth.AuthScreen
+import com.foolproof.ui.auth.AuthStore
+import com.foolproof.ui.auth.maskPhone
 import com.foolproof.ui.settings.SettingsScreen
 import com.foolproof.ui.video.VideoTabScreen
 import kotlinx.coroutines.launch
@@ -55,8 +60,9 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
     val backPressAgain = stringResource(R.string.back_press_again)
     var lastBackAt by remember { mutableStateOf(0L) }
     var showSettings by remember { mutableStateOf(false) }
+    var showAuth by remember { mutableStateOf(false) }
 
-    BackHandler(enabled = !showSettings) {
+    BackHandler(enabled = !showSettings && !showAuth) {
         val now = android.os.SystemClock.elapsedRealtime()
         if (now - lastBackAt <= 2_000L) {
             // LocalContext 被语言设置包装成 ContextWrapper，不能直接 as Activity
@@ -72,8 +78,14 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
         return
     }
 
+    if (showAuth) {
+        AuthScreen(onBack = { showAuth = false }, onDone = { showAuth = false })
+        return
+    }
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val userPhone by AuthStore.phone.collectAsState()
     val versionName = remember {
         runCatching {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName
@@ -94,7 +106,9 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
         drawerContent = {
             ModalDrawerSheet {
                 Row(
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp),
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp, vertical = 24.dp)
+                        .clickable { if (userPhone == null) showAuth = true },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
@@ -106,11 +120,18 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
                     Spacer(Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = stringResource(R.string.app_name),
+                            text = userPhone?.let { maskPhone(it) }
+                                ?: stringResource(R.string.app_name),
                             style = MaterialTheme.typography.titleMedium,
                         )
                         Text(
-                            text = stringResource(R.string.drawer_user_subtitle),
+                            text = stringResource(
+                                if (userPhone == null) {
+                                    R.string.auth_login_or_register
+                                } else {
+                                    R.string.auth_logged_in
+                                },
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -129,6 +150,15 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
                     },
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                 )
+
+                if (userPhone != null) {
+                    TextButton(
+                        onClick = { AuthStore.logout() },
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                    ) {
+                        Text(stringResource(R.string.auth_logout))
+                    }
+                }
 
                 Spacer(Modifier.weight(1f))
 

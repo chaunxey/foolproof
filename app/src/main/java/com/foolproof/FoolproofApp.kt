@@ -14,6 +14,7 @@ import com.foolproof.features.conversion.di.fileConversionModule
 import com.foolproof.features.duplicates.di.duplicateCleanupModule
 import com.foolproof.features.video.data.VideoOutputCleaner
 import com.foolproof.features.video.di.videoCompressionModule
+import com.foolproof.ui.auth.AuthStore
 import org.koin.core.context.GlobalContext
 import org.koin.core.module.Module
 import kotlin.concurrent.thread
@@ -32,6 +33,7 @@ class FoolproofApp : BaseApplication() {
 
     override fun onCreate() {
         super.onCreate()
+        AuthStore.init(this)
         setupAds()
         // 启动清理上个进程可能残留的半成品（FR-014：不得留下孤立文件）。
         // 放后台线程：只删几个文件，但不能占用冷启动的关键路径。
