@@ -136,33 +136,38 @@ class PangleAdSdk(private val usage: AdUsage) : AdSdk {
             .setCodeId(PangleAdsConfig.SPLASH_CODE_ID)
             .setExpressViewAcceptedSize(widthDp, heightDp)
             .build()
-        adNative.loadSplashAd(
-            adSlot,
-            object : TTAdNative.CSJSplashAdListener {
-                override fun onSplashLoadSuccess(ad: CSJSplashAd) = Unit
+        runCatching {
+            adNative.loadSplashAd(
+                adSlot,
+                object : TTAdNative.CSJSplashAdListener {
+                    override fun onSplashLoadSuccess(ad: CSJSplashAd) = Unit
 
-                override fun onSplashLoadFail(error: CSJAdError) {
-                    splashLoading = false
-                    onUnavailable()
-                }
-
-                override fun onSplashRenderSuccess(ad: CSJSplashAd) {
-                    splashLoading = false
-                    if (cacheOnly) {
-                        splashAd = ad
-                        splashLoadedAt = System.currentTimeMillis()
-                    } else {
-                        onReady(PangleSplashSlot(ad, context))
+                    override fun onSplashLoadFail(error: CSJAdError) {
+                        splashLoading = false
+                        onUnavailable()
                     }
-                }
 
-                override fun onSplashRenderFail(ad: CSJSplashAd, error: CSJAdError) {
-                    splashLoading = false
-                    onUnavailable()
-                }
-            },
-            SPLASH_LOAD_TIMEOUT_SECONDS,
-        )
+                    override fun onSplashRenderSuccess(ad: CSJSplashAd) {
+                        splashLoading = false
+                        if (cacheOnly) {
+                            splashAd = ad
+                            splashLoadedAt = System.currentTimeMillis()
+                        } else {
+                            onReady(PangleSplashSlot(ad, context))
+                        }
+                    }
+
+                    override fun onSplashRenderFail(ad: CSJSplashAd, error: CSJAdError) {
+                        splashLoading = false
+                        onUnavailable()
+                    }
+                },
+                SPLASH_LOAD_TIMEOUT_SECONDS,
+            )
+        }.onFailure {
+            splashLoading = false
+            onUnavailable()
+        }
     }
 
     private companion object {

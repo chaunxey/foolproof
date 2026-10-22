@@ -8,8 +8,9 @@
 > **进度（2026-10-22）**：Phase 0 / Phase 1 / Phase 2 已完成并验证——
 > `:ads:api` 7 个单测、`:ads:pangle` 5 个单测通过；`meta` / `pangle` 两种构建均成功；
 > pangle 依赖树只有 `com.pangle.cn:ads-sdk-pro:7.8.1.5`，meta 构建只有 FAN；
-> emulator-5554 安装启动无崩溃（参数为空 → 占位/放行）。
-> **待办**：填入穿山甲后台的 appId/代码位后验证真实填充、原生开屏与门控（Phase 3）。
+> emulator-5554 安装启动无崩溃（参数为空 → 占位/放行）；
+> 两种 provider 的 release APK/AAB 均构建成功且类互斥。
+> **待办**：填入穿山甲后台的 appId/代码位后验证真实填充、原生开屏与门控（T027）。
 
 ## Phase 0: Setup + Foundational（不依赖 SDK）✅
 
@@ -69,7 +70,9 @@
 
 - [x] T025 双构建 + 依赖互斥：`meta` / `pangle` 各构建成功；
   pangle 依赖树只有 `com.pangle.cn:ads-sdk-pro`，meta 只有 FAN；非法开关值构建失败
-- [ ] T026 设备验收（`10AG9C079Y001L0` 或 `emulator-5554`）：
+- [x] T026 release 收尾：`assembleRelease` / `bundleRelease` 两种 provider 各跑一次——
+  meta APK 14.3 MB / AAB 18.3 MB，pangle APK 19.7 MB / AAB 21.1 MB；
+  APK 类互斥（meta 有 `com.facebook.ads` 无 Pangle，pangle 反之）；release 权限清单无
+  `WRITE_EXTERNAL_STORAGE` / `READ_PHONE_STATE` / 定位等敏感项
+- [ ] T027 设备验收（`10AG9C079Y001L0` 或 `emulator-5554`）：
   meta 三路径回归；pangle **填入真实 appId/代码位**后验证横幅/门控/原生开屏与空配置降级
-- [ ] T027 体积与 Manifest 对比收尾：release `assembleRelease` / `bundleRelease` 各跑一次，
-  记录 pangle 体积；发布前再核对一次权限清单

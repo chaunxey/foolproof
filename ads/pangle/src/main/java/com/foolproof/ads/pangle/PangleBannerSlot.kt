@@ -72,20 +72,22 @@ internal class PangleBannerSlot(
             .setCodeId(PangleAdsConfig.BANNER_CODE_ID)
             .setExpressViewAcceptedSize(widthDp, BANNER_HEIGHT_DP)
             .build()
-        adNative.loadBannerExpressAd(adSlot, object : TTAdNative.NativeExpressAdListener {
-            override fun onError(code: Int, message: String?) {
-                onLoaded(false)
-            }
-
-            override fun onNativeExpressAdLoad(ads: MutableList<TTNativeExpressAd>?) {
-                val ad = ads?.firstOrNull()
-                if (ad == null) {
+        runCatching {
+            adNative.loadBannerExpressAd(adSlot, object : TTAdNative.NativeExpressAdListener {
+                override fun onError(code: Int, message: String?) {
                     onLoaded(false)
-                } else {
-                    render(ad)
                 }
-            }
-        })
+
+                override fun onNativeExpressAdLoad(ads: MutableList<TTNativeExpressAd>?) {
+                    val ad = ads?.firstOrNull()
+                    if (ad == null) {
+                        onLoaded(false)
+                    } else {
+                        render(ad)
+                    }
+                }
+            })
+        }.onFailure { onLoaded(false) }
     }
 
     private fun render(ad: TTNativeExpressAd) {

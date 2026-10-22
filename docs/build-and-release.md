@@ -34,7 +34,8 @@
 | 包 | 大小 |
 | --- | --- |
 | debug APK | ~33 MB（含 Compose tooling；pangle 构建约 35 MB） |
-| release APK | ~13.3 MB（meta；pangle 发布前重新记录） |
+| release APK | ~14.3 MB（meta；pangle 约 19.7 MB） |
+| release AAB | ~18.3 MB（meta；pangle 约 21.1 MB） |
 
 已做的优化：
 

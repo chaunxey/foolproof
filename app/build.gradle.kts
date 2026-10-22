@@ -64,7 +64,7 @@ android {
         compose = true
     }
     // 只编译当前 provider 的工厂文件，另一个 provider 的源码不参与构建
-    sourceSets.getByName("main").kotlin.srcDir("src/ad/$adSdk/kotlin")
+    sourceSets.getByName("main").kotlin.directories.add("src/ad/$adSdk/kotlin")
     androidResources {
         localeFilters += listOf("zh", "en", "ja", "fr", "de", "km")
     }
