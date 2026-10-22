@@ -9,7 +9,9 @@ import android.util.Size
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -65,17 +67,13 @@ fun LazyGridScope.duplicatePhotoRows(
     var remaining = MAX_PHOTOS
 
     state.groups.forEach { group ->
-        item(key = "group-header-${group.id}", span = { GridItemSpan(maxLineSpan) }) {
-            GroupHeader(group)
-        }
-
         val visible = group.items.take(remaining.coerceAtLeast(0))
         remaining -= visible.size
-
-        visible.chunked(COLUMNS).forEachIndexed { rowIndex, row ->
-            item(key = "group-${group.id}-row-$rowIndex", span = { GridItemSpan(maxLineSpan) }) {
-                JustifiedRow(
-                    photos = row,
+        if (visible.isNotEmpty()) {
+            item(key = "group-${group.id}", span = { GridItemSpan(maxLineSpan) }) {
+                PhotoGroupCard(
+                    group = group,
+                    photos = visible,
                     selected = state.selected,
                     onToggle = onToggle,
                     onOpen = onOpen,
@@ -96,42 +94,21 @@ fun LazyGridScope.duplicatePhotoRows(
     }
 }
 
-/**
- * 一行最多 3 张。
- *
- * 排版用 `weight(宽高比) + aspectRatio(宽高比)`：weight 按比例分配宽度，
- * aspectRatio 由宽度反推高度，三者高度自然相等 —— 不需要 `BoxWithConstraints`（避免 subcompose 开销）。
- */
+/** 同一组照片放在一个圆角卡片里，3 列等宽正方形，最后一行不拉伸。 */
 @Composable
-private fun JustifiedRow(
+private fun PhotoGroupCard(
+    group: PhotoGroup,
     photos: List<PhotoItem>,
     selected: Set<String>,
     onToggle: (String) -> Unit,
     onOpen: (String) -> Unit,
 ) {
-    Row(modifier = Modifier.fillMaxWidth().padding(bottom = GAP)) {
-        photos.forEachIndexed { index, photo ->
-            val aspect = photo.safeAspect()
-            PhotoCell(
-                photo = photo,
-                checked = photo.id in selected,
-                onToggle = { onToggle(photo.id) },
-                onOpen = { onOpen(photo.id) },
-                modifier = Modifier.weight(aspect).aspectRatio(aspect),
-            )
-            if (index != photos.lastIndex) Spacer(modifier = Modifier.width(GAP))
-        }
-    }
-}
-
-@Composable
-private fun GroupHeader(group: PhotoGroup) {
     Surface(
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+        shape = RoundedCornerShape(12.dp),
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        shape = RoundedCornerShape(6.dp),
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
             Text(
                 text = stringResource(
                     R.string.duplicates_group_summary,
@@ -140,6 +117,27 @@ private fun GroupHeader(group: PhotoGroup) {
                 ),
                 style = MaterialTheme.typography.bodyMedium,
             )
+
+            photos.chunked(COLUMNS).forEach { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = GAP),
+                    horizontalArrangement = Arrangement.spacedBy(GAP),
+                ) {
+                    row.forEach { photo ->
+                        PhotoCell(
+                            photo = photo,
+                            checked = photo.id in selected,
+                            onToggle = { onToggle(photo.id) },
+                            onOpen = { onOpen(photo.id) },
+                            modifier = Modifier.weight(1f).aspectRatio(1f),
+                        )
+                    }
+                    // 最后一行不足 3 张时补空位，避免最后一张被拉满整行
+                    repeat(COLUMNS - row.size) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
         }
     }
 }
@@ -163,7 +161,7 @@ private fun PhotoCell(
             Image(
                 bitmap = it,
                 contentDescription = photo.displayName,
-                contentScale = ContentScale.Fit,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize().clickable(onClick = onOpen),
             )
         }
