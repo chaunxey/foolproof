@@ -52,6 +52,7 @@ import androidx.core.content.FileProvider
 import com.foolproof.base.util.ByteFormat
 import com.foolproof.common.ui.FoolproofButton
 import com.foolproof.common.ui.FoolproofSecondaryButton
+import com.foolproof.common.ui.SuccessDialog
 import com.foolproof.features.conversion.PdfPick
 import com.foolproof.features.conversion.PdfToolPhase
 import com.foolproof.features.conversion.PdfToolsAction
@@ -94,6 +95,13 @@ fun PdfToolsSection(
     var message by remember { mutableStateOf<Int?>(null) }
     var messageError by remember { mutableStateOf(false) }
     val working = state.phase == PdfToolPhase.WORKING
+    var showSuccess by remember { mutableStateOf(false) }
+
+    LaunchedEffect(state.phase) {
+        if (state.phase == PdfToolPhase.DONE && state.mode != PdfToolMode.IMAGES) {
+            showSuccess = true
+        }
+    }
 
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenMultipleDocuments(),
@@ -361,6 +369,42 @@ fun PdfToolsSection(
                     )
                 }
             }
+            }
+        }
+        if (showSuccess) {
+            state.output?.let { output ->
+                SuccessDialog(
+                    title = stringResource(R.string.pdf_tools_done),
+                    summary = ByteFormat.formatBytes(output.bytes),
+                    onDismiss = { showSuccess = false },
+                    preview = {
+                        PdfPreview(path = output.path, modifier = Modifier.fillMaxWidth())
+                    },
+                    actions = {
+                        TextButton(
+                            onClick = {
+                                if (!context.openPdfFile(output.path)) {
+                                    message = R.string.conversion_msg_no_pdf_app
+                                    messageError = true
+                                }
+                            },
+                        ) {
+                            Text(stringResource(R.string.conversion_open))
+                        }
+                        TextButton(
+                            onClick = { viewModel.dispatch(PdfToolsAction.Share) },
+                        ) {
+                            Text(stringResource(R.string.conversion_share))
+                        }
+                        if (state.canSaveToDownloads) {
+                            TextButton(
+                                onClick = { viewModel.dispatch(PdfToolsAction.SaveToDownloads) },
+                            ) {
+                                Text(stringResource(R.string.conversion_save_to_downloads))
+                            }
+                        }
+                    },
+                )
             }
         }
     }

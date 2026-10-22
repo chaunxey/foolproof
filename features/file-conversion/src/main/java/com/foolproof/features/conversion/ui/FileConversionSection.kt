@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import com.foolproof.base.ads.AdGateProvider
 import com.foolproof.base.ads.FeatureId
 import com.foolproof.common.ui.FoolproofButton
+import com.foolproof.common.ui.SuccessDialog
 import com.foolproof.common.ui.FoolproofSecondaryButton
 import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.ByteFormat
@@ -108,9 +109,11 @@ fun FileConversionSection(
     }
 
     // 每成功生成一次 PDF 记一次
+    var showSuccess by remember { mutableStateOf(false) }
     LaunchedEffect(state.phase) {
         if (state.phase is ConversionPhase.Done) {
             AdGateProvider.gate?.onSuccess(FeatureId.FILE_CONVERSION)
+            showSuccess = true
         }
     }
 
@@ -438,6 +441,37 @@ fun FileConversionSection(
                 viewModel.dispatch(ConversionAction.ImagesPicked(listOf(uri)))
             },
         )
+    }
+
+    (state.phase as? ConversionPhase.Done)?.let { done ->
+        if (showSuccess) {
+            SuccessDialog(
+                title = stringResource(R.string.conversion_msg_done),
+                summary = stringResource(
+                    R.string.conversion_result_meta,
+                    done.result.path.substringAfterLast('/'),
+                    ByteFormat.formatBytes(done.result.bytes),
+                    done.result.pageCount,
+                ),
+                onDismiss = { showSuccess = false },
+                preview = {
+                    PdfPreview(path = done.result.path, modifier = Modifier.fillMaxWidth())
+                },
+                actions = {
+                    TextButton(onClick = { viewModel.dispatch(ConversionAction.Open) }) {
+                        Text(stringResource(R.string.conversion_open))
+                    }
+                    TextButton(onClick = { viewModel.dispatch(ConversionAction.Share) }) {
+                        Text(stringResource(R.string.conversion_share))
+                    }
+                    if (state.canSaveToDownloads) {
+                        TextButton(onClick = { viewModel.dispatch(ConversionAction.SaveToDownloads) }) {
+                            Text(stringResource(R.string.conversion_save_to_downloads))
+                        }
+                    }
+                },
+            )
+        }
     }
 }
 

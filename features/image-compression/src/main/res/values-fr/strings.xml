@@ -52,4 +52,5 @@
     <string name="compression_strip_location_hint">Position détectée ; elle sera supprimée après compression</string>
     <string name="compression_strip_hint">Supprime le GPS, le modèle et autres métadonnées</string>
     <string name="compression_strip_off_hint">Les EXIF sources sont conservés (position possible)</string>
+    <string name="compression_success_title">Compression terminée</string>
 </resources>

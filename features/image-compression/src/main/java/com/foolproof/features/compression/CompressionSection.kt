@@ -3,6 +3,8 @@ package com.foolproof.features.compression
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +30,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -40,6 +44,7 @@ import com.foolproof.base.ads.FeatureId
 import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.ByteFormat
 import com.foolproof.common.ui.FoolproofButton
+import com.foolproof.common.ui.SuccessDialog
 import com.foolproof.common.ui.FoolproofSecondaryButton
 import com.foolproof.base.util.findActivity
 import com.foolproof.base.share.SharedContentStore
@@ -65,6 +70,12 @@ fun CompressionSection(
     viewModel: CompressionViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    var showSuccess by remember { mutableStateOf(false) }
+    LaunchedEffect(state.isRunning) {
+        if (!state.isRunning && state.completedCount > 0) {
+            showSuccess = true
+        }
+    }
     val shared by SharedContentStore.content.collectAsState()
     var quickStart by remember { mutableStateOf(false) }
     LaunchedEffect(shared) {
@@ -286,6 +297,54 @@ fun CompressionSection(
                     onRetry = { viewModel.dispatch(CompressionAction.Retry(image.id)) },
                     onShare = { viewModel.dispatch(CompressionAction.Share(image.id)) },
                     onSave = { viewModel.dispatch(CompressionAction.SaveToGallery(image.id)) },
+                )
+            }
+        }
+        if (showSuccess) {
+            val first = state.outcomes.values.firstOrNull { it.outputPath != null }
+            if (first?.outputPath != null) {
+                val bitmap = remember(first.outputPath) {
+                    BitmapFactory.decodeFile(first.outputPath)
+                }
+                SuccessDialog(
+                    title = stringResource(R.string.compression_success_title),
+                    summary = stringResource(
+                        R.string.compression_progress_saved,
+                        state.images.size,
+                        state.completedCount,
+                        ByteFormat.formatBytes(state.totalSavedBytes),
+                    ),
+                    onDismiss = { showSuccess = false },
+                    preview = {
+                        bitmap?.let {
+                            Image(
+                                bitmap = it.asImageBitmap(),
+                                contentDescription = null,
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    },
+                    actions = {
+                        TextButton(
+                            onClick = {
+                                viewModel.dispatch(CompressionAction.Share(first.id))
+                                showSuccess = false
+                            },
+                        ) {
+                            Text(stringResource(R.string.compression_share))
+                        }
+                        if (state.saveSupported) {
+                            TextButton(
+                                onClick = {
+                                    viewModel.dispatch(CompressionAction.SaveToGallery(first.id))
+                                    showSuccess = false
+                                },
+                            ) {
+                                Text(stringResource(R.string.compression_save_to_gallery))
+                            }
+                        }
+                    },
                 )
             }
         }

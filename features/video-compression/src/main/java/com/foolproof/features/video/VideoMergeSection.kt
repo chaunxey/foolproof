@@ -111,6 +111,7 @@ fun VideoMergeSection(
     LaunchedEffect(state.output) {
         if (state.output != null) {
             AdGateProvider.gate?.onSuccess(FeatureId.VIDEO_MERGE)
+            showPreview = true
         }
     }
 

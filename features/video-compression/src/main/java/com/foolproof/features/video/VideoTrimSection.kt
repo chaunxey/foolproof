@@ -49,6 +49,11 @@ fun VideoTrimSection(
     val activity = context.findActivity()
     var messageRes by remember { mutableStateOf<Int?>(null) }
     var showResultDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(state.phase) {
+        if (state.phase == VideoPhase.Done && state.output != null) {
+            showResultDialog = true
+        }
+    }
 
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia(),

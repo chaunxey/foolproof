@@ -75,15 +75,15 @@ fun VideoCompressionSection(
     val context = LocalContext.current
     val activity = context.findActivity()
 
-    // 每成功压缩完一个视频记一次
+    // 每成功压缩完一个视频记一次，并自动弹预览
+    var showResultDialog by remember { mutableStateOf(false) }
     LaunchedEffect(state.phase) {
         if (state.phase is VideoPhase.Done) {
             AdGateProvider.gate?.onSuccess(FeatureId.VIDEO_COMPRESSION)
+            showResultDialog = true
         }
     }
     var message by remember { mutableStateOf<UiMessage?>(null) }
-    // 压缩结果改为弹窗预览，主页面不再切换状态
-    var showResultDialog by remember { mutableStateOf(false) }
 
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia(),
