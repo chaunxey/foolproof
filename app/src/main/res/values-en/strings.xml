@@ -57,4 +57,14 @@
     <string name="auth_switch_to_login">Have an account? Sign in</string>
     <string name="auth_code_mode">Code</string>
     <string name="auth_invalid_code">Wrong code</string>
+    <string name="auth_code_sent">Code sent</string>
+    <string name="auth_sms_title">Phone sign in</string>
+    <string name="auth_get_code">Get code</string>
+    <string name="auth_resend_in">%1$d s</string>
+    <string name="auth_terms">By signing in you agree to the Terms and Privacy Policy</string>
+    <string name="auth_password_title">Password sign in</string>
+    <string name="auth_password_subtitle">Sign in to your existing account</string>
+    <string name="auth_use_code">Sign in with code</string>
+    <string name="auth_sms_subtitle">Unregistered numbers are signed up automatically</string>
+    <string name="auth_use_password">Sign in with password</string>
 </resources>

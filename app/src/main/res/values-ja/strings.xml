@@ -57,4 +57,14 @@
     <string name="auth_switch_to_login">アカウントをお持ち？ログイン</string>
     <string name="auth_code_mode">認証コード</string>
     <string name="auth_invalid_code">コードが違います</string>
+    <string name="auth_code_sent">コードを送信しました</string>
+    <string name="auth_sms_title">電話番号ログイン</string>
+    <string name="auth_get_code">コードを取得</string>
+    <string name="auth_resend_in">%1$d 秒</string>
+    <string name="auth_terms">ログインすると利用規約とプライバシーポリシーに同意したものとみなされます</string>
+    <string name="auth_password_title">パスワードログイン</string>
+    <string name="auth_password_subtitle">既存アカウントにログイン</string>
+    <string name="auth_use_code">コードでログイン</string>
+    <string name="auth_sms_subtitle">未登録の番号は自動登録されます</string>
+    <string name="auth_use_password">パスワードでログイン</string>
 </resources>

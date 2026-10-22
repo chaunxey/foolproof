@@ -56,4 +56,14 @@
     <string name="auth_switch_to_login">已有账号？登录</string>
     <string name="auth_code_mode">验证码登录</string>
     <string name="auth_invalid_code">验证码错误</string>
+    <string name="auth_code_sent">验证码已发送</string>
+    <string name="auth_sms_title">手机号登录</string>
+    <string name="auth_get_code">获取验证码</string>
+    <string name="auth_resend_in">%1$d 秒</string>
+    <string name="auth_terms">登录即代表同意《用户协议》和《隐私政策》</string>
+    <string name="auth_password_title">密码登录</string>
+    <string name="auth_password_subtitle">使用密码登录已有账号</string>
+    <string name="auth_use_code">验证码登录</string>
+    <string name="auth_sms_subtitle">未注册的手机号将自动创建账号</string>
+    <string name="auth_use_password">密码登录</string>
 </resources>

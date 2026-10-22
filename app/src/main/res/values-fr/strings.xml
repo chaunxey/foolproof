@@ -57,4 +57,14 @@
     <string name="auth_switch_to_login">Déjà un compte ? Connexion</string>
     <string name="auth_code_mode">Code</string>
     <string name="auth_invalid_code">Code incorrect</string>
+    <string name="auth_code_sent">Code envoyé</string>
+    <string name="auth_sms_title">Connexion par téléphone</string>
+    <string name="auth_get_code">Obtenir le code</string>
+    <string name="auth_resend_in">%1$d s</string>
+    <string name="auth_terms">En vous connectant, vous acceptez les Conditions et la Politique de confidentialité</string>
+    <string name="auth_password_title">Connexion par mot de passe</string>
+    <string name="auth_password_subtitle">Connectez-vous à votre compte</string>
+    <string name="auth_use_code">Connexion par code</string>
+    <string name="auth_sms_subtitle">Les numéros non inscrits sont créés automatiquement</string>
+    <string name="auth_use_password">Connexion par mot de passe</string>
 </resources>

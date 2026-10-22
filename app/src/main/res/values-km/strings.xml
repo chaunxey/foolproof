@@ -57,4 +57,14 @@
     <string name="auth_switch_to_login">មានគណនី? ចូល</string>
     <string name="auth_code_mode">កូដ</string>
     <string name="auth_invalid_code">កូដខុស</string>
+    <string name="auth_code_sent">កូដត្រូវបានផ្ញើ</string>
+    <string name="auth_sms_title">ចូលដោយទូរស័ព្ទ</string>
+    <string name="auth_get_code">ទទួលកូដ</string>
+    <string name="auth_resend_in">%1$d វិនាទី</string>
+    <string name="auth_terms">ការចូលមានន័យថាអ្នកយល់ព្រមលក្ខខណ្ឌ និងគោលនយោបាយឯកជនភាព</string>
+    <string name="auth_password_title">ចូលដោយពាក្យសម្ងាត់</string>
+    <string name="auth_password_subtitle">ចូលគណនីដែលមាន</string>
+    <string name="auth_use_code">ចូលដោយកូដ</string>
+    <string name="auth_sms_subtitle">លេខដែលមិនបានចុះឈ្មោះនឹងបង្កើតគណនីស្វ័យប្រវត្តិ</string>
+    <string name="auth_use_password">ចូលដោយពាក្យសម្ងាត់</string>
 </resources>

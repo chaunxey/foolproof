@@ -127,7 +127,7 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
                         Text(
                             text = stringResource(
                                 if (userPhone == null) {
-                                    R.string.auth_login_or_register
+                                    R.string.auth_login
                                 } else {
                                     R.string.auth_logged_in
                                 },

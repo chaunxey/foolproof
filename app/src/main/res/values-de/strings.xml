@@ -57,4 +57,14 @@
     <string name="auth_switch_to_login">Konto? Anmelden</string>
     <string name="auth_code_mode">Code</string>
     <string name="auth_invalid_code">Falscher Code</string>
+    <string name="auth_code_sent">Code gesendet</string>
+    <string name="auth_sms_title">Telefon-Anmeldung</string>
+    <string name="auth_get_code">Code anfordern</string>
+    <string name="auth_resend_in">%1$d s</string>
+    <string name="auth_terms">Mit der Anmeldung akzeptieren Sie AGB und Datenschutz</string>
+    <string name="auth_password_title">Passwort-Anmeldung</string>
+    <string name="auth_password_subtitle">Mit bestehendem Konto anmelden</string>
+    <string name="auth_use_code">Mit Code anmelden</string>
+    <string name="auth_sms_subtitle">Nicht registrierte Nummern werden automatisch angelegt</string>
+    <string name="auth_use_password">Mit Passwort anmelden</string>
 </resources>
