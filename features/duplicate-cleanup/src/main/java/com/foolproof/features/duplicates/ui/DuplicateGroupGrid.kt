@@ -171,7 +171,7 @@ private fun PhotoCell(
             Image(
                 bitmap = it,
                 contentDescription = photo.displayName,
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize().clickable(onClick = onOpen),
             )
         }

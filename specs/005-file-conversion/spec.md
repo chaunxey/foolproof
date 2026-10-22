@@ -1,10 +1,10 @@
-﻿# Feature Specification: 文件转 PDF（file-conversion）
+# Feature Specification: 文件转 PDF（file-conversion）
 
 **Feature Branch**: `feature_foundation1`（目录：`specs/005-file-conversion`）
 
 **Created**: 2026-10-21
 
-**Status**: Draft
+**Status**: Implemented (retro-spec)
 
 **Input**: User description: "图片转 PDF、文本/Markdown 转 PDF；任意文档（docx/xlsx）留到后续再做"
 
@@ -17,7 +17,8 @@
 共用 `:features:file-conversion` 模块，在底部导航占第 3 个 tab。
 
 **本次范围**：图片 → PDF、文本/TXT/MD → PDF。
-**明确不做**（后续再议）：Word（.docx/.doc）、Excel（.xls/.xlsx）、PPT、PDF 合并/拆分、OCR、PDF 编辑。
+**后续已上线**：PDF 合并/拆分/旋转/页面管理/压缩/转图片，见 [007-pdf-tools](../007-pdf-tools/spec.md)。
+**明确不做**：Word（.docx/.doc）、Excel（.xls/.xlsx）、PPT、OCR。
 
 > ⚠️ 宪法 §3.3 原先把「Word（DOCX）→ PDF」标为 ✅ v1 实现（截长图方案），
 > 负责人于 2026-10-21 决定**推迟到后续**。本规格按推迟后的范围编写，

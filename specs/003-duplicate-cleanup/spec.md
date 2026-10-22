@@ -138,9 +138,10 @@
 
 **展示与勾选**
 
-- **FR-011**: 结果 MUST 以三列网格展示，组头跨列且显示张数与可释放空间；
-  Section MUST NOT 自带滚动容器（整页滚动由 `:app` 统一管理，宪法 §3.2 v1.11）；
-  缩略图 MUST 按原图比例完整显示，MUST NOT 裁剪。
+- **FR-011**: 结果 MUST 以重复组卡片展示，每组一个圆角卡片，固定 3 列、单元格 1:1；
+  最后一行不足 3 张时 MUST 补空位，MUST NOT 把最后一张拉满整行；
+  Section MUST NOT 自带滚动容器（整页滚动由 `:app` 统一管理，宪法 §3.2）；
+  缩略图 MUST 用 `ContentScale.Fit` 完整显示，MUST NOT 裁剪。
 - **FR-012**: 每组 MUST 默认预选「除最大一张以外的其余项」，用户 MUST 可逐张改选；
   系统 MUST NOT 在无用户确认的情况下删除任何文件。
 - **FR-013**: 点图片 MUST 进入全屏预览，返回后勾选状态 MUST 保持。
@@ -158,6 +159,8 @@
 - **FR-017**: 哈希计算、分组算法（阈值边界）、预选规则、状态机、失败隔离 MUST 有单元测试，
   `./gradlew :features:duplicate-cleanup:testDebugUnitTest` 通过。
 - **FR-018**: ViewModel MUST 继承 `BaseViewModel`（宪法 §4）；日志 MUST 用注入的 `LogUtil`（§6）。
+- **FR-019**: dHash 距离 6–12 时 MUST 追加 9×8 灰度相关性校验，≥0.92 才归组；
+  不得仅因放宽阈值而合并结构不同的图片（压缩副本识别，2026-10-22 追溯）。
 
 ### Key Entities
 

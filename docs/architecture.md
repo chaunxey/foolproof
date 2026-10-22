@@ -61,9 +61,9 @@ base → 无业务依赖
 
 ## 依赖选择说明
 
-- **Media3 Transformer**：视频压缩/拼接；
+- **Media3 Transformer**：视频压缩/拼接/裁剪；
 - **CameraX**：PDF 图片模式的拍照；
-- **PDFBox-Android（Apache-2.0）**：PDF 合并/拆分/旋转/页面重写/压缩；
-  这是对宪法“零第三方 PDF 库”的偏离，后续宪法修订需同步；
+- **PDFBox-Android（Apache-2.0）**：PDF 合并/拆分/旋转/页面重写/压缩/转图片；
+  宪法 v1.18 已将 PDFBox 登记为正式 PDF 能力依赖，不再算偏离；
 - **Meta Audience Network**：广告；
 - Ktor/BouncyCastle 当前只被 base 网络层引用，可由 R8 裁剪；若确定短期不做 AI 聊天，可整体移出以进一步减小体积。

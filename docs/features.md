@@ -14,7 +14,7 @@
 
 - 8×8 dHash + 汉明距离 ≤ 5 分组；低方差图额外保护；
 - 每组默认勾选“除体积最大外”的副本，用户可改选，绝不自动删除；
-- API ≥ 30 用 `MediaStore.createDeleteRequest`（回收站）；≤ 29 走 SAF 且不可恢复；
+- API ≥ 30 用 `MediaStore.createTrashRequest`（回收站）；≤ 29 走 SAF 且不可恢复；
 - 结果以重新查询 Uri 为准；仅申请读媒体权限，不申请写权限；
 - 已知局限：水平镜像副本不会被识别（漏判，不是误判）。
 

@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-21
 
-**Status**: Draft
+**Status**: Implemented (retro-spec)
 
 **Input**: User description: "视频压缩：选视频、预设分辨率/码率档位、裁剪时长，前台压缩并导出"
 
@@ -18,7 +18,8 @@
 - **不引 FFmpeg、不做剪辑**，只做转码/缩放/裁剪时长（§2、§1.2 v1.13）；
 - **不申请写权限**：输出写应用私有目录，存相册仅 API ≥ 29 且走 MediaStore（§8）。
 
-本模块独占一个页面（新 tab），不与图片压缩同页（§3.2 的同页规则只适用于图片压缩 + 重复照片清理）。
+本模块与「视频拼接 / 视频裁剪」共用视频 tab 页面，三者通过 `HorizontalPager` 切换；
+拼接/裁剪的规格见 [009-video-editing](../009-video-editing/spec.md)。
 
 ---
 
