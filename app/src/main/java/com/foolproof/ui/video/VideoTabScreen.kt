@@ -45,7 +45,10 @@ private enum class VideoTabMode { COMPRESS, MERGE, TRIM }
  * 广告位放在模式切换下方，作为功能分割处的横幅。
  */
 @Composable
-fun VideoTabScreen(modifier: Modifier = Modifier) {
+fun VideoTabScreen(
+    modifier: Modifier = Modifier,
+    onPageChanged: (Int) -> Unit = {},
+) {
     var mode by rememberSaveable { mutableStateOf(VideoTabMode.COMPRESS) }
     val pagerState = rememberPagerState(initialPage = mode.ordinal) {
         VideoTabMode.entries.size
@@ -54,6 +57,7 @@ fun VideoTabScreen(modifier: Modifier = Modifier) {
 
     LaunchedEffect(pagerState.currentPage) {
         mode = VideoTabMode.entries[pagerState.currentPage]
+        onPageChanged(pagerState.currentPage)
     }
 
     Column(modifier = modifier.fillMaxSize()) {

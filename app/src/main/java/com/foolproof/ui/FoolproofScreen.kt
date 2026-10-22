@@ -2,15 +2,20 @@ package com.foolproof.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.DrawerValue
@@ -25,14 +30,15 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.unit.dp
 import com.foolproof.R
 import com.foolproof.base.share.SharedContentStore
@@ -84,6 +90,8 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    var currentTab by remember { mutableStateOf(FoolproofDestination.Images) }
+    var videoPage by remember { mutableIntStateOf(0) }
     val userPhone by AuthStore.phone.collectAsState()
     val versionName = remember {
         runCatching {
@@ -102,6 +110,8 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
     ModalNavigationDrawer(
         modifier = modifier.fillMaxSize(),
         drawerState = drawerState,
+        // 视频页的横向手势归 Pager；压缩页额外提供 24dp 边缘手势开抽屉
+        gesturesEnabled = currentTab != FoolproofDestination.Videos,
         drawerContent = {
             ModalDrawerSheet {
                 Row(
@@ -161,18 +171,51 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
             }
         },
     ) {
-        FoolproofTabHost(
-            modifier = Modifier.fillMaxSize(),
-            onMenuClick = { scope.launch { drawerState.open() } },
-            requestedDestination = requestedDestination,
-        ) { destination ->
-            when (destination) {
-                FoolproofDestination.Images -> CompressionTabScreen()
-                FoolproofDestination.Videos -> VideoTabScreen()
-                FoolproofDestination.Converter -> ConversionTabScreen()
+        Box(modifier = Modifier.fillMaxSize()) {
+            FoolproofTabHost(
+                modifier = Modifier.fillMaxSize(),
+                onMenuClick = { scope.launch { drawerState.open() } },
+                requestedDestination = requestedDestination,
+                onDestinationChanged = { currentTab = it },
+            ) { destination ->
+                when (destination) {
+                    FoolproofDestination.Images -> CompressionTabScreen()
+                    FoolproofDestination.Videos -> VideoTabScreen(onPageChanged = { videoPage = it })
+                    FoolproofDestination.Converter -> ConversionTabScreen()
+                }
+            }
+            if (currentTab == FoolproofDestination.Videos && videoPage == 0) {
+                EdgeDrawerHandle(onOpen = { scope.launch { drawerState.open() } })
             }
         }
     }
+}
+
+/** 视频压缩页专用的左边缘抽屉手势：绕开 Pager，并排除系统返回手势区。 */
+@Composable
+private fun EdgeDrawerHandle(onOpen: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxHeight()
+            .width(24.dp)
+            .pointerInput(onOpen) {
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    var total = 0f
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                        total += change.positionChange().x
+                        if (total > 12.dp.toPx()) {
+                            change.consume()
+                            onOpen()
+                            break
+                        }
+                        if (total < -12.dp.toPx()) break
+                    }
+                }
+            },
+    )
 }
 
 @Composable

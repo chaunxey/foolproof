@@ -52,6 +52,7 @@ fun FoolproofTabHost(
     destinations: List<FoolproofDestination> = FoolproofDestination.entries,
     onMenuClick: (() -> Unit)? = null,
     requestedDestination: FoolproofDestination? = null,
+    onDestinationChanged: ((FoolproofDestination) -> Unit)? = null,
     content: @Composable (FoolproofDestination) -> Unit,
 ) {
     var selected by rememberSaveable { mutableStateOf(FoolproofDestination.Images.name) }
@@ -59,6 +60,7 @@ fun FoolproofTabHost(
         requestedDestination?.let { selected = it.name }
     }
     val current = destinations.firstOrNull { it.name == selected } ?: destinations.first()
+    LaunchedEffect(current) { onDestinationChanged?.invoke(current) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
