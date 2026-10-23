@@ -5,6 +5,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -160,20 +161,23 @@ fun CompressionSection(
                     Text(stringResource(R.string.compression_reset))
                 }
             }
-            FoolproofSecondaryButton(
-                text = if (state.images.isEmpty()) {
-                    stringResource(R.string.compression_pick_image)
-                } else {
-                    stringResource(R.string.compression_reselect)
-                },
-                onClick = { viewModel.dispatch(CompressionAction.SelectImages) },
-                enabled = !state.isRunning,
-            )
+            if (state.images.isNotEmpty()) {
+                FoolproofSecondaryButton(
+                    text = stringResource(R.string.compression_reselect),
+                    onClick = { viewModel.dispatch(CompressionAction.SelectImages) },
+                    enabled = !state.isRunning,
+                )
+            }
         }
 
         if (state.images.isEmpty()) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = !state.isRunning) {
+                        viewModel.dispatch(CompressionAction.SelectImages)
+                    }
+                    .padding(top = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Icon(
@@ -183,11 +187,17 @@ fun CompressionSection(
                     modifier = Modifier.size(40.dp),
                 )
                 Text(
+                    text = stringResource(R.string.compression_pick_image),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+                Text(
                     text = stringResource(R.string.compression_empty_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
         }

@@ -7,6 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -133,20 +134,29 @@ fun VideoMergeSection(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
-            FoolproofSecondaryButton(
-                text = stringResource(R.string.video_merge_add),
-                onClick = {
-                    picker.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly),
-                    )
-                },
-                enabled = !state.isMerging,
-            )
+            if (state.clips.isNotEmpty()) {
+                FoolproofSecondaryButton(
+                    text = stringResource(R.string.video_merge_add),
+                    onClick = {
+                        picker.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly),
+                        )
+                    },
+                    enabled = !state.isMerging,
+                )
+            }
         }
 
         if (state.clips.isEmpty()) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = !state.isMerging) {
+                        picker.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly),
+                        )
+                    }
+                    .padding(top = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Icon(
@@ -156,11 +166,17 @@ fun VideoMergeSection(
                     modifier = Modifier.size(40.dp),
                 )
                 Text(
+                    text = stringResource(R.string.video_merge_add),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+                Text(
                     text = stringResource(R.string.video_merge_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 8.dp),
+                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
         } else {
