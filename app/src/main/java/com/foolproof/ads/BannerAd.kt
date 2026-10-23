@@ -1,5 +1,7 @@
 package com.foolproof.ads
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -33,6 +36,8 @@ import kotlinx.coroutines.delay
 import java.util.concurrent.atomic.AtomicBoolean
 
 private const val BANNER_REFRESH_MS = 60_000L
+private const val BANNER_FALLBACK_MS = 1_500L
+private val BANNER_HEIGHT = 50.dp
 private const val SPLASH_WATCHDOG_MS = 2_000L
 private const val SPLASH_MAX_MS = 6_000L
 private const val SPLASH_SECONDS = 5
@@ -40,22 +45,41 @@ private const val SPLASH_SKIP_AFTER_SECONDS = 3
 
 /**
  * 功能分割处的横幅（320×50）。SDK 由构建开关决定：
- * - 未配置 / 没有填充 → 不占位、不显示任何东西；
- * - 可见期间每 60 秒刷新一次；
- * - 离开页面时释放原生 View。
+ * - 先透明预占 50dp，避免填充时内容跳动；
+ * - 1.5 秒仍无填充 → 动画收起，不显示「AD」占位文案；
+ * - 可见期间每 60 秒刷新一次；离开页面时释放原生 View。
  */
 @Composable
 fun BannerAd(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val sdk = AdSdkRegistry.sdk
     var loaded by remember(sdk) { mutableStateOf(false) }
+    var timedOut by remember(sdk) { mutableStateOf(false) }
     val slot = remember(sdk) {
         sdk?.createBanner(context) { loaded = it }
     } ?: return
 
-    // 广告就绪前高度为 0：不再显示「AD」占位块
-    Box(modifier = modifier.fillMaxWidth().height(if (loaded) 50.dp else 0.dp)) {
-        AndroidView(modifier = Modifier.fillMaxSize(), factory = { slot.view })
+    LaunchedEffect(slot, loaded) {
+        if (!loaded) {
+            delay(BANNER_FALLBACK_MS)
+            timedOut = true
+        }
+    }
+    val height by animateDpAsState(
+        targetValue = when {
+            loaded -> BANNER_HEIGHT
+            timedOut -> 0.dp
+            else -> BANNER_HEIGHT
+        },
+        animationSpec = tween(durationMillis = 200),
+        label = "bannerHeight",
+    )
+
+    Box(modifier = modifier.fillMaxWidth().height(height)) {
+        AndroidView(
+            modifier = Modifier.fillMaxSize().alpha(if (loaded) 1f else 0f),
+            factory = { slot.view },
+        )
         LaunchedEffect(slot) {
             while (true) {
                 delay(BANNER_REFRESH_MS)
