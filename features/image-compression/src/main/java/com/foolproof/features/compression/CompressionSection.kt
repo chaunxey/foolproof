@@ -170,6 +170,26 @@ fun CompressionSection(
             }
         }
 
+        // 选中的图片直接显示在原选择区，不再落到底部
+        if (renderResults && state.images.isNotEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                state.images.forEach { image ->
+                    ImageRow(
+                        image = image,
+                        outcome = state.outcomeOf(image.id),
+                        saveSupported = state.saveSupported,
+                        saved = state.isSaved(image.id),
+                        onRetry = { viewModel.dispatch(CompressionAction.Retry(image.id)) },
+                        onShare = { viewModel.dispatch(CompressionAction.Share(image.id)) },
+                        onSave = { viewModel.dispatch(CompressionAction.SaveToGallery(image.id)) },
+                    )
+                }
+            }
+        }
+
         if (state.images.isEmpty()) {
             Column(
                 modifier = Modifier
@@ -239,30 +259,30 @@ fun CompressionSection(
             onQualityChange = { viewModel.dispatch(CompressionAction.ChangeQuality(it)) },
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            val primary = stringResource(
-                when {
-                    state.isRunning -> R.string.compression_cancel
-                    locked -> com.foolproof.common.R.string.ad_unlock_button
-                    else -> R.string.compression_start
-                },
-                REWARD_AMOUNT,
-            )
-            FoolproofButton(
-                text = primary,
-                onClick = {
+        if (state.images.isNotEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                val primary = stringResource(
                     when {
-                        state.isRunning -> viewModel.dispatch(CompressionAction.Cancel)
-                        locked -> showUnlock = true
-                        else -> viewModel.dispatch(CompressionAction.Start)
-                    }
-                },
-                enabled = state.isRunning || state.canStart,
-            )
-            if (state.images.isNotEmpty()) {
+                        state.isRunning -> R.string.compression_cancel
+                        locked -> com.foolproof.common.R.string.ad_unlock_button
+                        else -> R.string.compression_start
+                    },
+                    REWARD_AMOUNT,
+                )
+                FoolproofButton(
+                    text = primary,
+                    onClick = {
+                        when {
+                            state.isRunning -> viewModel.dispatch(CompressionAction.Cancel)
+                            locked -> showUnlock = true
+                            else -> viewModel.dispatch(CompressionAction.Start)
+                        }
+                    },
+                    enabled = state.isRunning || state.canStart,
+                )
                 TextButton(
                     onClick = { viewModel.dispatch(CompressionAction.Clear) },
                     enabled = !state.isRunning,
@@ -316,24 +336,6 @@ fun CompressionSection(
             )
         }
 
-        if (renderResults) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                state.images.forEach { image ->
-                    ImageRow(
-                        image = image,
-                        outcome = state.outcomeOf(image.id),
-                        saveSupported = state.saveSupported,
-                        saved = state.isSaved(image.id),
-                        onRetry = { viewModel.dispatch(CompressionAction.Retry(image.id)) },
-                        onShare = { viewModel.dispatch(CompressionAction.Share(image.id)) },
-                        onSave = { viewModel.dispatch(CompressionAction.SaveToGallery(image.id)) },
-                    )
-                }
-            }
-        }
         if (showSuccess) {
             val first = state.outcomes.values.firstOrNull { it.outputPath != null }
             if (first?.outputPath != null) {

@@ -16,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import com.foolproof.ads.SectionBannerAd
 import com.foolproof.features.compression.CompressionSection
 import com.foolproof.features.compression.CompressionViewModel
-import com.foolproof.features.compression.compressionResultRows
 import com.foolproof.features.duplicates.DuplicateAction
 import com.foolproof.features.duplicates.DuplicateHeader
 import com.foolproof.features.duplicates.DuplicateViewModel
@@ -38,7 +37,6 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun CompressionTabScreen(modifier: Modifier = Modifier) {
     val compressionViewModel: CompressionViewModel = koinViewModel()
-    val compressionState by compressionViewModel.uiState.collectAsState()
     val duplicateViewModel: DuplicateViewModel = koinViewModel()
     val duplicateState by duplicateViewModel.uiState.collectAsState()
 
@@ -56,14 +54,8 @@ fun CompressionTabScreen(modifier: Modifier = Modifier) {
         ) {
             CompressionSection(
                 viewModel = compressionViewModel,
-                renderResults = false,
             )
         }
-
-        compressionResultRows(
-            state = compressionState,
-            viewModel = compressionViewModel,
-        )
 
         // 压缩区与去重区之间的横幅广告
         item(
