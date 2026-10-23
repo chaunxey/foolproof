@@ -102,11 +102,16 @@ fun SectionBannerAd(modifier: Modifier = Modifier) {
  * - Meta / 未配置 / 加载失败：回退到自绘 5 秒壳（横幅 + 3 秒后可跳过）。
  */
 @Composable
-fun SplashAdOverlay(onFinished: () -> Unit) {
+fun SplashAdOverlay(onFinished: () -> Unit, onReady: () -> Unit = {}) {
     val context = LocalContext.current
     val sdk = AdSdkRegistry.sdk
     val settled = remember { AtomicBoolean(false) }
     var state by remember { mutableStateOf<SplashState>(SplashState.Loading) }
+
+    // 原生广告/自绘壳一旦就绪，通知 Activity 释放系统启动画面
+    LaunchedEffect(state) {
+        if (state !is SplashState.Loading) onReady()
+    }
 
     LaunchedEffect(sdk) {
         if (sdk == null) {
@@ -146,8 +151,7 @@ fun SplashAdOverlay(onFinished: () -> Unit) {
 /**
  * 开屏加载态：只保留与系统启动画面一致的底色。
  *
- * 系统启动画面已经画过应用图标（自适应图标，系统负责尺寸与圆角），
- * 这里不再画第二个图标，避免出现「大小不同 + 白边」的切换。
+ * 系统启动画面负责显示图标；这里不再画第二个图标，避免尺寸/白边不一致。
  */
 @Composable
 private fun SplashLoading() {

@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Density
 import androidx.core.view.WindowCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.foolproof.ads.SplashAdOverlay
 import com.foolproof.ads.SplashScheduler
 import com.foolproof.ads.UsageStore
@@ -36,6 +37,10 @@ class MainActivity : ComponentActivity() {
 
     private var initialStartDone = false
     private val showSplash = mutableStateOf(false)
+
+    /** 开屏广告层就绪后释放系统启动画面（图标一直保留到广告可展示）。 */
+    @Volatile
+    private var splashReady = false
 
     override fun attachBaseContext(newBase: Context) {
         // 在 super 之前初始化偏好，保证首帧就能读到语言/字体/主题设置
@@ -71,11 +76,15 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         SharedContentStore.publishFrom(this, intent)
         enableEdgeToEdge()
         // 在首帧之前决定是否展示开屏，避免先闪一下主界面
         showSplash.value = SplashScheduler.shouldShow()
+        if (!showSplash.value) splashReady = true
+        // 图标 → 广告之间不留空白帧：广告层就绪（或 2 秒兜底）后再撤启动画面
+        splashScreen.setKeepOnScreenCondition { !splashReady }
         setContent {
             val scale by SettingsStore.fontScale.collectAsState()
             val language by SettingsStore.language.collectAsState()
@@ -115,7 +124,10 @@ class MainActivity : ComponentActivity() {
                     Box(modifier = Modifier.fillMaxSize()) {
                         FoolproofScreen(modifier = Modifier.fillMaxSize())
                         if (showSplash.value) {
-                            SplashAdOverlay(onFinished = { showSplash.value = false })
+                            SplashAdOverlay(
+                                onFinished = { showSplash.value = false },
+                                onReady = { splashReady = true },
+                            )
                         }
                     }
                 }

@@ -96,6 +96,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     // :app 需要直接从 Koin 取 feature 的 ViewModel（页面组装的一部分）
     implementation(libs.koin.compose.viewmodel)
