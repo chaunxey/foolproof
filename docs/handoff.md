@@ -23,12 +23,11 @@ H:\AndroidDevelop\workplace\Foolproof
 
 不要凭印象改代码；涉及行为先确认对应 REQ。
 
-## 3. 当前状态（2026-10-22）
+## 3. 当前状态（2026-10-23）
 
-- 分支：`feature/ad-sdk-provider`（广告 provider 可切换；合回 `main` 后改回 `main`）
-- 最新提交：以 `git log -1 main` 为准（本文档会随提交更新）
+- 分支：`release`（从 `feature/ad-sdk-provider` 拉出并推送，最新提交 `63afc83`）
 - 最新 Release：`v1.1.0`（Release 源提交 `29916fb`）
-  - APK：`Foolproof-v1.1.0.apk`（14,261,641 bytes）
+  - APK（pangle，2026-10-23 重建）：`Foolproof-v1.1.0-pangle.apk`（20,196,918 bytes）
   - AAB：`Foolproof-v1.1.0.aab`（18,330,097 bytes）
   - 签名证书 SHA-256：`2e6c62554cb1d7939f3babaa576b9f373341c609d139c1fd04b362c422cc0dc1`
 - 追溯文档分支：`spec/constitution-retro`
