@@ -6,10 +6,11 @@ import com.bytedance.sdk.openadsdk.TTAdConstant
 import com.bytedance.sdk.openadsdk.TTAdNative
 import com.bytedance.sdk.openadsdk.TTAdSdk
 import com.bytedance.sdk.openadsdk.TTFullScreenVideoAd
+import com.bytedance.sdk.openadsdk.mediation.ad.MediationAdSlot
 import com.foolproof.ads.api.FullscreenAd
 import com.foolproof.ads.api.FullscreenAdLoader
 
-/** 穿山甲全屏视频：关闭/出错都会收口到 CountingAdGate。 */
+/** 穿山甲插全屏/全屏视频：关闭/出错都会收口到 CountingAdGate。 */
 internal class PangleFullscreenLoader(private val activity: Activity) : FullscreenAdLoader {
 
     override val isConfigured: Boolean
@@ -26,6 +27,7 @@ internal class PangleFullscreenLoader(private val activity: Activity) : Fullscre
         val adSlot = AdSlot.Builder()
             .setCodeId(PangleAdsConfig.INTERSTITIAL_CODE_ID)
             .setOrientation(TTAdConstant.VERTICAL)
+            .setMediationAdSlot(MediationAdSlot.Builder().build())
             .build()
         runCatching {
             adNative.loadFullScreenVideoAd(
@@ -35,7 +37,11 @@ internal class PangleFullscreenLoader(private val activity: Activity) : Fullscre
                         onFailed()
                     }
 
-                    override fun onFullScreenVideoAdLoad(ad: TTFullScreenVideoAd) {
+                    override fun onFullScreenVideoAdLoad(ad: TTFullScreenVideoAd?) {
+                        if (ad == null) {
+                            onFailed()
+                            return
+                        }
                         ad.setFullScreenVideoAdInteractionListener(
                             object : TTFullScreenVideoAd.FullScreenVideoAdInteractionListener {
                                 override fun onAdShow() = Unit
@@ -68,7 +74,7 @@ internal class PangleFullscreenLoader(private val activity: Activity) : Fullscre
 
                     override fun onFullScreenVideoCached() = Unit
 
-                    override fun onFullScreenVideoCached(ad: TTFullScreenVideoAd) = Unit
+                    override fun onFullScreenVideoCached(ad: TTFullScreenVideoAd?) = Unit
                 },
             )
         }.onFailure { onFailed() }

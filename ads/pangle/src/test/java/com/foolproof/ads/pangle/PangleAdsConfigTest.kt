@@ -7,8 +7,8 @@ import org.junit.Test
 class PangleAdsConfigTest {
 
     @Test
-    fun `defaults are not configured`() {
-        assertFalse(PangleAdsConfig.configured)
+    fun `shipped config is configured`() {
+        assertTrue(PangleAdsConfig.configured)
     }
 
     @Test

@@ -8,6 +8,7 @@ import com.bytedance.sdk.openadsdk.AdSlot
 import com.bytedance.sdk.openadsdk.TTAdNative
 import com.bytedance.sdk.openadsdk.TTAdSdk
 import com.bytedance.sdk.openadsdk.TTNativeExpressAd
+import com.bytedance.sdk.openadsdk.mediation.ad.MediationAdSlot
 import com.foolproof.ads.api.AdBannerSlot
 
 /** 穿山甲模板横幅：请求 50dp 高，渲染成功后塞进容器；刷新前先销毁旧广告。 */
@@ -71,6 +72,7 @@ internal class PangleBannerSlot(
         val adSlot = AdSlot.Builder()
             .setCodeId(PangleAdsConfig.BANNER_CODE_ID)
             .setExpressViewAcceptedSize(widthDp, BANNER_HEIGHT_DP)
+            .setMediationAdSlot(MediationAdSlot.Builder().build())
             .build()
         runCatching {
             adNative.loadBannerExpressAd(adSlot, object : TTAdNative.NativeExpressAdListener {
@@ -95,22 +97,28 @@ internal class PangleBannerSlot(
         expressAd = ad
         ad.setExpressInteractionListener(
             object : TTNativeExpressAd.ExpressAdInteractionListener {
-                override fun onAdClicked(view: View, type: Int) = Unit
+                override fun onAdClicked(view: View?, type: Int) = Unit
 
-                override fun onAdShow(view: View, type: Int) = Unit
+                override fun onAdShow(view: View?, type: Int) = Unit
 
-                override fun onRenderFail(view: View, message: String?, code: Int) {
+                override fun onRenderFail(view: View?, message: String?, code: Int) {
                     onLoaded(false)
                 }
 
-                override fun onRenderSuccess(view: View, width: Float, height: Float) {
+                override fun onRenderSuccess(view: View?, width: Float, height: Float) {
                     if (destroyed) {
                         ad.destroy()
                         return
                     }
+                    // GroMore 聚合广告可能回调 null，用它自己的 express view 兜底
+                    val bannerView = view ?: ad.getExpressAdView()
+                    if (bannerView == null) {
+                        onLoaded(false)
+                        return
+                    }
                     container.removeAllViews()
                     container.addView(
-                        view,
+                        bannerView,
                         FrameLayout.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT,

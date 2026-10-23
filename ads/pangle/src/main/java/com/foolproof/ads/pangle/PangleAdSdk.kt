@@ -9,6 +9,7 @@ import com.bytedance.sdk.openadsdk.CSJSplashAd
 import com.bytedance.sdk.openadsdk.TTAdConfig
 import com.bytedance.sdk.openadsdk.TTAdNative
 import com.bytedance.sdk.openadsdk.TTAdSdk
+import com.bytedance.sdk.openadsdk.mediation.ad.MediationAdSlot
 import com.foolproof.ads.api.AdBannerSlot
 import com.foolproof.ads.api.AdGateConfig
 import com.foolproof.ads.api.AdProviderId
@@ -20,11 +21,14 @@ import com.foolproof.ads.api.SplashAdSlot
 import com.foolproof.base.ads.FeatureId
 
 /**
- * 穿山甲（Pangle / CSJ）实现，走官方 Maven `com.pangle.cn:ads-sdk-pro`。
+ * 穿山甲（GroMore 融合 SDK）实现，走官方 Maven `com.pangle.cn:mediation-sdk`。
  *
- * - 初始化：`TTAdSdk.init` + `TTAdSdk.start`，private 开关默认关闭位置/电话/应用列表采集；
+ * 广告位是 GroMore 聚合广告位（ID 以 1 开头），因此初始化必须打开 `useMediation`，
+ * 每个请求都要带 `MediationAdSlot`。
+ *
+ * - 初始化：`TTAdSdk.init` + `TTAdSdk.start`，默认关闭位置/电话/应用列表采集；
  * - 横幅：模板横幅，未就绪时短轮询等 SDK 初始化完成；
- * - 门控：全屏视频，关闭/出错收口到 `CountingAdGate`；
+ * - 门控：插全屏/全屏视频，关闭/出错收口到 `CountingAdGate`；
  * - 开屏：`loadSplashAd` 渲染成功后交给 `:app` 的广告层；启动时预热一次。
  */
 class PangleAdSdk(private val usage: AdUsage) : AdSdk {
@@ -59,6 +63,8 @@ class PangleAdSdk(private val usage: AdUsage) : AdSdk {
                     .debug(debug)
                     .allowShowNotify(true)
                     .supportMultiProcess(false)
+                    // GroMore 聚合广告位（1 开头）必须打开聚合开关
+                    .useMediation(true)
                     .customController(PanglePrivacyController)
                     .build(),
             )
@@ -135,20 +141,24 @@ class PangleAdSdk(private val usage: AdUsage) : AdSdk {
         val adSlot = AdSlot.Builder()
             .setCodeId(PangleAdsConfig.SPLASH_CODE_ID)
             .setExpressViewAcceptedSize(widthDp, heightDp)
+            .setMediationAdSlot(MediationAdSlot.Builder().build())
             .build()
         runCatching {
             adNative.loadSplashAd(
                 adSlot,
                 object : TTAdNative.CSJSplashAdListener {
-                    override fun onSplashLoadSuccess(ad: CSJSplashAd) = Unit
+                    override fun onSplashLoadSuccess(ad: CSJSplashAd?) = Unit
 
-                    override fun onSplashLoadFail(error: CSJAdError) {
-                        splashLoading = false
+                    override fun onSplashLoadFail(error: CSJAdError?) {
                         onUnavailable()
                     }
 
-                    override fun onSplashRenderSuccess(ad: CSJSplashAd) {
+                    override fun onSplashRenderSuccess(ad: CSJSplashAd?) {
                         splashLoading = false
+                        if (ad == null) {
+                            onUnavailable()
+                            return
+                        }
                         if (cacheOnly) {
                             splashAd = ad
                             splashLoadedAt = System.currentTimeMillis()
@@ -157,8 +167,7 @@ class PangleAdSdk(private val usage: AdUsage) : AdSdk {
                         }
                     }
 
-                    override fun onSplashRenderFail(ad: CSJSplashAd, error: CSJAdError) {
-                        splashLoading = false
+                    override fun onSplashRenderFail(ad: CSJSplashAd?, error: CSJAdError?) {
                         onUnavailable()
                     }
                 },

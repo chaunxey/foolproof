@@ -24,7 +24,8 @@ pdfbox = "2.0.27.0"
 camerax = "1.4.2"
 # 广告
 audienceNetwork = "6.22.0"
-pangle = "7.8.1.5"
+# GroMore 融合 SDK（聚合广告位 ID 以 1 开头）
+pangleMediation = "7.8.1.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -80,7 +81,7 @@ androidx-camera-view = { group = "androidx.camera", name = "camera-view", versio
 
 # 广告
 audience-network = { group = "com.facebook.android", name = "audience-network-sdk", version.ref = "audienceNetwork" }
-pangle-ads = { group = "com.pangle.cn", name = "ads-sdk-pro", version.ref = "pangle" }
+pangle-mediation = { group = "com.pangle.cn", name = "mediation-sdk", version.ref = "pangleMediation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

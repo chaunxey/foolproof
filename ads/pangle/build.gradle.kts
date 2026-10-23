@@ -21,8 +21,8 @@ android {
 dependencies {
     implementation(project(":ads:api"))
 
-    // 穿山甲官方 Maven：com.pangle.cn:ads-sdk-pro（仅选中 pangle 的构建会进 :app）
-    implementation(libs.pangle.ads)
+    // GroMore 融合 SDK：聚合广告位（1 开头）必须用它；仅选中 pangle 的构建会进 :app
+    implementation(libs.pangle.mediation)
 
     testImplementation(libs.junit)
 }
