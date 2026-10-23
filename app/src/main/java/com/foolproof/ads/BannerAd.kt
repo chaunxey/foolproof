@@ -40,7 +40,7 @@ private const val SPLASH_SKIP_AFTER_SECONDS = 3
 
 /**
  * 功能分割处的横幅（320×50）。SDK 由构建开关决定：
- * - 未配置 / 加载失败 → 占位块；
+ * - 未配置 / 没有填充 → 不占位、不显示任何东西；
  * - 可见期间每 60 秒刷新一次；
  * - 离开页面时释放原生 View。
  */
@@ -51,41 +51,20 @@ fun BannerAd(modifier: Modifier = Modifier) {
     var loaded by remember(sdk) { mutableStateOf(false) }
     val slot = remember(sdk) {
         sdk?.createBanner(context) { loaded = it }
-    }
+    } ?: return
 
-    Box(modifier = modifier.fillMaxWidth().height(50.dp)) {
-        if (slot == null) {
-            PlaceholderBanner(Modifier.fillMaxSize())
-        } else {
-            AndroidView(modifier = Modifier.fillMaxSize(), factory = { slot.view })
-            // 加载前用固定高度骨架占位，避免真实广告出现时布局跳动
-            if (!loaded) {
-                PlaceholderBanner(Modifier.fillMaxSize())
-            }
-            LaunchedEffect(slot) {
-                while (true) {
-                    delay(BANNER_REFRESH_MS)
-                    slot.refresh()
-                }
-            }
-            DisposableEffect(slot) {
-                onDispose { slot.destroy() }
+    // 广告就绪前高度为 0：不再显示「AD」占位块
+    Box(modifier = modifier.fillMaxWidth().height(if (loaded) 50.dp else 0.dp)) {
+        AndroidView(modifier = Modifier.fillMaxSize(), factory = { slot.view })
+        LaunchedEffect(slot) {
+            while (true) {
+                delay(BANNER_REFRESH_MS)
+                slot.refresh()
             }
         }
-    }
-}
-
-@Composable
-private fun PlaceholderBanner(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = "AD",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.outline,
-        )
+        DisposableEffect(slot) {
+            onDispose { slot.destroy() }
+        }
     }
 }
 

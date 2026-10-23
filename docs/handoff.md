@@ -43,7 +43,7 @@ H:\AndroidDevelop\workplace\Foolproof
 - 转换：图片/文本→PDF、PDF 合并/拆分/旋转/页面/压缩/转图片；
 - 系统分享入口：图片/视频/PDF；
 - 本地模拟登录（验证码 `0000`、密码 `admin`，无后端）、抽屉、设置、DataStore；
-- 6 语言、深色模式、广告占位/接入；
+- 6 语言、深色模式、广告接入；
 - 广告 provider 可切换：`meta`（Meta Audience Network，默认）/ `pangle`（穿山甲 GroMore 7.8.1.4，
   官方 Maven），单个产物只含一套 SDK；feature 仍只依赖 `:base` 的 `AdGate`。
 - 广告额度：每个功能每天免费 5 次（本地 0 点重置、不累计）+ 激励余额（+5/次、可叠加、跨天保留）；
@@ -53,7 +53,7 @@ H:\AndroidDevelop\workplace\Foolproof
 
 - 登录是本地模拟，不发真实短信，没有服务端账号；
 - PDF 压缩有损，文字层会丢失；加密 PDF 不支持；
-- 未配置 FAN placement ID 时横幅是占位块；
+- 未配置 FAN placement ID 时横幅不显示（不再有「AD」占位块）；
 - 穿山甲 appId/广告位已填（appId `5899851`，广告位 104722089 / 104722138 / 104721749）；
   它们是 **GroMore 聚合广告位**（1 开头），必须 `useMediation` + `MediationAdSlot`；
   横幅与原生开屏已在真机验证有填充；`104722138` 是激励视频位，用于解锁次数；

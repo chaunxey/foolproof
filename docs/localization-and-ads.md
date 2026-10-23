@@ -35,7 +35,7 @@
   - Meta：`ads/meta/.../MetaAdsConfig.kt`（banner / interstitial / splash / rewarded placement ID）；
   - 穿山甲：`ads/pangle/.../PangleAdsConfig.kt`（APP_ID / BANNER_CODE_ID /
     REWARDED_AD_ID / SPLASH_CODE_ID）；
-  - 为空时：**不初始化 SDK**、横幅显示占位块、门控直接放行；
+  - 为空时：**不初始化 SDK**、横幅不显示、门控直接放行；
 - **穿山甲是 GroMore 聚合广告位**：三个 ID 都是以 `1` 开头的**广告位 ID**（不是 ADN 代码位），
   所以初始化必须 `useMediation(true)`、请求带 `MediationAdSlot`；广告位类型要和请求方法一致：
   `BANNER` ↔ `loadBannerExpressAd`、**激励视频** ↔ `loadRewardVideoAd`、开屏 ↔ `loadSplashAd`；
