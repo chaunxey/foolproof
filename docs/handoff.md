@@ -25,13 +25,15 @@ H:\AndroidDevelop\workplace\Foolproof
 
 ## 3. 当前状态（2026-10-23）
 
-- 分支：`release`（从 `feature/ad-sdk-provider` 拉出并推送，最新提交 `63afc83`）
-- 最新 Release：`v1.1.0`（Release 源提交 `29916fb`）
-  - APK（pangle，2026-10-23 重建）：`Foolproof-v1.1.0-pangle.apk`（20,196,918 bytes）
-  - AAB：`Foolproof-v1.1.0.aab`（18,330,097 bytes）
+- 分支：`release`（已推送；最新提交以 `git log -1 release` 为准）
+- 当前版本：`versionCode 3` / `versionName 1.2.0`
+- 最新 Release：`v1.2.0`（pangle）
+  - APK：`Foolproof-v1.2.0-pangle.apk`（20,196,918 bytes）
   - 签名证书 SHA-256：`2e6c62554cb1d7939f3babaa576b9f373341c609d139c1fd04b362c422cc0dc1`
+- 上一版：`v1.1.0`（Release 源提交 `29916fb`）
+  - APK：`Foolproof-v1.1.0.apk`（14,261,641 bytes，meta）
+  - AAB：`Foolproof-v1.1.0.aab`（18,330,097 bytes）
 - 追溯文档分支：`spec/constitution-retro`
-- 当前版本：`versionCode 2` / `versionName 1.1.0`
 - minSdk 24 / compileSdk 37 / targetSdk 37
 
 ### 已上线能力
