@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -115,7 +116,8 @@ fun FoolproofScreen(modifier: Modifier = Modifier) {
         // 视频页交给 Pager；压缩页由 24dp 自定义边缘手势开抽屉
         gesturesEnabled = currentTab != FoolproofDestination.Videos,
         drawerContent = {
-            ModalDrawerSheet {
+            // 抽屉最多占屏幕 70%，右侧留出主界面，避免整屏遮挡
+            ModalDrawerSheet(modifier = Modifier.fillMaxWidth(0.7f)) {
                 Row(
                     modifier = Modifier
                         .padding(horizontal = 20.dp, vertical = 24.dp)
