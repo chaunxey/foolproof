@@ -34,7 +34,7 @@ import com.foolproof.ui.theme.FoolproofTheme
 
 class MainActivity : ComponentActivity() {
 
-    private var splashChecked = false
+    private var initialStartDone = false
     private val showSplash = mutableStateOf(false)
 
     override fun attachBaseContext(newBase: Context) {
@@ -54,9 +54,11 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         // 跨天时把每日免费额度刷新为 5（激励余额保留）
         UsageStore.refreshAll()
-        if (!splashChecked) {
-            splashChecked = true
-            // 冷启动必看一次；之后只有后台超过 1 小时回来才看
+        if (!initialStartDone) {
+            // 冷启动的判断已经在 onCreate 里做过，避免第一帧把开屏层关掉
+            initialStartDone = true
+        } else {
+            // 后台超过 1 小时回来再展示广告层
             showSplash.value = SplashScheduler.shouldShow()
         }
     }
@@ -72,6 +74,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         SharedContentStore.publishFrom(this, intent)
         enableEdgeToEdge()
+        // 在首帧之前决定是否展示开屏，避免先闪一下主界面
+        showSplash.value = SplashScheduler.shouldShow()
         setContent {
             val scale by SettingsStore.fontScale.collectAsState()
             val language by SettingsStore.language.collectAsState()

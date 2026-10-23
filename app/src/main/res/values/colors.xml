@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#D5EBFF</color>
+    <!-- 启动/开屏过渡背景：与系统启动画面、开屏加载态保持一致，避免白→黑闪屏 -->
+    <color name="splash_background">#D5EBFF</color>
 </resources>

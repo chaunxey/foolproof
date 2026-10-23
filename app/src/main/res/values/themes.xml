@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Foolproof" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Foolproof" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- 系统启动画面与窗口底色统一成开屏过渡色，避免白屏闪一下 -->
+        <item name="android:windowBackground">@color/splash_background</item>
+    </style>
 </resources>

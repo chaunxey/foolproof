@@ -1,5 +1,6 @@
 package com.foolproof.ads
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,6 +25,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -136,9 +140,28 @@ fun SplashAdOverlay(onFinished: () -> Unit) {
     }
 
     when (val current = state) {
-        SplashState.Loading -> Box(modifier = Modifier.fillMaxSize().background(Color.Black))
+        SplashState.Loading -> SplashLoading()
         SplashState.Shell -> SplashShell(onFinished)
         is SplashState.Native -> NativeSplash(current.slot, onFinished)
+    }
+}
+
+/**
+ * 开屏加载态：与系统启动画面同一底色 + 应用图标，避免「白屏 → 黑屏 → 广告」的跳变。
+ */
+@Composable
+private fun SplashLoading() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colorResource(com.foolproof.R.color.splash_background)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Image(
+            painter = painterResource(com.foolproof.R.drawable.ic_launcher_foreground),
+            contentDescription = null,
+            modifier = Modifier.size(96.dp),
+        )
     }
 }
 

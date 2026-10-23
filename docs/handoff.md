@@ -58,6 +58,11 @@ H:\AndroidDevelop\workplace\Foolproof
   它们是 **GroMore 聚合广告位**（1 开头），必须 `useMediation` + `MediationAdSlot`；
   横幅与原生开屏已在真机验证有填充；`104722138` 是激励视频位，用于解锁次数；
 - 穿山甲开屏素材走 http，`:app` 已开 `usesCleartextTraffic`，否则会 `load image fail`。
+- 冷启动过渡：`windowBackground` 与开屏加载态统一为 `#D5EBFF`（`splash_background`），
+  避免「系统白屏 → 黑色加载 → 广告」的闪屏；
+- 激励视频素材由广告主决定：部分广告是「去浏览 15 秒」的互动任务，落地页期间视频倒计时会暂停，
+  回到广告后继续，完成任务才发奖；这不是客户端 bug。若不想要这类素材，可在 GroMore 广告位
+  的屏蔽设置里关闭互动/试玩类广告（以平台实际选项为准）。
 - Meta 的激励视频需要在后台单独建 Rewarded placement；未配置时 meta 包 fail-open（不锁功能）。
 - Play Console、关闭测试、正式广告 ID、隐私政策尚未完成（如需上架再单独排期）。
 
