@@ -15,20 +15,20 @@ import com.foolproof.ads.api.AdGateConfig
 import com.foolproof.ads.api.AdProviderId
 import com.foolproof.ads.api.AdSdk
 import com.foolproof.ads.api.AdUsage
-import com.foolproof.ads.api.CountingAdGate
 import com.foolproof.ads.api.HandlerDelayScheduler
+import com.foolproof.ads.api.RewardedGate
 import com.foolproof.ads.api.SplashAdSlot
 import com.foolproof.base.ads.FeatureId
 
 /**
  * 穿山甲（GroMore 融合 SDK）实现，走官方 Maven `com.pangle.cn:mediation-sdk`。
  *
- * 广告位是 GroMore 聚合广告位（ID 以 1 开头），因此初始化必须打开 `useMediation`，
+ * 广告位是 GroMore 聚合广告位（ID 以 1 开头），初始化必须打开 `useMediation`，
  * 每个请求都要带 `MediationAdSlot`。
  *
  * - 初始化：`TTAdSdk.init` + `TTAdSdk.start`，默认关闭位置/电话/应用列表采集；
  * - 横幅：模板横幅，未就绪时短轮询等 SDK 初始化完成；
- * - 门控：插全屏/全屏视频，关闭/出错收口到 `CountingAdGate`；
+ * - 额度门控：激励视频，奖励成功才 +5 次；
  * - 开屏：`loadSplashAd` 渲染成功后交给 `:app` 的广告层；启动时预热一次。
  */
 class PangleAdSdk(private val usage: AdUsage) : AdSdk {
@@ -38,7 +38,12 @@ class PangleAdSdk(private val usage: AdUsage) : AdSdk {
     override val configured: Boolean
         get() = PangleAdsConfig.configured
 
-    private val gate = CountingAdGate(usage, AdGateConfig()) { HandlerDelayScheduler() }
+    private val gate = RewardedGate(
+        usage = usage,
+        config = AdGateConfig(),
+        loaderFactory = { activity -> PangleRewardedLoader(activity) },
+        schedulerFactory = { HandlerDelayScheduler() },
+    )
 
     @Volatile
     private var splashAd: CSJSplashAd? = null
@@ -105,8 +110,14 @@ class PangleAdSdk(private val usage: AdUsage) : AdSdk {
         requestSplash(context, cacheOnly = false, onReady = onReady, onUnavailable = onUnavailable)
     }
 
-    override fun maybeGate(activity: Activity, feature: FeatureId, onAllow: () -> Unit) {
-        gate.maybeGate(feature, onAllow, PangleFullscreenLoader(activity))
+    override fun available(feature: FeatureId): Int = gate.available(feature)
+
+    override fun requestUnlock(
+        activity: Activity,
+        feature: FeatureId,
+        onResult: (Boolean) -> Unit,
+    ) {
+        gate.requestUnlock(activity, feature, onResult)
     }
 
     override fun onSuccess(feature: FeatureId) {

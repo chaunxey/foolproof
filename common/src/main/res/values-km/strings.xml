@@ -7,4 +7,11 @@
     <string name="tab_settings">ការកំណត់</string>
     <string name="tab_menu">ម៉ឺនុយ</string>
     <string name="success_close">បិទ</string>
+    <!-- ពាណិជ្ជកម្មផ្តល់រង្វាន់ -->
+    <string name="ad_unlock_title">ដោះសោការប្រើប្រាស់បន្ថែម</string>
+    <string name="ad_unlock_message">មើលពាណិជ្ជកម្មដើម្បីដោះសោ %1$d ដង</string>
+    <string name="ad_unlock_watch">មើលពាណិជ្ជកម្ម</string>
+    <string name="ad_unlock_cancel">បោះបង់</string>
+    <string name="ad_unlock_loading">កំពុងផ្ទុកពាណិជ្ជកម្ម…</string>
+    <string name="ad_unlock_button">មើលពាណិជ្ជកម្មដើម្បីដោះសោ %1$d ដង</string>
 </resources>

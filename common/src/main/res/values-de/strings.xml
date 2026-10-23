@@ -7,4 +7,11 @@
     <string name="tab_settings">Einstellungen</string>
     <string name="tab_menu">Menü</string>
     <string name="success_close">Schließen</string>
+    <!-- Werbevideo -->
+    <string name="ad_unlock_title">Mehr Nutzungen freischalten</string>
+    <string name="ad_unlock_message">Werbevideo ansehen, um %1$d Nutzungen freizuschalten</string>
+    <string name="ad_unlock_watch">Ansehen</string>
+    <string name="ad_unlock_cancel">Abbrechen</string>
+    <string name="ad_unlock_loading">Werbung wird geladen…</string>
+    <string name="ad_unlock_button">Werbung für +%1$d Nutzungen</string>
 </resources>

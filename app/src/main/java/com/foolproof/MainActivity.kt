@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.Density
 import androidx.core.view.WindowCompat
 import com.foolproof.ads.SplashAdOverlay
 import com.foolproof.ads.SplashScheduler
+import com.foolproof.ads.UsageStore
 import com.foolproof.base.share.SharedContentStore
 import com.foolproof.ui.FoolproofScreen
 import com.foolproof.ui.settings.SettingsStore
@@ -51,6 +52,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        // 跨天时把每日免费额度刷新为 5（激励余额保留）
+        UsageStore.refreshAll()
         if (!splashChecked) {
             splashChecked = true
             // 冷启动必看一次；之后只有后台超过 1 小时回来才看

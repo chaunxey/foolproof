@@ -61,11 +61,14 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 
 import com.foolproof.base.ads.AdGateProvider
+import com.foolproof.base.ads.AdGateState
+import com.foolproof.base.ads.DAILY_FREE_USES
 import com.foolproof.base.ads.FeatureId
+import com.foolproof.base.ads.REWARD_AMOUNT
 import com.foolproof.common.ui.FoolproofButton
+import com.foolproof.common.ui.RewardUnlockDialog
 import com.foolproof.common.ui.SuccessDialog
 import com.foolproof.common.ui.FoolproofSecondaryButton
-import com.foolproof.base.ads.gateOrRun
 import com.foolproof.base.util.ByteFormat
 import com.foolproof.base.util.findActivity
 import com.foolproof.features.conversion.ConversionAction
@@ -93,6 +96,10 @@ fun FileConversionSection(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val activity = context.findActivity()
+    val available = AdGateState.available.collectAsState().value[FeatureId.FILE_CONVERSION]
+        ?: DAILY_FREE_USES
+    val locked = available <= 0
+    var showUnlock by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<Pair<Int, Boolean>?>(null) }
     var showCamera by remember { mutableStateOf(false) }
     val hasCamera = remember {
@@ -390,9 +397,15 @@ fun FileConversionSection(
 
             else -> {
                 FoolproofButton(
-                    text = stringResource(R.string.conversion_start),
+                    text = if (locked) {
+                        stringResource(com.foolproof.common.R.string.ad_unlock_button, REWARD_AMOUNT)
+                    } else {
+                        stringResource(R.string.conversion_start)
+                    },
                     onClick = {
-                        AdGateProvider.gate.gateOrRun(activity, FeatureId.FILE_CONVERSION) {
+                        if (locked) {
+                            showUnlock = true
+                        } else {
                             viewModel.dispatch(ConversionAction.Start)
                         }
                     },
@@ -400,6 +413,17 @@ fun FileConversionSection(
                     modifier = Modifier.padding(top = 12.dp),
                 )
             }
+        }
+
+        if (showUnlock) {
+            RewardUnlockDialog(
+                feature = FeatureId.FILE_CONVERSION,
+                onDismiss = { showUnlock = false },
+                onAllowed = {
+                    showUnlock = false
+                    viewModel.dispatch(ConversionAction.Start)
+                },
+            )
         }
 
         (state.phase as? ConversionPhase.Done)?.let { done ->

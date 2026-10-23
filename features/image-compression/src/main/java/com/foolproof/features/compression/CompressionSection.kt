@@ -43,10 +43,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.painterResource
 import coil3.compose.AsyncImage
 import com.foolproof.base.ads.AdGateProvider
+import com.foolproof.base.ads.AdGateState
+import com.foolproof.base.ads.DAILY_FREE_USES
 import com.foolproof.base.ads.FeatureId
-import com.foolproof.base.ads.gateOrRun
+import com.foolproof.base.ads.REWARD_AMOUNT
 import com.foolproof.base.util.ByteFormat
 import com.foolproof.common.ui.FoolproofButton
+import com.foolproof.common.ui.RewardUnlockDialog
 import com.foolproof.common.ui.SuccessDialog
 import com.foolproof.common.ui.FoolproofSecondaryButton
 import com.foolproof.base.util.findActivity
@@ -95,6 +98,10 @@ fun CompressionSection(
     }
     val context = LocalContext.current
     val activity = context.findActivity()
+    val available = AdGateState.available.collectAsState().value[FeatureId.IMAGE_COMPRESSION]
+        ?: DAILY_FREE_USES
+    val locked = available <= 0
+    var showUnlock by remember { mutableStateOf(false) }
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(MAX_PICK_COUNT),
     ) { uris ->
@@ -227,18 +234,20 @@ fun CompressionSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             val primary = stringResource(
-                if (state.isRunning) R.string.compression_cancel else R.string.compression_start,
+                when {
+                    state.isRunning -> R.string.compression_cancel
+                    locked -> com.foolproof.common.R.string.ad_unlock_button
+                    else -> R.string.compression_start
+                },
+                REWARD_AMOUNT,
             )
             FoolproofButton(
                 text = primary,
                 onClick = {
-                    if (state.isRunning) {
-                        viewModel.dispatch(CompressionAction.Cancel)
-                    } else {
-                        // 每成功压缩 5 次，下一次开始前先看插屏
-                        AdGateProvider.gate.gateOrRun(activity, FeatureId.IMAGE_COMPRESSION) {
-                            viewModel.dispatch(CompressionAction.Start)
-                        }
+                    when {
+                        state.isRunning -> viewModel.dispatch(CompressionAction.Cancel)
+                        locked -> showUnlock = true
+                        else -> viewModel.dispatch(CompressionAction.Start)
                     }
                 },
                 enabled = state.isRunning || state.canStart,
@@ -251,6 +260,17 @@ fun CompressionSection(
                     Text(stringResource(R.string.compression_clear))
                 }
             }
+        }
+
+        if (showUnlock) {
+            RewardUnlockDialog(
+                feature = FeatureId.IMAGE_COMPRESSION,
+                onDismiss = { showUnlock = false },
+                onAllowed = {
+                    showUnlock = false
+                    viewModel.dispatch(CompressionAction.Start)
+                },
+            )
         }
 
         if (state.images.isNotEmpty()) {

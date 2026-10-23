@@ -32,20 +32,21 @@
 - **切换**：改 `gradle.properties` 的 `foolproof.adSdk`，sync 后重新构建即可；
   `:app` 只依赖选中的 provider，另一个 SDK 不会进包；
 - **配置**：
-  - Meta：`ads/meta/.../MetaAdsConfig.kt`（banner / interstitial / splash placement ID）；
+  - Meta：`ads/meta/.../MetaAdsConfig.kt`（banner / interstitial / splash / rewarded placement ID）；
   - 穿山甲：`ads/pangle/.../PangleAdsConfig.kt`（APP_ID / BANNER_CODE_ID /
-    INTERSTITIAL_CODE_ID / SPLASH_CODE_ID）；
+    REWARDED_AD_ID / SPLASH_CODE_ID）；
   - 为空时：**不初始化 SDK**、横幅显示占位块、门控直接放行；
 - **穿山甲是 GroMore 聚合广告位**：三个 ID 都是以 `1` 开头的**广告位 ID**（不是 ADN 代码位），
   所以初始化必须 `useMediation(true)`、请求带 `MediationAdSlot`；广告位类型要和请求方法一致：
-  `BANNER` ↔ `loadBannerExpressAd`、**插全屏/全屏视频** ↔ `loadFullScreenVideoAd`、开屏 ↔ `loadSplashAd`；
+  `BANNER` ↔ `loadBannerExpressAd`、**激励视频** ↔ `loadRewardVideoAd`、开屏 ↔ `loadSplashAd`；
 - **明文流量**：穿山甲开屏素材会用 `http://*.pglstatp-toutiao.com` 的图片，
   `:app` 的 Manifest 已开 `android:usesCleartextTraffic="true"`，否则会被 WebView 当 Mixed Content 拦掉，
   表现为 `load image fail`；
 - **功能分割处横幅**：图片 tab（压缩 ↔ 去重）、视频 tab（压缩 ↔ 拼接）、转换 tab（生成 PDF ↔ PDF 工具）；
   新增分段统一调用 `SectionBannerAd()`；
-- **次数门控**：每个 `FeatureId` 独立计数，成功使用 5 次后，下一次使用前展示全屏广告；
-  加载失败或 5 秒内未就绪一律放行；
+- **额度门控**：每个功能每天免费 5 次（本地 0 点重置、不累计）；用完后按钮变
+  「看广告解锁 5 次」，用户主动看完激励视频 +5 次（可叠加、跨天保留）；
+  先扣免费再扣激励；广告失败/无填充/8 秒超时放行一次且不扣额度，60 秒内不再等待；
 - **启动/唤醒**：冷启动必展示一次广告层，后台超过 1 小时回来再展示；
   Meta 用自绘 5 秒壳（3 秒后可跳过），穿山甲优先原生开屏，失败/超时回退自绘壳；
 - **测试**：debug 包 Meta 自动 `AdSettings.setDebugBuild(true)`，穿山甲 `TTAdConfig.debug(true)`；
@@ -54,4 +55,4 @@
   隐私政策与 Play Data Safety 必须说明。
 
 Meta 的 placement ID 依赖 Play 商店链接，上架是 Meta 广告链路的前置条件；
-穿山甲的 appId/代码位在穿山甲媒体平台创建。
+穿山甲的 appId/广告位在穿山甲媒体平台创建；Meta 的激励视频需要在后台单独建 Rewarded placement。

@@ -36,11 +36,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.foolproof.base.ads.AdGateProvider
+import com.foolproof.base.ads.AdGateState
+import com.foolproof.base.ads.DAILY_FREE_USES
 import com.foolproof.base.ads.FeatureId
-import com.foolproof.base.ads.gateOrRun
+import com.foolproof.base.ads.REWARD_AMOUNT
 import com.foolproof.base.util.ByteFormat
 import com.foolproof.common.ui.FoolproofButton
 import com.foolproof.common.ui.FoolproofSecondaryButton
+import com.foolproof.common.ui.RewardUnlockDialog
 import com.foolproof.base.util.findActivity
 import com.foolproof.base.share.SharedContentStore
 import com.foolproof.features.video.domain.CompressionPreset
@@ -74,6 +77,10 @@ fun VideoCompressionSection(
     }
     val context = LocalContext.current
     val activity = context.findActivity()
+    val available = AdGateState.available.collectAsState().value[FeatureId.VIDEO_COMPRESSION]
+        ?: DAILY_FREE_USES
+    val locked = available <= 0
+    var showUnlock by remember { mutableStateOf(false) }
 
     // 每成功压缩完一个视频记一次，并自动弹预览
     var showResultDialog by remember { mutableStateOf(false) }
@@ -258,11 +265,17 @@ fun VideoCompressionSection(
 
             else -> {
                 FoolproofButton(
-                    text = stringResource(
-                        if (state.output == null) R.string.video_start else R.string.video_restart,
-                    ),
+                    text = if (locked) {
+                        stringResource(com.foolproof.common.R.string.ad_unlock_button, REWARD_AMOUNT)
+                    } else {
+                        stringResource(
+                            if (state.output == null) R.string.video_start else R.string.video_restart,
+                        )
+                    },
                     onClick = {
-                        AdGateProvider.gate.gateOrRun(activity, FeatureId.VIDEO_COMPRESSION) {
+                        if (locked) {
+                            showUnlock = true
+                        } else {
                             viewModel.dispatch(VideoAction.Start)
                         }
                     },
@@ -270,6 +283,17 @@ fun VideoCompressionSection(
                     modifier = Modifier.padding(top = 12.dp),
                 )
             }
+        }
+
+        if (showUnlock) {
+            RewardUnlockDialog(
+                feature = FeatureId.VIDEO_COMPRESSION,
+                onDismiss = { showUnlock = false },
+                onAllowed = {
+                    showUnlock = false
+                    viewModel.dispatch(VideoAction.Start)
+                },
+            )
         }
 
         state.output?.let { output ->

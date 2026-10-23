@@ -38,10 +38,11 @@ base → 无业务依赖
 
 ## 广告 provider
 
-- `:ads:api`：`AdSdk : AdGate`（`init` / `createBanner` / `loadSplash` / 门控）、
-  `AdBannerSlot`、`SplashAdSlot`、`CountingAdGate`（5 次成功 + 5 秒超时兜底）；
-- `:ads:meta`：Meta 横幅/插屏/初始化；开屏继续用 `:app` 的自绘壳（`loadSplash` 直接回退）；
-- `:ads:pangle`：穿山甲 GroMore 融合 SDK（模板横幅、插全屏门控、原生开屏 `CSJSplashAd`）；
+- `:ads:api`：`AdSdk : AdGate`（`init` / `createBanner` / `loadSplash` / `available` / `requestUnlock`）、
+  `AdBannerSlot`、`SplashAdSlot`、`RewardedGate`（每日免费 + 激励余额、8 秒加载超时、60 秒失败冷却）、
+  `Quota`（免费/激励两套额度）；
+- `:ads:meta`：Meta 横幅/激励视频/初始化；开屏继续用 `:app` 的自绘壳（`loadSplash` 直接回退）；
+- `:ads:pangle`：穿山甲 GroMore 融合 SDK（模板横幅、激励视频、原生开屏 `CSJSplashAd`）；
   广告位是 **GroMore 聚合广告位（ID 以 1 开头）**，初始化开 `useMediation`，请求都带
   `MediationAdSlot`；初始化成功后预热一次开屏，并在 `TTCustomController` 里关闭位置/电话状态/
   应用列表等采集；
@@ -50,7 +51,10 @@ base → 无业务依赖
 - 启动：`FoolproofApp.setupAds()` 创建 `AdSdk`，同时写入 `AdSdkRegistry`（Compose 横幅/开屏用）
   和 `AdGateProvider`（feature 门控用）；
 - 开屏：`:app` 的 `SplashAdOverlay` 先试原生开屏（2 秒看门狗、6 秒硬上限），
-  不支持/失败/超时回退到自绘 5 秒壳。
+  不支持/失败/超时回退到自绘 5 秒壳；
+- 额度：每个功能每天免费 5 次（本地 0 点重置、不累计）+ 激励余额（+5/次、可叠加、跨天保留）；
+  `:app` 的 `UsageStore` 持久化，`:base` 的 `AdGateState` 把可用次数同步给 5 个 feature 的按钮；
+  锁定态点击弹 `RewardUnlockDialog`，用户主动看完激励视频才 +5。
 
 ## base
 

@@ -7,4 +7,11 @@
     <string name="tab_settings">Settings</string>
     <string name="tab_menu">Menu</string>
     <string name="success_close">Close</string>
+    <!-- Rewarded unlock -->
+    <string name="ad_unlock_title">Unlock more uses</string>
+    <string name="ad_unlock_message">Watch an ad to unlock %1$d more uses</string>
+    <string name="ad_unlock_watch">Watch ad</string>
+    <string name="ad_unlock_cancel">Cancel</string>
+    <string name="ad_unlock_loading">Loading ad…</string>
+    <string name="ad_unlock_button">Watch ad to unlock %1$d</string>
 </resources>

@@ -7,4 +7,11 @@
     <string name="tab_settings">Paramètres</string>
     <string name="tab_menu">Menu</string>
     <string name="success_close">Fermer</string>
+    <!-- Pub récompensée -->
+    <string name="ad_unlock_title">Débloquer plus d\'utilisations</string>
+    <string name="ad_unlock_message">Regardez une pub pour débloquer %1$d utilisations</string>
+    <string name="ad_unlock_watch">Regarder</string>
+    <string name="ad_unlock_cancel">Annuler</string>
+    <string name="ad_unlock_loading">Chargement de la pub…</string>
+    <string name="ad_unlock_button">Pub pour +%1$d utilisations</string>
 </resources>

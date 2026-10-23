@@ -1,7 +1,7 @@
 package com.foolproof.ads.api
 
-/** 门控参数：N 次成功使用后看一次广告；超过 [timeoutMs] 没有结果就放行。 */
+/** 门控参数：激励视频加载超时与失败冷却。 */
 data class AdGateConfig(
-    val usesBeforeAd: Int = 5,
-    val timeoutMs: Long = 5_000L,
+    val loadTimeoutMs: Long = 8_000L,
+    val failCooldownMs: Long = 60_000L,
 )

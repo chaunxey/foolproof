@@ -41,9 +41,12 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.foolproof.base.ads.AdGateProvider
+import com.foolproof.base.ads.AdGateState
+import com.foolproof.base.ads.DAILY_FREE_USES
 import com.foolproof.base.ads.FeatureId
+import com.foolproof.base.ads.REWARD_AMOUNT
 import com.foolproof.common.ui.FoolproofButton
-import com.foolproof.base.ads.gateOrRun
+import com.foolproof.common.ui.RewardUnlockDialog
 import com.foolproof.base.util.ByteFormat
 import com.foolproof.features.duplicates.ui.PhotoPreviewDialog
 import kotlinx.coroutines.delay
@@ -63,6 +66,10 @@ fun DuplicateHeader(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val activity = context.findActivity()
+    val available = AdGateState.available.collectAsState().value[FeatureId.DUPLICATE_CLEANUP]
+        ?: DAILY_FREE_USES
+    val locked = available <= 0
+    var showUnlock by remember { mutableStateOf(false) }
 
     val permission = remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -86,8 +93,7 @@ fun DuplicateHeader(
     ) { granted ->
         hasPermission = granted
         val permanentlyDenied = !granted &&
-            activity != null &&
-            !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
+            activity != null &&            !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
         viewModel.dispatch(DuplicateAction.PermissionResolved(granted, permanentlyDenied))
     }
 
@@ -186,6 +192,7 @@ fun DuplicateHeader(
             ScanButton(
                 state = state,
                 hasPermission = hasPermission,
+                locked = locked,
                 onRequestPermission = {
                     if (state.permission == PermissionState.DENIED_FOREVER) {
                         context.openAppSettings()
@@ -195,11 +202,24 @@ fun DuplicateHeader(
                     }
                 },
                 onScan = {
-                    AdGateProvider.gate.gateOrRun(activity, FeatureId.DUPLICATE_CLEANUP) {
+                    if (locked) {
+                        showUnlock = true
+                    } else {
                         viewModel.dispatch(DuplicateAction.RequestScan)
                     }
                 },
                 onCancel = { viewModel.dispatch(DuplicateAction.CancelScan) },
+            )
+        }
+
+        if (showUnlock) {
+            RewardUnlockDialog(
+                feature = FeatureId.DUPLICATE_CLEANUP,
+                onDismiss = { showUnlock = false },
+                onAllowed = {
+                    showUnlock = false
+                    viewModel.dispatch(DuplicateAction.RequestScan)
+                },
             )
         }
 
@@ -340,6 +360,7 @@ fun DuplicateHeader(
 private fun ScanButton(
     state: DuplicateUiState,
     hasPermission: Boolean,
+    locked: Boolean,
     onRequestPermission: () -> Unit,
     onScan: () -> Unit,
     onCancel: () -> Unit,
@@ -358,16 +379,24 @@ private fun ScanButton(
         }
         state.hasResults || state.scan is ScanState.Done -> {
             FoolproofButton(
-                text = stringResource(R.string.duplicates_scan_again),
+                text = scanLabel(locked, R.string.duplicates_scan_again),
                 onClick = onScan,
             )
         }
         else -> FoolproofButton(
-            text = stringResource(R.string.duplicates_scan_start),
+            text = scanLabel(locked, R.string.duplicates_scan_start),
             onClick = onScan,
         )
     }
 }
+
+@Composable
+private fun scanLabel(locked: Boolean, normalRes: Int): String =
+    if (locked) {
+        stringResource(com.foolproof.common.R.string.ad_unlock_button, REWARD_AMOUNT)
+    } else {
+        stringResource(normalRes)
+    }
 
 /** 一次性提示 → 文案资源。 */
 private fun DuplicateEffect.MessageKind.labelRes(): Int = when (this) {

@@ -58,11 +58,14 @@ import kotlin.math.roundToInt
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.foolproof.base.ads.AdGateProvider
+import com.foolproof.base.ads.AdGateState
+import com.foolproof.base.ads.DAILY_FREE_USES
 import com.foolproof.base.ads.FeatureId
-import com.foolproof.base.ads.gateOrRun
+import com.foolproof.base.ads.REWARD_AMOUNT
 import com.foolproof.base.util.findActivity
 import com.foolproof.common.ui.FoolproofButton
 import com.foolproof.common.ui.FoolproofSecondaryButton
+import com.foolproof.common.ui.RewardUnlockDialog
 import com.foolproof.features.video.domain.MergeClip
 import com.foolproof.features.video.ui.ResultPreviewDialog
 import com.foolproof.features.video.ui.formatDuration
@@ -78,6 +81,10 @@ fun VideoMergeSection(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val activity = context.findActivity()
+    val available = AdGateState.available.collectAsState().value[FeatureId.VIDEO_MERGE]
+        ?: DAILY_FREE_USES
+    val locked = available <= 0
+    var showUnlock by remember { mutableStateOf(false) }
     val moreLabel = stringResource(R.string.video_merge_more)
     var messageRes by remember { mutableStateOf<Int?>(null) }
     var trimTargetId by remember { mutableStateOf<String?>(null) }
@@ -308,14 +315,31 @@ fun VideoMergeSection(
             }
         } else {
             FoolproofButton(
-                text = stringResource(R.string.video_merge_start),
+                text = if (locked) {
+                    stringResource(com.foolproof.common.R.string.ad_unlock_button, REWARD_AMOUNT)
+                } else {
+                    stringResource(R.string.video_merge_start)
+                },
                 onClick = {
-                    AdGateProvider.gate.gateOrRun(activity, FeatureId.VIDEO_MERGE) {
+                    if (locked) {
+                        showUnlock = true
+                    } else {
                         viewModel.dispatch(VideoMergeAction.Start)
                     }
                 },
                 enabled = state.canStart,
                 modifier = Modifier.padding(top = 12.dp),
+            )
+        }
+
+        if (showUnlock) {
+            RewardUnlockDialog(
+                feature = FeatureId.VIDEO_MERGE,
+                onDismiss = { showUnlock = false },
+                onAllowed = {
+                    showUnlock = false
+                    viewModel.dispatch(VideoMergeAction.Start)
+                },
             )
         }
 

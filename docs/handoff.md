@@ -46,6 +46,8 @@ H:\AndroidDevelop\workplace\Foolproof
 - 6 语言、深色模式、广告占位/接入；
 - 广告 provider 可切换：`meta`（Meta Audience Network，默认）/ `pangle`（穿山甲 GroMore 7.8.1.4，
   官方 Maven），单个产物只含一套 SDK；feature 仍只依赖 `:base` 的 `AdGate`。
+- 广告额度：每个功能每天免费 5 次（本地 0 点重置、不累计）+ 激励余额（+5/次、可叠加、跨天保留）；
+  锁定态按钮「看广告解锁 5 次」+ 确认弹窗，用户主动看完才解锁（见 specs/011-rewarded-unlock）。
 
 ### 已知边界
 
@@ -54,8 +56,9 @@ H:\AndroidDevelop\workplace\Foolproof
 - 未配置 FAN placement ID 时横幅是占位块；
 - 穿山甲 appId/广告位已填（appId `5899851`，广告位 104722089 / 104722138 / 104721749）；
   它们是 **GroMore 聚合广告位**（1 开头），必须 `useMediation` + `MediationAdSlot`；
-  横幅与原生开屏已在真机验证有填充，门控要确认广告位类型是「插全屏/全屏视频」（插屏会报 840031）；
+  横幅与原生开屏已在真机验证有填充；`104722138` 是激励视频位，用于解锁次数；
 - 穿山甲开屏素材走 http，`:app` 已开 `usesCleartextTraffic`，否则会 `load image fail`。
+- Meta 的激励视频需要在后台单独建 Rewarded placement；未配置时 meta 包 fail-open（不锁功能）。
 - Play Console、关闭测试、正式广告 ID、隐私政策尚未完成（如需上架再单独排期）。
 
 ## 4. 开发流程（必须遵守）

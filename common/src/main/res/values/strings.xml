@@ -8,4 +8,11 @@
     <string name="tab_settings">设置</string>
     <string name="tab_menu">菜单</string>
     <string name="success_close">关闭</string>
+    <!-- 激励视频解锁 -->
+    <string name="ad_unlock_title">解锁更多次数</string>
+    <string name="ad_unlock_message">观看一段广告，解锁 %1$d 次使用</string>
+    <string name="ad_unlock_watch">观看广告</string>
+    <string name="ad_unlock_cancel">取消</string>
+    <string name="ad_unlock_loading">广告加载中…</string>
+    <string name="ad_unlock_button">看广告解锁 %1$d 次</string>
 </resources>

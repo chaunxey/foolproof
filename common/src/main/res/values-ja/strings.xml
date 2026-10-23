@@ -7,4 +7,11 @@
     <string name="tab_settings">設定</string>
     <string name="tab_menu">メニュー</string>
     <string name="success_close">閉じる</string>
+    <!-- リワード広告 -->
+    <string name="ad_unlock_title">回数を追加</string>
+    <string name="ad_unlock_message">広告を見て %1$d 回分を解除</string>
+    <string name="ad_unlock_watch">広告を見る</string>
+    <string name="ad_unlock_cancel">キャンセル</string>
+    <string name="ad_unlock_loading">広告を読み込み中…</string>
+    <string name="ad_unlock_button">広告を見て %1$d 回解除</string>
 </resources>
