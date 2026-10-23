@@ -8,7 +8,7 @@
 :common                           TabHost、共享 Compose 组件（品牌按钮）、导航
 :ads:api                          广告抽象：AdSdk、横幅/开屏槽、门控策略（无具体 SDK）
 :ads:meta                         Meta Audience Network 实现
-:ads:pangle                       穿山甲（Pangle）实现
+:ads:pangle                       穿山甲（GroMore 融合 SDK）实现
 :features:image-compression       图片压缩
 :features:duplicate-cleanup       重复照片清理
 :features:video-compression       视频压缩 + 视频拼接
@@ -41,8 +41,10 @@ base → 无业务依赖
 - `:ads:api`：`AdSdk : AdGate`（`init` / `createBanner` / `loadSplash` / 门控）、
   `AdBannerSlot`、`SplashAdSlot`、`CountingAdGate`（5 次成功 + 5 秒超时兜底）；
 - `:ads:meta`：Meta 横幅/插屏/初始化；开屏继续用 `:app` 的自绘壳（`loadSplash` 直接回退）；
-- `:ads:pangle`：穿山甲模板横幅、全屏视频门控、原生开屏（`CSJSplashAd`）；
-  初始化成功后预热一次开屏，并在 `TTCustomController` 里关闭位置/电话状态/应用列表等采集；
+- `:ads:pangle`：穿山甲 GroMore 融合 SDK（模板横幅、插全屏门控、原生开屏 `CSJSplashAd`）；
+  广告位是 **GroMore 聚合广告位（ID 以 1 开头）**，初始化开 `useMediation`，请求都带
+  `MediationAdSlot`；初始化成功后预热一次开屏，并在 `TTCustomController` 里关闭位置/电话状态/
+  应用列表等采集；
 - 切换：`gradle.properties` 的 `foolproof.adSdk=meta|pangle`（默认 `meta`）。`:app` 只把选中的
   provider 挂进依赖，且只编译 `src/ad/<provider>/kotlin` 下的工厂文件，一个产物里只有一套 SDK；
 - 启动：`FoolproofApp.setupAds()` 创建 `AdSdk`，同时写入 `AdSdkRegistry`（Compose 横幅/开屏用）
@@ -84,5 +86,5 @@ base → 无业务依赖
 - **PDFBox-Android（Apache-2.0）**：PDF 合并/拆分/旋转/页面重写/压缩/转图片；
   宪法 v1.18 已将 PDFBox 登记为正式 PDF 能力依赖，不再算偏离；
 - **Meta Audience Network**：广告（海外）；
-- **穿山甲 Pangle（官方 Maven `com.pangle.cn:ads-sdk-pro`）**：广告（国内），与 Meta 二选一；
+- **穿山甲 GroMore 融合 SDK（官方 Maven `com.pangle.cn:mediation-sdk`）**：广告（国内），与 Meta 二选一；
 - Ktor/BouncyCastle 当前只被 base 网络层引用，可由 R8 裁剪；若确定短期不做 AI 聊天，可整体移出以进一步减小体积。

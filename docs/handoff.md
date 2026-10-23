@@ -15,7 +15,7 @@ H:\AndroidDevelop\workplace\Foolproof
 
 按顺序：
 
-1. [.specify/memory/constitution.md](../.specify/memory/constitution.md)（v1.18：本地优先、权限、模块、MVI、spec 治理）
+1. [.specify/memory/constitution.md](../.specify/memory/constitution.md)（v1.19：本地优先、权限、模块、MVI、spec 治理）
 2. [specs/README.md](../specs/README.md)（001–010 规格索引）
 3. [docs/architecture.md](architecture.md)（模块、数据流、依赖选择）
 4. [docs/features.md](features.md)（已上线行为与已知限制）
@@ -44,16 +44,18 @@ H:\AndroidDevelop\workplace\Foolproof
 - 系统分享入口：图片/视频/PDF；
 - 本地模拟登录（验证码 `0000`、密码 `admin`，无后端）、抽屉、设置、DataStore；
 - 6 语言、深色模式、广告占位/接入；
-- 广告 provider 可切换：`meta`（Meta Audience Network，默认）/ `pangle`（穿山甲 7.8.1.5，官方 Maven），
-  单个产物只含一套 SDK；feature 仍只依赖 `:base` 的 `AdGate`。
+- 广告 provider 可切换：`meta`（Meta Audience Network，默认）/ `pangle`（穿山甲 GroMore 7.8.1.4，
+  官方 Maven），单个产物只含一套 SDK；feature 仍只依赖 `:base` 的 `AdGate`。
 
 ### 已知边界
 
 - 登录是本地模拟，不发真实短信，没有服务端账号；
 - PDF 压缩有损，文字层会丢失；加密 PDF 不支持；
 - 未配置 FAN placement ID 时横幅是占位块；
-- 穿山甲 appId/代码位默认空：未配置时不初始化 SDK、横幅占位、门控放行；
-  原生开屏与真实填充需填入后台参数后验证（arm64-only，32 位设备无填充但会降级）。
+- 穿山甲 appId/广告位已填（appId `5899851`，广告位 104722089 / 104722138 / 104721749）；
+  它们是 **GroMore 聚合广告位**（1 开头），必须 `useMediation` + `MediationAdSlot`；
+  横幅与原生开屏已在真机验证有填充，门控要确认广告位类型是「插全屏/全屏视频」（插屏会报 840031）；
+- 穿山甲开屏素材走 http，`:app` 已开 `usesCleartextTraffic`，否则会 `load image fail`。
 - Play Console、关闭测试、正式广告 ID、隐私政策尚未完成（如需上架再单独排期）。
 
 ## 4. 开发流程（必须遵守）

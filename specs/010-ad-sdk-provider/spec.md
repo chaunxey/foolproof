@@ -215,12 +215,11 @@
 
 ## 假设
 
-- 穿山甲国内 SDK 通过**官方 Maven** 接入：仓库 `https://artifact.bytedance.com/repository/pangle`，
-  坐标 `com.pangle.cn:ads-sdk-pro:7.8.1.5`（已核实 POM/metadata 可访问，无需下载 AAR）；
-  仓库默认不带真实 appId / 代码位。
+- 穿山甲走 **GroMore 融合 SDK**（官方 Maven `com.pangle.cn:mediation-sdk:7.8.1.4`）；
+  广告位是 GroMore 聚合广告位（ID 以 1 开头），初始化必须 `useMediation`，请求带 `MediationAdSlot`。
 - 版本在 plan 中锁定，且需满足 `minSdk 24`。
 - 构建开关是**开发者构建期**行为，不进入设置页、不随用户切换。
-- **开屏形态已拍板（2026-10-22）**：穿山甲走原生 `TTSplashAd`；Meta 保持自绘 5 秒壳；
+- **开屏形态已拍板（2026-10-22）**：穿山甲走原生开屏（`CSJSplashAd`）；Meta 保持自绘 5 秒壳；
   穿山甲不可用时回退自绘壳。
 - 计数阈值、开屏触发时机、横幅刷新周期保持现状，不借本次调整产品策略。
-- 本次不引入广告聚合（GroMore）、不接第二个国内 SDK。
+- 使用 GroMore 聚合 SDK，但本次只接穿山甲一个 ADN；优量汇/快手等 adapter 不在范围内。

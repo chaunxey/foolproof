@@ -55,7 +55,7 @@
 | 视频 | Media3 Transformer 1.11.1 + media3-effect | 转码/缩放/裁剪/拼接，不引 FFmpeg |
 | PDF 能力 | **PDFBox-Android 2.0.27.0** | PDF 合并/拆分/旋转/页面/压缩/转图片；生成 PDF 仍用原生 `PdfDocument` |
 | 相机 | CameraX 1.4.2 | 拍照转 PDF |
-| 广告 | Meta Audience Network 6.22.0（海外）<br>穿山甲 Pangle 7.8.1.5（国内） | 分别封装在 `:ads:meta` / `:ads:pangle`；构建开关 `foolproof.adSdk` 二选一，单个产物只含一个 SDK；feature 只依赖 `:base` 的 `AdGate` |
+| 广告 | Meta Audience Network 6.22.0（海外）<br>穿山甲 GroMore 7.8.1.4（国内） | 分别封装在 `:ads:meta` / `:ads:pangle`；构建开关 `foolproof.adSdk` 二选一，单个产物只含一个 SDK；feature 只依赖 `:base` 的 `AdGate` |
 | 网络 | Ktor Client（base 封装） | 当前无业务网络功能；为将来保留，禁止 feature 自建客户端 |
 | 异步 | Coroutine + Flow | 禁止 RxJava |
 | 测试 | JUnit4 + coroutines-test + koin-test | 仅 test 配置 |
@@ -289,8 +289,8 @@ feature 之间禁止互相依赖
   - 修正旧版“4 tab / 语音聊天”等与代码不一致的描述。
 - **v1.19（2026-10-22，广告 provider 可切换）**：
   - 新增 `:ads:api`（广告抽象）、`:ads:meta`、`:ads:pangle` 三个模块，广告实现从 `:app` 迁出；
-  - 登记穿山甲 Pangle 7.8.1.5（官方 Maven `com.pangle.cn:ads-sdk-pro`），由构建开关
-    `foolproof.adSdk`（默认 `meta`）决定单个产物只含一个广告 SDK；
+  - 登记穿山甲 GroMore 7.8.1.4（官方 Maven `com.pangle.cn:mediation-sdk`，聚合广告位 ID 以 1 开头，
+    初始化必须 `useMediation`），由构建开关 `foolproof.adSdk`（默认 `meta`）决定单个产物只含一个 SDK；
   - `AdGate` 接口保持不变，feature 模块零改动；门控策略下沉到 `:ads:api` 的 `CountingAdGate`，
     新增 5 秒超时兜底；
-  - 补充广告 SDK 敏感权限剔除与穿山甲初始化合规约束。
+  - 补充广告 SDK 敏感权限剔除、穿山甲初始化合规约束与开屏素材明文流量要求。

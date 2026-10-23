@@ -13,7 +13,7 @@
 | UI | Jetpack Compose（BOM 2026.09.00）；广告 View 由 SDK 提供，Compose 侧只做 `AndroidView` 包装 |
 | DI | 不新增 Koin 绑定：广告沿用进程级 `AdGateProvider` / 新 `AdSdkRegistry`，启动时在 `:app` 注入 |
 | 现有广告 | Meta Audience Network 6.22.0（`:app` 直接依赖） |
-| 新增广告 | 穿山甲（Pangle / CSJ）**7.8.1.5**（2026-09-24，minSdk 24），**仅 `:ads:pangle` 依赖** |
+| 新增广告 | 穿山甲 **GroMore 融合 SDK 7.8.1.4**（聚合广告位，ID 以 1 开头），**仅 `:ads:pangle` 依赖** |
 | 切换 | Gradle 属性 `foolproof.adSdk=meta|pangle`（默认 `meta`） |
 | 构建产物 | 每个构建只含一个广告 SDK；AAB/APK 签名与版本号流程不变（不引入 flavor） |
 
@@ -197,25 +197,27 @@ class CountingAdGate(
 - `AdsConfig` → `MetaAdsConfig`（三个 placement ID + `configured`）；
 - `FeatureId` 计数 key 不变（`uses_<FEATURE>`），切 SDK 不丢计数（spec FR-015）。
 
-### D6. 穿山甲实现映射（以 7.8.1.5 实际 API 为准，实现时对照官方 demo）
+### D6. 穿山甲实现映射（GroMore 融合 SDK 7.8.1.4）
 
-| 能力 | Meta（现状） | 穿山甲 |
+| 能力 | Meta（现状） | 穿山甲（GroMore） |
 |---|---|---|
-| 初始化 | `AudienceNetworkAds.initialize` + `AdSettings.setDebugBuild` | `TTAdSdk.init(context, TTAdConfig.Builder().appId(..).appName(..).debug(debug).build())` + `TTAdSdk.start(callback)`（6.x 起必须 start；58xx 起 `init` 返回 boolean、`isSdkReady` 可查） |
+| 初始化 | `AudienceNetworkAds.initialize` + `AdSettings.setDebugBuild` | `TTAdSdk.init(context, TTAdConfig.Builder().appId(..).appName(..).debug(debug).useMediation(true).build())` + `TTAdSdk.start(callback)`；`isSdkReady` 可查 |
 | 广告入口 | `AdView` / `InterstitialAd` | `TTAdSdk.getAdManager().createAdNative(context)` |
-| 横幅 | `AdView(320×50)`，60 秒 `loadAd()` | `loadBannerExpressAd(AdSlot)` → `TTNativeExpressAd.render()` 得到 `View`；刷新 = `destroy()` 后重新 load；`setExpressViewAcceptedSize(320f, 50f)` |
-| 门控全屏 | `InterstitialAd` | `loadFullScreenVideoAd(AdSlot)` → `TTFullScreenVideoAd`，`setFullScreenVideoAdInteractionListener` 后 `showFullScreenVideoAd(activity)`；`onAdClose`/`onError` → 放行 |
-| 开屏 | 自绘壳 + 横幅 | `loadSplashAd(AdSlot, SplashAdListener)` → `TTSplashAd.getSplashView()` + `setSplashInteractionListener`（`onAdSkip`/`onAdTimeOver` → 关闭）；失败/超时回退自绘壳（D7） |
+| 广告位 | placement ID | **GroMore 聚合广告位 ID（1 开头）**，请求带 `MediationAdSlot` |
+| 横幅 | `AdView(320×50)`，60 秒 `loadAd()` | `loadBannerExpressAd(AdSlot)` → `TTNativeExpressAd.render()`；`onRenderSuccess` 可能回调 null，用 `getExpressAdView()` 兜底；换新前 `destroy()` |
+| 门控 | `InterstitialAd` | `loadFullScreenVideoAd(AdSlot)` → `TTFullScreenVideoAd.showFullScreenVideoAd(activity)`；**广告位类型必须是插全屏/全屏视频**，插屏会报 840031 |
+| 开屏 | 自绘壳 + 横幅 | `loadSplashAd(AdSlot, CSJSplashAdListener, timeout)` → `CSJSplashAd.showSplashView(container)`，`onSplashAdClose` → 关闭；失败/超时回退自绘壳（D7） |
 | 测试模式 | `AdSettings.setDebugBuild(true)` | `TTAdConfig.Builder().debug(true)` + 后台测试代码位 |
 | 销毁 | `destroy()` | `destroy()`（横幅换新前必须销毁旧对象） |
 
 补充：
 
 - 7.3.0.8 起 Manifest 不再需要 `TTMultiProvider`，不手工添加；
-- 初始化成功回调里再发首个广告请求；初始化失败只记日志并降级（不抛给业务）；
-- 可选：`TTAdSdk.getAdManager().requestPermissionIfNecessary(activity)`，
-  如 7.8.1.5 仍要求则在 `MainActivity.onResume` 调一次（由 `AdSdk` 暴露 `onActivityAvailable`，
-  不满足则跳过，不阻塞）。
+- 初始化成功回调里再发首个广告请求；初始化失败静默降级（不抛给业务）；
+- 开屏素材可能走 `http://*.pglstatp-toutiao.com`：`:app` 必须开 `android:usesCleartextTraffic="true"`，
+  否则 WebView 会以 Mixed Content 拦掉，表现为 Pangle 层 `load image fail`（20005）；
+- GroMore 日志里的 “未按要求接入三方广告sdk【pangle】” 是缺少独立 adapter 的提示，
+  纯穿山甲瀑布流仍可填充；接其他 ADN 时再补 adapter。
 
 ### D7. 启动/唤醒广告层：穿山甲原生开屏 + 回退壳（已拍板）
 
@@ -237,16 +239,14 @@ SplashAdOverlay(onFinished)
 - 2 秒后即使 SDK 迟到的成功回调也忽略（避免“进入应用后又弹开屏”）；
 - 预加载：`PangleAdSdk.init` 时后台预热一次 `loadSplashAd`，命中则冷启动直接原生。
 
-### D8. 依赖落地：官方 Maven 仓库（已核实）
+### D8. 依赖落地：官方 Maven 仓库（GroMore 融合 SDK）
 
-官方集成文档 [SDK接入配置](https://www.csjplatform.com/supportcenter/5397) 的「方式一：maven 集成」给出：
+穿山甲最终以 **GroMore 聚合广告位**（ID 以 1 开头）接入，因此依赖用融合 SDK：
 
 - 仓库：`https://artifact.bytedance.com/repository/pangle`
-- 坐标：`com.pangle.cn:ads-sdk-pro:7.8.1.5`（`packaging=aar`，POM 未声明外部依赖）
+- 坐标：`com.pangle.cn:mediation-sdk:7.8.1.4`（POM 无外部依赖）
 
-已验证 `maven-metadata.xml` 的 latest/release = **7.8.1.5**（lastUpdated 2026-10-10），
-对应 POM 可访问；不需要下载/入库 AAR。项目启用了 `FAIL_ON_PROJECT_REPOS`，
-仓库只能声明在 `settings.gradle.kts`：
+项目启用了 `FAIL_ON_PROJECT_REPOS`，仓库只能声明在 `settings.gradle.kts`：
 
 ```kotlin
 maven {
@@ -258,14 +258,15 @@ maven {
 版本登记在 `gradle/libs.versions.toml`：
 
 ```toml
-pangle = "7.8.1.5"
-pangle-ads = { group = "com.pangle.cn", name = "ads-sdk-pro", version.ref = "pangle" }
+pangleMediation = "7.8.1.4"
+pangle-mediation = { group = "com.pangle.cn", name = "mediation-sdk", version.ref = "pangleMediation" }
 ```
 
-`:ads:pangle` 只写 `implementation(libs.pangle.ads)`，仓库里不落任何二进制。
+`:ads:pangle` 只写 `implementation(libs.pangle.mediation)`，仓库里不落任何二进制。
 
-官方文档还要求手动集成时补 `com.squareup.okhttp3:okhttp:3.12.1`（AAR 不带网络库）；
-本项目 `:base` 的 Ktor 已经带 okhttp，先不降级重复引入，运行期初始化失败再对齐版本。
+初始化必须 `useMediation(true)`（否则报 40006 广告位ID不合法），每个 `AdSlot` 都要
+`setMediationAdSlot(MediationAdSlot.Builder().build())`。`:app` Manifest 需要
+`android:usesCleartextTraffic="true"`，否则开屏素材的 http 图片会被 WebView 拦掉。
 
 ### D9. 权限、合规、R8
 
@@ -294,10 +295,10 @@ object MetaAdsConfig {
 
 // ads/pangle/.../PangleAdsConfig.kt
 object PangleAdsConfig {
-    const val APP_ID = ""                  // 穿山甲应用 ID
-    const val BANNER_CODE_ID = ""          // 横幅代码位
-    const val INTERSTITIAL_CODE_ID = ""    // 全屏/插屏代码位
-    const val SPLASH_CODE_ID = ""          // 原生开屏代码位（为空则回退自绘壳）
+    const val APP_ID = "5899851"
+    const val BANNER_CODE_ID = "104722089"       // GroMore 广告位：Banner
+    const val INTERSTITIAL_CODE_ID = "104722138" // GroMore 广告位：插全屏/全屏视频
+    const val SPLASH_CODE_ID = "104721749"       // GroMore 广告位：开屏（为空则回退自绘壳）
     val configured get() = APP_ID.isNotBlank() &&
         BANNER_CODE_ID.isNotBlank() && INTERSTITIAL_CODE_ID.isNotBlank()
 }
@@ -344,7 +345,7 @@ app/src/ad/pangle/kotlin/com/foolproof/ads/AdSdkFactory.kt
 
 ```
 settings.gradle.kts                          + include 三个模块、穿山甲官方 Maven 仓库
-gradle/libs.versions.toml                    + pangle 7.8.1.5 / com.pangle.cn:ads-sdk-pro
+gradle/libs.versions.toml                    + pangleMediation 7.8.1.4 / com.pangle.cn:mediation-sdk
 gradle.properties                            + foolproof.adSdk=meta
 app/build.gradle.kts                         + 开关校验、源集、条件依赖
 app/src/main/java/com/foolproof/FoolproofApp.kt        setupAds 改为 createAdSdk()
@@ -377,9 +378,9 @@ app/src/main/java/com/foolproof/ads/AdsConfig.kt     → MetaAdsConfig / AdGateC
   5. 验证 `:app:assembleDebug` 成功、Meta 行为不变。
 - **Phase 1 — 穿山甲接入**
   1. `settings.gradle.kts` 注册 `:ads:pangle` + 官方 Maven 仓库；`libs.versions.toml` 登记
-     `com.pangle.cn:ads-sdk-pro:7.8.1.5`，模块编译通过；
-  2. 初始化、横幅、全屏门控、原生开屏实现，空配置全降级；
-  3. `:app` 补 pangle 源集工厂与 Manifest 权限剔除；
+     `com.pangle.cn:mediation-sdk:7.8.1.4`，模块编译通过；
+  2. 初始化（`useMediation` + `MediationAdSlot`）、横幅、插全屏门控、原生开屏实现，空配置全降级；
+  3. `:app` 补 pangle 源集工厂、Manifest 权限剔除与 `usesCleartextTraffic`；
   4. `-Pfoolproof.adSdk=pangle` 构建通过。
 - **Phase 2 — 治理与文档**：宪法 v1.19、docs 五处、specs 索引、handoff。
 - **Phase 3 — 验证**：单测、双构建、真机/模拟器三条路径、体积与 Manifest 对比。
@@ -408,9 +409,9 @@ app/src/main/java/com/foolproof/ads/AdsConfig.kt     → MetaAdsConfig / AdGateC
 
 | 风险 | 缓解 |
 |---|---|
-| **`ads-sdk-pro` POM 无传递依赖** | 项目已有 okhttp（Ktor）；如初始化失败再按官方文档补 `okhttp:3.12.1` |
+| **GroMore 聚合广告位的类型必须与请求方法一致** | 横幅 ↔ `loadBannerExpressAd`；插全屏/全屏视频 ↔ `loadFullScreenVideoAd`；插屏会报 840031 |
 | 官方 Maven 仓库不可达（网络/CI） | 仓库集中声明在 settings；必要时加代理或公司镜像，仍不需要落 AAR |
-| 穿山甲 7.6.1.2+ **仅 arm64**（7.8.1.5 下线 32 位 so） | 32 位设备无填充但降级为占位；若必须覆盖 32 位，退到 7.5.1.7（plan review 决策） |
+| 穿山甲 7.6.1.2+ **仅 arm64**（7.8.1.4 下线 32 位 so） | 32 位设备无填充但降级为占位；若必须覆盖 32 位，退到 7.5.1.7（plan review 决策） |
 | 包体增加（SDK 数 MB） | 只打包选中 provider；发布前记录体积；必要时按 ABI 拆包 |
 | SDK 带入敏感权限 | `tools:node="remove"` + `apkanalyzer` 对比 v1.1.0 |
 | 合规：未同意隐私政策就采集设备标识 | 未配置/未请求不初始化；个性化推荐默认关；完整同意流程另立 spec |
@@ -425,15 +426,15 @@ app/src/main/java/com/foolproof/ads/AdsConfig.kt     → MetaAdsConfig / AdGateC
 | # | 议题 | 决定 |
 |---|---|---|
 | 1 | 切换方式 | Gradle 属性 `foolproof.adSdk`（默认 `meta`），`assembleDebug` 等命令不变 |
-| 2 | SDK 版本/接入 | 穿山甲 **7.8.1.5**（arm64-only），走官方 Maven `com.pangle.cn:ads-sdk-pro`，**不落 AAR** |
+| 2 | SDK 版本/接入 | 穿山甲 **GroMore 7.8.1.4**（arm64-only），走官方 Maven `com.pangle.cn:mediation-sdk`，**不落 AAR** |
 | 3 | 权限 | **剔除全部敏感权限**（`READ_PHONE_STATE` / `REQUEST_INSTALL_PACKAGES` / `QUERY_ALL_PACKAGES` / 定位 / 通讯录 / 短信 / 写存储） |
 | 4 | 开屏 | 穿山甲接 **原生 TTSplashAd**；Meta 保持自绘壳；不可用时回退自绘壳 |
 | 5 | 默认 provider | `meta` |
 | 6 | 执行 | 直接进入 implement：先写 `tasks.md`，再做 Phase 0 |
 
-**接入方式修订（2026-10-22）**：穿山甲提供官方 Maven 集成
-（`https://artifact.bytedance.com/repository/pangle` + `com.pangle.cn:ads-sdk-pro:7.8.1.5`），
-已核实 POM 与 metadata 可访问，因此不再需要下载 AAR/入库二进制，Phase 1 可直接开始。
+**接入方式修订（2026-10-23）**：广告位实际是 **GroMore 聚合广告位**（ID 以 1 开头，例
+`104722089`），直投 SDK 会报 40006；因此改为 `com.pangle.cn:mediation-sdk:7.8.1.4` +
+`useMediation(true)` + `MediationAdSlot`。开屏素材走 http，`:app` 需开 `usesCleartextTraffic`。
 
 ## 9. 完成定义
 
@@ -449,7 +450,7 @@ app/src/main/java/com/foolproof/ads/AdsConfig.kt     → MetaAdsConfig / AdGateC
 
    | 类别 | 选型 | 备注 |
    | --- | --- | --- |
-   | 广告 | Meta Audience Network 6.22.0（海外）<br>穿山甲 Pangle 7.8.1.5（国内） | 分别封装在 `:ads:meta` / `:ads:pangle`；构建开关 `foolproof.adSdk` 二选一，单个产物只含一个 SDK；feature 只依赖 `:base` 的 `AdGate` |
+   | 广告 | Meta Audience Network 6.22.0（海外）<br>穿山甲 GroMore 7.8.1.4（国内） | 分别封装在 `:ads:meta` / `:ads:pangle`；构建开关 `foolproof.adSdk` 二选一，单个产物只含一个 SDK；feature 只依赖 `:base` 的 `AdGate` |
 
 2. **§3 模块结构**加入：
 

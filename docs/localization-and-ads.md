@@ -27,7 +27,7 @@
 | provider | SDK | 依赖 |
 | --- | --- | --- |
 | `meta`（默认） | Meta Audience Network 6.22.0 | `libs.audience.network` |
-| `pangle` | 穿山甲 Pangle 7.8.1.5 | 官方 Maven `com.pangle.cn:ads-sdk-pro` |
+| `pangle` | 穿山甲 GroMore 7.8.1.4 | 官方 Maven `com.pangle.cn:mediation-sdk` |
 
 - **切换**：改 `gradle.properties` 的 `foolproof.adSdk`，sync 后重新构建即可；
   `:app` 只依赖选中的 provider，另一个 SDK 不会进包；
@@ -36,6 +36,12 @@
   - 穿山甲：`ads/pangle/.../PangleAdsConfig.kt`（APP_ID / BANNER_CODE_ID /
     INTERSTITIAL_CODE_ID / SPLASH_CODE_ID）；
   - 为空时：**不初始化 SDK**、横幅显示占位块、门控直接放行；
+- **穿山甲是 GroMore 聚合广告位**：三个 ID 都是以 `1` 开头的**广告位 ID**（不是 ADN 代码位），
+  所以初始化必须 `useMediation(true)`、请求带 `MediationAdSlot`；广告位类型要和请求方法一致：
+  `BANNER` ↔ `loadBannerExpressAd`、**插全屏/全屏视频** ↔ `loadFullScreenVideoAd`、开屏 ↔ `loadSplashAd`；
+- **明文流量**：穿山甲开屏素材会用 `http://*.pglstatp-toutiao.com` 的图片，
+  `:app` 的 Manifest 已开 `android:usesCleartextTraffic="true"`，否则会被 WebView 当 Mixed Content 拦掉，
+  表现为 `load image fail`；
 - **功能分割处横幅**：图片 tab（压缩 ↔ 去重）、视频 tab（压缩 ↔ 拼接）、转换 tab（生成 PDF ↔ PDF 工具）；
   新增分段统一调用 `SectionBannerAd()`；
 - **次数门控**：每个 `FeatureId` 独立计数，成功使用 5 次后，下一次使用前展示全屏广告；
