@@ -19,7 +19,7 @@
 
     <string name="duplicates_hint_no_duplicates">重複写真は見つかりませんでした</string>
     <string name="duplicates_hint_cancelled">キャンセルしました。再検索できます。</string>
-    <string name="duplicates_hint_idle">「%1$s」をタップして、ギャラリー内の重複写真をスキャンします</string>
+    <string name="duplicates_hint_idle">アイコンまたは文字をタップしてギャラリーをスキャン</string>
 
     <string name="duplicates_delete_title">削除の確認</string>
     <string name="duplicates_delete_message">%1$d 枚の写真（約 %2$s）を削除します</string>

@@ -28,8 +28,8 @@
     <!-- 空结果提示 -->
     <string name="duplicates_hint_no_duplicates">没有发现重复照片</string>
     <string name="duplicates_hint_cancelled">已取消，可重新查询</string>
-    <!-- %1$s 为【查询相同图片】按钮文案，避免句子里再硬编码一遍 -->
-    <string name="duplicates_hint_idle">点击「%1$s」扫描相册中的重复照片</string>
+    <!-- 空状态整块可点，无需再提按钮 -->
+    <string name="duplicates_hint_idle">点击图标或文字开始扫描</string>
 
     <!-- 删除确认框 -->
     <string name="duplicates_delete_title">删除确认</string>

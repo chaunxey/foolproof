@@ -12,6 +12,7 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -109,6 +111,16 @@ fun DuplicateHeader(
             }
         }
         viewModel.dispatch(DuplicateAction.SafTreeChosen(uri?.toString()))
+    }
+
+    // 空状态整块可点：权限 → 额度解锁 → 开始扫描
+    val startScanFlow: () -> Unit = {
+        when {
+            state.permission == PermissionState.DENIED_FOREVER -> context.openAppSettings()
+            !hasPermission -> permissionLauncher.launch(permission)
+            locked -> showUnlock = true
+            else -> viewModel.dispatch(DuplicateAction.RequestScan)
+        }
     }
 
     val systemDeleteLauncher = rememberLauncherForActivityResult(
@@ -189,27 +201,21 @@ fun DuplicateHeader(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
-            ScanButton(
-                state = state,
-                hasPermission = hasPermission,
-                locked = locked,
-                onRequestPermission = {
-                    if (state.permission == PermissionState.DENIED_FOREVER) {
-                        context.openAppSettings()
-                    } else {
-                        // 只申请权限；授权结果回调里再启动扫描（避免无权扫描白跑一次）
-                        permissionLauncher.launch(permission)
-                    }
-                },
-                onScan = {
-                    if (locked) {
-                        showUnlock = true
-                    } else {
-                        viewModel.dispatch(DuplicateAction.RequestScan)
-                    }
-                },
-                onCancel = { viewModel.dispatch(DuplicateAction.CancelScan) },
-            )
+            val showScanButton = state.isScanning ||
+                state.hasResults ||
+                state.scan is ScanState.Done ||
+                state.permission == PermissionState.DENIED_FOREVER ||
+                !hasPermission
+            if (showScanButton) {
+                ScanButton(
+                    state = state,
+                    hasPermission = hasPermission,
+                    locked = locked,
+                    onRequestPermission = startScanFlow,
+                    onScan = startScanFlow,
+                    onCancel = { viewModel.dispatch(DuplicateAction.CancelScan) },
+                )
+            }
         }
 
         if (showUnlock) {
@@ -288,33 +294,40 @@ fun DuplicateHeader(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else {
-            if (state.scan !is ScanState.Done) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_empty_duplicates),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 16.dp).size(40.dp),
-                )
-                Text(
-                    text = stringResource(R.string.duplicates_empty_title),
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.padding(top = 8.dp),
-                )
-            }
             val hint = when {
                 state.scan is ScanState.Done -> stringResource(R.string.duplicates_hint_no_duplicates)
                 state.scan is ScanState.Cancelled -> stringResource(R.string.duplicates_hint_cancelled)
-                else -> stringResource(
-                    R.string.duplicates_hint_idle,
-                    stringResource(R.string.duplicates_scan_start),
+                else -> stringResource(R.string.duplicates_hint_idle)
+            }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = !state.isScanning) { startScanFlow() }
+                    .padding(top = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                if (state.scan !is ScanState.Done) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_empty_duplicates),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(40.dp),
+                    )
+                    Text(
+                        text = stringResource(R.string.duplicates_empty_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+                Text(
+                    text = hint,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 8.dp),
                 )
             }
-            Text(
-                text = hint,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 12.dp),
-            )
         }
     }
 

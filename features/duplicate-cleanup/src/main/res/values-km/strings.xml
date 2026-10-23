@@ -19,7 +19,7 @@
 
     <string name="duplicates_hint_no_duplicates">រកមិនឃើញរូបថតស្ទួនទេ</string>
     <string name="duplicates_hint_cancelled">បានបោះបង់។ អ្នកអាចស្វែងរកម្តងទៀត។</string>
-    <string name="duplicates_hint_idle">ចុច “%1$s” ដើម្បីស្កេនវិចិត្រសាលរករូបថតស្ទួន</string>
+    <string name="duplicates_hint_idle">ចុចរូបតំណាង ឬអត្ថបទ ដើម្បីស្កេនវិចិត្រសាល</string>
 
     <string name="duplicates_delete_title">បញ្ជាក់ការលុប</string>
     <string name="duplicates_delete_message">នឹងលុបរូបថត %1$d រូប ប្រមាណ %2$s</string>

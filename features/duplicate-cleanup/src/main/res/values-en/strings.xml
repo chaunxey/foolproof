@@ -19,7 +19,7 @@
 
     <string name="duplicates_hint_no_duplicates">No duplicate photos found</string>
     <string name="duplicates_hint_cancelled">Cancelled. You can search again.</string>
-    <string name="duplicates_hint_idle">Tap “%1$s” to scan your gallery for duplicate photos</string>
+    <string name="duplicates_hint_idle">Tap the icon or text to scan your gallery</string>
 
     <string name="duplicates_delete_title">Delete confirmation</string>
     <string name="duplicates_delete_message">About to delete %1$d photos, approx. %2$s</string>

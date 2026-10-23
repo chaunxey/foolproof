@@ -19,7 +19,7 @@
 
     <string name="duplicates_hint_no_duplicates">Keine doppelten Fotos gefunden</string>
     <string name="duplicates_hint_cancelled">Abgebrochen. Du kannst erneut suchen.</string>
-    <string name="duplicates_hint_idle">Tippe auf „%1$s“, um deine Galerie nach doppelten Fotos zu durchsuchen</string>
+    <string name="duplicates_hint_idle">Tippe auf Symbol oder Text, um die Galerie zu durchsuchen</string>
 
     <string name="duplicates_delete_title">Löschen bestätigen</string>
     <string name="duplicates_delete_message">Es werden %1$d Fotos gelöscht, ca. %2$s</string>

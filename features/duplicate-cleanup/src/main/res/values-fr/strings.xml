@@ -19,7 +19,7 @@
 
     <string name="duplicates_hint_no_duplicates">Aucune photo en double trouvée</string>
     <string name="duplicates_hint_cancelled">Annulé. Vous pouvez relancer la recherche.</string>
-    <string name="duplicates_hint_idle">Touchez « %1$s » pour analyser la galerie et trouver les photos en double</string>
+    <string name="duplicates_hint_idle">Touchez l\'icône ou le texte pour analyser la galerie</string>
 
     <string name="duplicates_delete_title">Confirmer la suppression</string>
     <string name="duplicates_delete_message">Vous allez supprimer %1$d photos, soit environ %2$s</string>
