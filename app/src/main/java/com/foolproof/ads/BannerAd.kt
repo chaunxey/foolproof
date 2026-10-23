@@ -1,6 +1,5 @@
 package com.foolproof.ads
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,9 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -24,11 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -149,7 +144,10 @@ fun SplashAdOverlay(onFinished: () -> Unit) {
 }
 
 /**
- * 开屏加载态：与系统启动画面同一底色 + 应用图标，避免「白屏 → 黑屏 → 广告」的跳变。
+ * 开屏加载态：只保留与系统启动画面一致的底色。
+ *
+ * 系统启动画面已经画过应用图标（自适应图标，系统负责尺寸与圆角），
+ * 这里不再画第二个图标，避免出现「大小不同 + 白边」的切换。
  */
 @Composable
 private fun SplashLoading() {
@@ -157,16 +155,7 @@ private fun SplashLoading() {
         modifier = Modifier
             .fillMaxSize()
             .background(colorResource(com.foolproof.R.color.splash_background)),
-        contentAlignment = Alignment.Center,
-    ) {
-        Image(
-            painter = painterResource(com.foolproof.R.mipmap.ic_launcher_foreground),
-            contentDescription = null,
-            modifier = Modifier
-                .size(120.dp)
-                .clip(RoundedCornerShape(28.dp)),
-        )
-    }
+    )
 }
 
 private sealed interface SplashState {
