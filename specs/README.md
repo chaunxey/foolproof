@@ -15,6 +15,7 @@
 | [008-auth-settings](008-auth-settings/spec.md) | 本地模拟登录、抽屉、设置、DataStore | 已实现（追溯） |
 | [009-video-editing](009-video-editing/spec.md) | 视频拼接、裁剪、三模式 Pager | 已实现（追溯） |
 | [010-ad-sdk-provider](010-ad-sdk-provider/spec.md) | 可切换广告 SDK（Meta / 穿山甲） | 已实现（feature 分支） |
+| [011-rewarded-unlock](011-rewarded-unlock/spec.md) | 每日免费 + 激励视频解锁次数（取代 010 的自动门控） | 已实现（feature 分支） |
 
 > 治理规则见 [.specify/memory/constitution.md](../.specify/memory/constitution.md) §13：
 > 新增功能/行为变更必须补 spec、plan、tasks；纯 bugfix/样式/性能可直接修。
